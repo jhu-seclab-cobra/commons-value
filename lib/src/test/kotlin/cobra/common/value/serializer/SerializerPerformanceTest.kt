@@ -1,4 +1,4 @@
-package cobra.common.value.serializer
+package cobra.commons.value.serializer
 
 import kotlin.test.Test
 import kotlin.test.assertEquals

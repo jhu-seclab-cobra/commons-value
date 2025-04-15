@@ -1,4 +1,4 @@
-package cobra.common.value
+package cobra.commons.value
 
 /**
  * Represents a boolean value in the storage system.

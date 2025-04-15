@@ -1,4 +1,4 @@
-package cobra.common.value
+package cobra.commons.value
 
 /**
  * Represents a collection value in the system. This sealed interface extends [IValue] and is used

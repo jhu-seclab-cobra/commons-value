@@ -1,4 +1,4 @@
-package cobra.common.value
+package cobra.commons.value
 
 /**
  * Represents a range of integer values, providing range operations.

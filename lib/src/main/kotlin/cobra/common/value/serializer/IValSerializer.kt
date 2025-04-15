@@ -1,6 +1,6 @@
-package cobra.common.value.serializer
+package cobra.commons.value.serializer
 
-import cobra.common.value.IValue
+import cobra.commons.value.IValue
 
 /**
  * Defines a mechanism for serializing and deserializing [IValue] instances to and from a specific material format.

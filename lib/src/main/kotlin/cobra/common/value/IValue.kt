@@ -1,4 +1,4 @@
-package cobra.common.value
+package cobra.commons.value
 
 /**
  * Represents a generic value within the system with a flexible core property.
