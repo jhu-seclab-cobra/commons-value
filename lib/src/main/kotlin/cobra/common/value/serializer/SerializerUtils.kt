@@ -1,4 +1,4 @@
-package cobra.common.value.serializer
+package cobra.commons.value.serializer
 
 import org.apache.commons.lang3.math.NumberUtils
 import java.io.DataInput

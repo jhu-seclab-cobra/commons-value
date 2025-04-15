@@ -1,4 +1,4 @@
-# COBRA.COMMON.VALUE 
+# COBRA.COMMONS.VALUE 
 
 A Kotlin library that provides a flexible union value system with serialization support for the COBRA platform. The library offers a type-safe way to handle different value types through a unified interface.
 
@@ -34,9 +34,9 @@ implementation("com.github.COBRA-Static-Analysis:common.value:0.1.0")
 ### Basic Value Creation
 
 ```kotlin
-import cobra.common.value.IValue
-import cobra.common.value.primitive.StrVal
-import cobra.common.value.collection.ListVal
+import cobra.commons.value.IValue
+import cobra.commons.value.primitive.StrVal
+import cobra.commons.value.collection.ListVal
 
 // Create a string value
 val stringValue: IValue = StrVal("Hello, World!")
@@ -48,8 +48,8 @@ val listValue: IValue = ListVal(listOf(1, 2, 3))
 ### Value Serialization
 
 ```kotlin
-import cobra.common.value.serializer.IValSerializer
-import cobra.common.value.serializer.DftByteArraySerializerImpl
+import cobra.commons.value.serializer.IValSerializer
+import cobra.commons.value.serializer.DftByteArraySerializerImpl
 
 // Create a serializer instance
 val serializer: IValSerializer = DftByteArraySerializerImpl()
@@ -64,8 +64,8 @@ val deserializedValue = serializer.deserialize(serializedData)
 ### Custom Value Types
 
 ```kotlin
-import cobra.common.value.IValue
-import cobra.common.value.primitive.IPrimitiveVal
+import cobra.commons.value.IValue
+import cobra.commons.value.primitive.IPrimitiveVal
 
 // Define a custom primitive value type
 data class CustomPrimitiveVal(
@@ -79,20 +79,20 @@ val customValue = CustomPrimitiveVal(42, "extra info")
 
 ## Project Structure
 
-- `cobra.common.value.IValue`: Core interface for all value types
-- `cobra.common.value.primitive`: Primitive value implementations
+- `cobra.commons.value.IValue`: Core interface for all value types
+- `cobra.commons.value.primitive`: Primitive value implementations
   - `IPrimitiveVal`: Interface for primitive values
   - `BoolVal`: Boolean value implementation
   - `StrVal`: String value implementation
   - `NumVal`: Numeric value implementation
   - `NullVal`: Null value implementation
-- `cobra.common.value.collection`: Collection value implementations
+- `cobra.commons.value.collection`: Collection value implementations
   - `ICollectionVal`: Interface for collection values
   - `ListVal`: List value implementation
   - `MapVal`: Map value implementation
   - `SetVal`: Set value implementation
   - `RangeVal`: Range value implementation
-- `cobra.common.value.serializer`: Serialization utilities
+- `cobra.commons.value.serializer`: Serialization utilities
   - `IValSerializer`: Serialization interface
   - `DftByteArraySerializerImpl`: Default byte array serializer
   - `DftByteBufferSerializerImpl`: Default byte buffer serializer

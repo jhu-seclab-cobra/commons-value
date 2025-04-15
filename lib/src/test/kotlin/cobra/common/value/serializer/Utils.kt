@@ -1,6 +1,6 @@
-package cobra.common.value.serializer
+package cobra.commons.value.serializer
 
-import cobra.common.value.*
+import cobra.commons.value.*
 import kotlin.random.Random
 
 inline fun <reified T : IValue> random() = when (T::class) {
