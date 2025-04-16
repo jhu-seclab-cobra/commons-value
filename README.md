@@ -61,22 +61,6 @@ val serializedData = serializer.serialize(stringValue)
 val deserializedValue = serializer.deserialize(serializedData)
 ```
 
-### Custom Value Types
-
-```kotlin
-import edu.jhu.cobra.commons.value.IValue
-import edu.jhu.cobra.commons.value.primitive.IPrimitiveVal
-
-// Define a custom primitive value type
-data class CustomPrimitiveVal(
-    override val core: Any?,
-    val additionalProperty: String
-) : IPrimitiveVal
-
-// Use the custom value
-val customValue = CustomPrimitiveVal(42, "extra info")
-```
-
 ## Project Structure
 
 - `edu.jhu.cobra.commons.value.IValue`: Core interface for all value types
