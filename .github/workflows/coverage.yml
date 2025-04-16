@@ -22,9 +22,9 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: Generate coverage report
-        run: ./gradlew koverXmlReport
+        run: ./gradlew :lib:test :lib:koverXmlReport
 
       - name: Upload to Codecov
         uses: codecov/codecov-action@v3
         with:
-          files: ./build/reports/kover/report.xml
+          files: ./lib/build/reports/kover/report.xml
