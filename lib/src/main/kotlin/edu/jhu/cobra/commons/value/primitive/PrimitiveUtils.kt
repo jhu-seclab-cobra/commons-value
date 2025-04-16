@@ -246,9 +246,13 @@ fun StrVal.toRegex(doCaseIgnore: Boolean = false): Regex {
     core.forEach { sBuilder.append(if (it in tarChars) "\\$it" else "$it") }
     return sBuilder.toString()
         .replace(Unsure.ANY.core, ".*")
+        .replace(Unsure.ANY.toString(), ".*")
         .replace(Unsure.STR.core, ".*")
+        .replace(Unsure.STR.toString(), ".*")
         .replace(Unsure.NUM.core, "\\d+")
+        .replace(Unsure.NUM.toString(), "\\d+")
         .replace(Unsure.BOOL.core, "(true|false)")
+        .replace(Unsure.BOOL.toString(), "(true|false)")
         .toRegex(if (doCaseIgnore) setOf(RegexOption.IGNORE_CASE) else setOf())
 }
 

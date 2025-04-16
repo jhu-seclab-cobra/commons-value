@@ -21,11 +21,11 @@ class SerializerPerformanceTest {
         assertEquals(value, deserialized, "Serialization and deserialization of ${value::class} failed.")
     }
 
-//    @Test
-//    fun testDftCharBufferSerializerImpl() = randomDataSet.forEach { value ->
-//        val serialized = DftCharBufferSerializerImpl.serialize(value)
-//        val deserialized = DftCharBufferSerializerImpl.deserialize(serialized)
-//        assertEquals(value, deserialized, "Serialization and deserialization of ${value::class} failed.")
-//    }
+    @Test
+    fun testDftCharBufferSerializerImpl() = randomDataSet.forEach { value ->
+        val serialized = DftCharBufferSerializerImpl.serialize(value)
+        val deserialized = DftCharBufferSerializerImpl.deserialize(serialized)
+        assertEquals(value, deserialized, "Serialization and deserialization of ${value::class} failed.")
+    }
 
 }
