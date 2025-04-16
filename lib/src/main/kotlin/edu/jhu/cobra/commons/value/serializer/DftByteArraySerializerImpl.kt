@@ -1,6 +1,6 @@
 package edu.jhu.cobra.commons.value.serializer
 
-import cobra.commons.value.*
+import edu.jhu.cobra.commons.value.*
 import org.apache.commons.lang3.math.NumberUtils
 import java.nio.ByteBuffer
 

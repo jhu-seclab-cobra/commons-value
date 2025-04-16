@@ -1,6 +1,6 @@
 package edu.jhu.cobra.commons.value.serializer
 
-import cobra.commons.value.*
+import edu.jhu.cobra.commons.value.*
 import java.nio.ByteBuffer
 import java.nio.CharBuffer
 import kotlin.test.Test

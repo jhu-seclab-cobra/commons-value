@@ -1,6 +1,6 @@
 package edu.jhu.cobra.commons.value.serializer
 
-import cobra.commons.value.IValue
+import edu.jhu.cobra.commons.value.IValue
 
 /**
  * Defines a mechanism for serializing and deserializing [IValue] instances to and from a specific material format.
