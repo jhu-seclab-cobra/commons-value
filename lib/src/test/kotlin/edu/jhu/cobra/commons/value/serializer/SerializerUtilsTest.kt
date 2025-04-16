@@ -1,6 +1,8 @@
 package edu.jhu.cobra.commons.value.serializer
 
 import org.junit.Test
+import java.io.DataInput
+import java.io.EOFException
 import java.nio.BufferUnderflowException
 import java.nio.ByteBuffer
 import java.nio.CharBuffer
@@ -138,5 +140,91 @@ class SerializerUtilsTest {
         val strings = Type.entries.map { it.str }
         assertEquals(bytes.distinct().size, bytes.size)
         assertEquals(strings.distinct().size, strings.size)
+    }
+
+    @Test
+    fun testDataInputAsByteArray() {
+        val testData = byteArrayOf(1, 2, 3, 4, 5)
+        val dataInput = object : DataInput {
+            private var position = 0
+
+            override fun readByte(): Byte {
+                if (position >= testData.size) throw EOFException()
+                return testData[position++]
+            }
+
+            // Other DataInput methods are not used in this test
+            override fun readFully(b: ByteArray) = throw UnsupportedOperationException()
+            override fun readFully(b: ByteArray, off: Int, len: Int) = throw UnsupportedOperationException()
+            override fun skipBytes(n: Int) = throw UnsupportedOperationException()
+            override fun readUnsignedByte() = throw UnsupportedOperationException()
+            override fun readUnsignedShort() = throw UnsupportedOperationException()
+            override fun readShort() = throw UnsupportedOperationException()
+            override fun readChar() = throw UnsupportedOperationException()
+            override fun readInt() = throw UnsupportedOperationException()
+            override fun readLong() = throw UnsupportedOperationException()
+            override fun readFloat() = throw UnsupportedOperationException()
+            override fun readDouble() = throw UnsupportedOperationException()
+            override fun readLine() = throw UnsupportedOperationException()
+            override fun readUTF() = throw UnsupportedOperationException()
+            override fun readBoolean() = throw UnsupportedOperationException()
+        }
+
+        // Test reading specific size
+        assertContentEquals(byteArrayOf(1, 2, 3), dataInput.asByteArray(3))
+
+        // Test reading zero bytes
+        assertContentEquals(byteArrayOf(), dataInput.asByteArray(0))
+
+        // Test reading until EOF
+        assertContentEquals(byteArrayOf(4, 5), dataInput.asByteArray(-1))
+
+        // Test EOF exception
+        assertFailsWith<EOFException> { dataInput.asByteArray(1) }
+    }
+
+    @Test
+    fun testDataInputAsByteSequence() {
+        val testData = byteArrayOf(1, 2, 3, 4, 5)
+        val dataInput = object : DataInput {
+            private var position = 0
+
+            override fun readByte(): Byte {
+                if (position >= testData.size) throw EOFException()
+                return testData[position++]
+            }
+
+            // Other DataInput methods are not used in this test
+            override fun readFully(b: ByteArray) = throw UnsupportedOperationException()
+            override fun readFully(b: ByteArray, off: Int, len: Int) = throw UnsupportedOperationException()
+            override fun skipBytes(n: Int) = throw UnsupportedOperationException()
+            override fun readUnsignedByte() = throw UnsupportedOperationException()
+            override fun readUnsignedShort() = throw UnsupportedOperationException()
+            override fun readShort() = throw UnsupportedOperationException()
+            override fun readChar() = throw UnsupportedOperationException()
+            override fun readInt() = throw UnsupportedOperationException()
+            override fun readLong() = throw UnsupportedOperationException()
+            override fun readFloat() = throw UnsupportedOperationException()
+            override fun readDouble() = throw UnsupportedOperationException()
+            override fun readLine() = throw UnsupportedOperationException()
+            override fun readUTF() = throw UnsupportedOperationException()
+            override fun readBoolean() = throw UnsupportedOperationException()
+        }
+
+        // Test reading specific size
+        assertContentEquals(byteArrayOf(1, 2, 3), dataInput.asByteSequence(3).toList().toByteArray())
+
+        // Test reading zero bytes
+        assertContentEquals(byteArrayOf(), dataInput.asByteSequence(0).toList().toByteArray())
+
+        // Test reading with EOF
+        assertFailsWith<EOFException> {
+            dataInput.asByteSequence(-1).toList()
+        }
+
+        // Test reading more than available
+        assertFailsWith<EOFException> {
+            dataInput.asByteSequence(10).toList()
+        }
     }
 } 
