@@ -39,4 +39,8 @@ data object NullVal : IPrimitiveVal {
      * @return The string "NullVal".
      */
     override fun toString(): String = "NullVal"
+
+    infix fun isNull(value: IValue): Boolean = value is NullVal
+
+    infix fun isNotNull(value: IValue): Boolean = value !is NullVal
 }
