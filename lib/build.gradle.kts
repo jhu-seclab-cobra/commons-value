@@ -4,7 +4,7 @@ plugins {
     `maven-publish`
 }
 
-group = "edu.jhu.seclab.cobra"
+group = "edu.jhu.cobra"
 version = "0.1.0"
 
 val sourceJavaVersion = JavaVersion.toVersion(libs.versions.javaSource.get())
