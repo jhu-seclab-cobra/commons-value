@@ -1,7 +1,11 @@
 plugins {
     alias(libs.plugins.kotlin.jvm)
     `java-library`
+    `maven-publish`
 }
+
+group = "edu.jhu.seclab.cobra"
+version = "0.1.0"
 
 repositories {
     mavenCentral()
@@ -21,5 +25,15 @@ java {
     }
     sourceCompatibility = JavaVersion.toVersion(srcJavaVersion)
     targetCompatibility = JavaVersion.toVersion(tarJavaVersion)
+    withSourcesJar()
+    withJavadocJar()
+}
+
+publishing {
+    publications {
+        create<MavenPublication>("maven") {
+            from(components["java"])
+        }
+    }
 }
 
