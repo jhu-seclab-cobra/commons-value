@@ -118,18 +118,18 @@ abstract class AbcSerializerImplUnitTest<M : Any> {
     }
 }
 
-class DftByteBufferSerializerImplTest : AbcSerializerImplUnitTest<ByteBuffer>() {
+class DftByteBufferSerializerImplUnitTest : AbcSerializerImplUnitTest<ByteBuffer>() {
 
     override val testTarget get() = DftByteBufferSerializerImpl
 }
 
-class DftByteArraySerializerImplTest : AbcSerializerImplUnitTest<ByteArray>() {
+class DftByteArraySerializerImplUnitTest : AbcSerializerImplUnitTest<ByteArray>() {
 
     override val testTarget get() = DftByteArraySerializerImpl
 }
 
 
-class DftCharBufferSerializerImplTest : AbcSerializerImplUnitTest<CharBuffer>() {
+class DftCharBufferSerializerImplUnitTest : AbcSerializerImplUnitTest<CharBuffer>() {
 
     override val testTarget get() = DftCharBufferSerializerImpl
 }
