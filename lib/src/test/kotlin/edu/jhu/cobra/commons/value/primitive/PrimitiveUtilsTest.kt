@@ -175,7 +175,7 @@ class PrimitiveUtilsTest {
     @Test
     fun testStrValToRegexConversion() {
         // Test basic pattern
-        val basic = StrVal("Hello.*").toRegex()
+        val basic = (StrVal("Hello" + Unsure.STR)).toRegex()
         assertTrue(basic.matches("Hello World"))
         assertFalse(basic.matches("Hi World"))
 
@@ -185,14 +185,14 @@ class PrimitiveUtilsTest {
         assertFalse(special.matches("HelloAWorld"))
 
         // Test COBRA patterns
-        val anyPattern = StrVal("ANY").toRegex()
+        val anyPattern = Unsure.STR.toRegex()
         assertTrue(anyPattern.matches("anything"))
 
-        val numPattern = StrVal("NUM").toRegex()
+        val numPattern = Unsure.NUM.toRegex()
         assertTrue(numPattern.matches("123"))
         assertFalse(numPattern.matches("abc"))
 
-        val boolPattern = StrVal("BOOL").toRegex()
+        val boolPattern = Unsure.BOOL.toRegex()
         assertTrue(boolPattern.matches("true"))
         assertTrue(boolPattern.matches("false"))
         assertFalse(boolPattern.matches("other"))
