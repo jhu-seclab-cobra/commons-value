@@ -25,7 +25,7 @@ data class RangeVal(override val core: ArrayList<NumVal> = ArrayList(2)) : IColl
      * @param start The starting value of the range.
      * @param endInclude The ending value of the range, inclusive.
      */
-    constructor(start: NumVal, endInclude: NumVal) : this(start.toInt(), endInclude.toInt())
+    constructor(start: NumVal, endInclude: NumVal) : this(start.core, endInclude.core)
 
     /**
      * Constructs a [RangeVal] from two number values representing the start and end.
@@ -33,7 +33,7 @@ data class RangeVal(override val core: ArrayList<NumVal> = ArrayList(2)) : IColl
      * @param start The starting value of the range.
      * @param endInclude The ending value of the range, inclusive.
      */
-    constructor(start: Number, endInclude: Number) : this(arrayListOf(start.toInt().numVal, endInclude.toInt().numVal))
+    constructor(start: Number, endInclude: Number) : this(arrayListOf(start.numVal, endInclude.numVal))
 
 
     /**

@@ -2,17 +2,14 @@ package edu.jhu.cobra.commons.value.collection
 
 import edu.jhu.cobra.commons.value.NumVal
 import edu.jhu.cobra.commons.value.RangeVal
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertTrue
+import kotlin.test.*
 
 class RangeValTest {
     @Test
     fun testDefaultConstructor() {
         val rangeVal = RangeVal()
-        assertEquals(0, rangeVal.first)
-        assertEquals(0, rangeVal.last)
+        assertFailsWith<NoSuchElementException> { rangeVal.first }
+        assertFailsWith<NoSuchElementException> { rangeVal.last }
     }
 
     @Test
