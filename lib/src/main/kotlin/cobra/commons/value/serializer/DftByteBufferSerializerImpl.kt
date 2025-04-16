@@ -41,7 +41,7 @@ object DftByteBufferSerializerImpl : IValSerializer<ByteBuffer> {
         is StrVal -> {
             val strCore = value.core.toByteArray()
             val bufferLen = 1 + 4 + strCore.size
-            ByteBuffer.allocate(bufferLen).put(Type.STR.byte).putInt(strCore.size).put(strCore).flip()
+            ByteBuffer.allocate(bufferLen).put(Type.STR.byte).putInt(strCore.size).put(strCore).typedFlip()
         }
         // 1 byte type | 1 byte for the boolean value
         is BoolVal -> byteBufferOf(if (value.core) Type.BOOL_TRUE.byte else Type.BOOL_FALSE.byte)
@@ -56,32 +56,32 @@ object DftByteBufferSerializerImpl : IValSerializer<ByteBuffer> {
         )
 
         is NumVal -> when (val num = value.core) {
-            is Byte -> ByteBuffer.allocate(2).put(Type.NUM_BYTE.byte).put(num).flip()
-            is Short -> ByteBuffer.allocate(3).put(Type.NUM_SHORT.byte).putShort(num).flip()
-            is Int -> ByteBuffer.allocate(5).put(Type.NUM_INT.byte).putInt(num).flip()
-            is Long -> ByteBuffer.allocate(9).put(Type.NUM_LONG.byte).putLong(num).flip()
-            is Float -> ByteBuffer.allocate(5).put(Type.NUM_FLOAT.byte).putFloat(num).flip()
-            is Double -> ByteBuffer.allocate(9).put(Type.NUM_DOUBLE.byte).putDouble(num).flip()
+            is Byte -> ByteBuffer.allocate(2).put(Type.NUM_BYTE.byte).put(num).typedFlip()
+            is Short -> ByteBuffer.allocate(3).put(Type.NUM_SHORT.byte).putShort(num).typedFlip()
+            is Int -> ByteBuffer.allocate(5).put(Type.NUM_INT.byte).putInt(num).typedFlip()
+            is Long -> ByteBuffer.allocate(9).put(Type.NUM_LONG.byte).putLong(num).typedFlip()
+            is Float -> ByteBuffer.allocate(5).put(Type.NUM_FLOAT.byte).putFloat(num).typedFlip()
+            is Double -> ByteBuffer.allocate(9).put(Type.NUM_DOUBLE.byte).putDouble(num).typedFlip()
             else -> byteBufferOf(Type.NUM_OTHERS.byte, *num.toString().toByteArray())
         }
 
         is RangeVal -> { // 1 byte type | element1 | element2
             val rangeBuffer = ByteBuffer.allocate(1 + 4 + 4).put(Type.RANGE.byte)
-            rangeBuffer.putInt(value.first.toInt()).putInt(value.last.toInt()).flip()
+            rangeBuffer.putInt(value.first.toInt()).putInt(value.last.toInt()).typedFlip()
         }
 
         is ListVal -> { // 1 byte type | count | element1 | element2 | ...
             val allElements = value.map { element -> serialize(element) }
             val bufferSize = 1 + 4 + allElements.sumOf { array -> array.limit() }
             val buffer = ByteBuffer.allocate(bufferSize).put(Type.LIST).putInt(allElements.size)
-            allElements.fold(buffer) { acc, element -> acc.put(element) }.flip()
+            allElements.fold(buffer) { acc, element -> acc.put(element) }.typedFlip()
         }
 
         is SetVal -> { // 1 byte type | count | element1 | element2 | ...
             val allElements = value.map { element -> serialize(element) }
             val bufferSize = 1 + 4 + allElements.sumOf { array -> array.limit() }
             val buffer = ByteBuffer.allocate(bufferSize).put(Type.SET).putInt(allElements.size)
-            allElements.fold(buffer) { acc, element -> acc.put(element) }.flip()
+            allElements.fold(buffer) { acc, element -> acc.put(element) }.typedFlip()
         }
 
         is MapVal -> { // 1 byte type | count | size_keyN | keyN | size_valueN | valueN
@@ -89,7 +89,7 @@ object DftByteBufferSerializerImpl : IValSerializer<ByteBuffer> {
             val bufferLength = 1 + 4 + elements.sumOf { (k, v) -> 4 + k.size + v.limit() }
             val buffer = ByteBuffer.allocate(bufferLength).put(Type.MAP).putInt(value.size)
             elements.forEach { (k, v) -> buffer.putInt(k.size).put(k).put(v) }
-            buffer.flip()
+            buffer.typedFlip()
         }
 
         else -> throw IllegalArgumentException("Unknown value type: $value")
