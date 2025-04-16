@@ -78,7 +78,7 @@ object DftCharBufferSerializerImpl : IValSerializer<CharBuffer> {
             val charBuffer = CharBuffer.allocate(Type.LIST.str.length + 2 + eleCount.length + eleLength)
             charBuffer.put(Type.LIST.str).put(':').put(eleCount).put(':') // listType:cnt{
             elements.forEach { element -> charBuffer.put(element).put(',') } // element,element,...
-            charBuffer.position(charBuffer.position() - 1).put(':').flip() // }
+            charBuffer.typedPosition(charBuffer.position() - 1).put(':').typedFlip() // }
         }
 
         is SetVal -> { // setType:cnt_hex:element,element,...:
@@ -88,7 +88,7 @@ object DftCharBufferSerializerImpl : IValSerializer<CharBuffer> {
             val charBuffer = CharBuffer.allocate(Type.SET.str.length + 2 + eleCount.length + eleLength)
             charBuffer.put(Type.SET.str).put(':').put(eleCount).put(':') // setType:cnt:
             elements.forEach { element -> charBuffer.put(element).put(',') } // element,element,...
-            charBuffer.position(charBuffer.position() - 1).put(':').flip() // }
+            charBuffer.typedPosition(charBuffer.position() - 1).put(':').typedFlip() // }
         }
 
         is MapVal -> { // mapType:cnt_hex{key=element, key=element, key=element}
@@ -98,7 +98,7 @@ object DftCharBufferSerializerImpl : IValSerializer<CharBuffer> {
             val charBuffer = CharBuffer.allocate(Type.MAP.str.length + 2 + eleCount.length + eleLength)
             charBuffer.put(Type.MAP.str).put(':').put(eleCount).put(':') // mapType:cnt:
             elements.forEach { (k, v) -> charBuffer.put(k).put('=').put(v).put(',') } //key=value,...
-            charBuffer.position(charBuffer.position() - 1).put(':').flip() // }
+            charBuffer.typedPosition(charBuffer.position() - 1).put(':').typedFlip() // }
         }
 
         else -> throw IllegalArgumentException("Unknown type: $value")

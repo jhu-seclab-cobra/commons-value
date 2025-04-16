@@ -1,6 +1,6 @@
 [versions]
 kotlin = "2.0.21"
-javaSource = "21"
+javaSource = "8"
 javaTarget = "8"
 
 [plugins]
