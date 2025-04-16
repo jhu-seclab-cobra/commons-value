@@ -1,24 +1,5 @@
 package edu.jhu.cobra.commons.value
 
-/**
- * Provides utility extensions and functions for handling primitive types in the COBRA value system.
- *
- * This file contains extension functions and properties that facilitate the conversion and manipulation
- * of primitive types ([Number], [String], [Boolean], etc.) to and from COBRA's value types
- * ([NumVal], [StrVal], [BoolVal], etc.).
- *
- * Key features:
- * - Type conversion utilities (e.g., [numVal], [strVal], [boolVal])
- * - Range validation for numeric types ([isInIntRange], [isInLongRange], etc.)
- * - String manipulation and pattern matching ([toRegex])
- * - Primitive value comparison utilities
- *
- * @see NumVal
- * @see StrVal
- * @see BoolVal
- * @see IPrimitiveVal
- */
-
 import java.io.File
 import java.math.BigDecimal
 import java.nio.file.Path
@@ -242,18 +223,18 @@ fun String.startsWith(other: StrVal): Boolean = startsWith(other.core)
  * This function:
  * 1. Escapes special regex characters
  * 2. Replaces COBRA-specific patterns with their regex equivalents:
- *    - `ANY` → `.*`
- *    - `STR` → `.*`
- *    - `NUM` → `\d+`
- *    - `BOOL` → `(true|false)`
+ *    - `Unsure.ANY` → `.*`
+ *    - `Unsure.STR` → `.*`
+ *    - `Unsure.NUM` → `\d+`
+ *    - `Unsure.BOOL` → `(true|false)`
  *
  * Example:
  * ```kotlin
  * val strVal = StrVal("Hello.*")
  * val regex = strVal.toRegex() // Creates Regex("Hello\\.\\*")
- * 
- * val pattern = StrVal("NUM")
- * val numRegex = pattern.toRegex() // Creates Regex("\d+")
+ *
+ * val pattern = Unsure.ANY.strVal
+ * val numRegex = pattern.toRegex() // Creates Regex(".*")
  * ```
  *
  * @param doCaseIgnore Whether to make the regex case-insensitive
@@ -270,6 +251,22 @@ fun StrVal.toRegex(doCaseIgnore: Boolean = false): Regex {
         .replace(Unsure.BOOL.core, "(true|false)")
         .toRegex(if (doCaseIgnore) setOf(RegexOption.IGNORE_CASE) else setOf())
 }
+
+/**
+ * Converts the current [Unsure] instance to its corresponding regular expression pattern as a string.
+ *
+ * - [Unsure.ANY] and [Unsure.STR] are represented as `.*`, allowing matching of any string.
+ * - [Unsure.NUM] is represented as `\\d+`, allowing matching of one or more numeric digits.
+ * - [Unsure.BOOL] is represented as `(true|false)`, allowing matching of boolean values `true` or `false`.
+ *
+ * @return A string containing the regular expression pattern corresponding to the current [Unsure] type.
+ */
+fun Unsure.toRegex() = when (this) {
+    Unsure.ANY -> ".*"
+    Unsure.STR -> ".*"
+    Unsure.NUM -> "\\d+"
+    Unsure.BOOL -> "(true|false)"
+}.toRegex()
 
 /**
  * Converts this boolean to a [BoolVal] representation.

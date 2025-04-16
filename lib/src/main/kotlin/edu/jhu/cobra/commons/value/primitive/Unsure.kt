@@ -1,6 +1,5 @@
 package edu.jhu.cobra.commons.value
 
-
 /**
  * Represents an undefined or uncertain value in the storage system.
  *
@@ -108,6 +107,8 @@ enum class Unsure(override val core: String) : IPrimitiveVal {
          */
         operator fun contains(string: String): Boolean = string in stringValues
     }
+
+    override fun toString(): String = core
 
 
 }
