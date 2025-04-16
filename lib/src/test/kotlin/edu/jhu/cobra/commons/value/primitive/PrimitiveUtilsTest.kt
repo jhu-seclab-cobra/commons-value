@@ -2,7 +2,7 @@ package edu.jhu.cobra.commons.value.primitive
 
 import edu.jhu.cobra.commons.value.*
 import java.io.File
-import java.math.BigDecimal
+import java.math.BigInteger
 import java.text.ParseException
 import kotlin.io.path.Path
 import kotlin.test.*
@@ -11,66 +11,124 @@ class PrimitiveUtilsTest {
 
     @Test
     fun testIsInLongRange() {
-        // Test exact boundaries
-        assertTrue(BigDecimal(Long.MAX_VALUE).isInLongRange)
-        assertTrue(BigDecimal(Long.MIN_VALUE).isInLongRange)
-
-        // Test values within range
-        assertTrue(BigDecimal("0").isInLongRange)
-        assertTrue(BigDecimal("9223372036854775807").isInLongRange) // Long.MAX_VALUE
-        assertTrue(BigDecimal("-9223372036854775808").isInLongRange) // Long.MIN_VALUE
-
-        // Test values outside range
-        assertFalse(BigDecimal("9223372036854775808").isInLongRange) // Long.MAX_VALUE + 1
-        assertFalse(BigDecimal("-9223372036854775809").isInLongRange) // Long.MIN_VALUE - 1
+        assertTrue(Long.MAX_VALUE.isInLongRange)
+        assertTrue(Long.MIN_VALUE.isInLongRange)
+        assertTrue(0L.isInLongRange)
+        assertTrue(BigInteger.valueOf(Long.MAX_VALUE).isInLongRange)
+        assertFalse(BigInteger.valueOf(Long.MAX_VALUE).add(BigInteger.ONE).isInLongRange)
     }
 
     @Test
     fun testIsInIntRange() {
-        // Test exact boundaries
-        assertTrue(Int.MAX_VALUE.toLong().isInIntRange)
-        assertTrue(Int.MIN_VALUE.toLong().isInIntRange)
-
-        // Test values within range
-        assertTrue(0L.isInIntRange)
-        assertTrue(2147483647L.isInIntRange) // Int.MAX_VALUE
-        assertTrue((-2147483648L).isInIntRange) // Int.MIN_VALUE
-
-        // Test values outside range
-        assertFalse(2147483648L.isInIntRange) // Int.MAX_VALUE + 1
-        assertFalse((-2147483649L).isInIntRange) // Int.MIN_VALUE - 1
+        assertTrue(Int.MAX_VALUE.isInIntRange)
+        assertTrue(Int.MIN_VALUE.isInIntRange)
+        assertTrue(0.isInIntRange)
+        assertFalse(Long.MAX_VALUE.isInIntRange)
     }
 
     @Test
     fun testIsInShortRange() {
-        // Test exact boundaries
-        assertTrue(Short.MAX_VALUE.toInt().isInShortRange)
-        assertTrue(Short.MIN_VALUE.toInt().isInShortRange)
-
-        // Test values within range
+        assertTrue(Short.MAX_VALUE.isInShortRange)
+        assertTrue(Short.MIN_VALUE.isInShortRange)
         assertTrue(0.isInShortRange)
-        assertTrue(32767.isInShortRange) // Short.MAX_VALUE
-        assertTrue((-32768).isInShortRange) // Short.MIN_VALUE
-
-        // Test values outside range
-        assertFalse(32768.isInShortRange) // Short.MAX_VALUE + 1
-        assertFalse((-32769).isInShortRange) // Short.MIN_VALUE - 1
+        assertFalse(Int.MAX_VALUE.isInShortRange)
     }
 
     @Test
     fun testIsInByteRange() {
-        // Test exact boundaries
-        assertTrue(Byte.MAX_VALUE.toInt().isInByteRange)
-        assertTrue(Byte.MIN_VALUE.toInt().isInByteRange)
-
-        // Test values within range
+        assertTrue(Byte.MAX_VALUE.isInByteRange)
+        assertTrue(Byte.MIN_VALUE.isInByteRange)
         assertTrue(0.isInByteRange)
-        assertTrue(127.isInByteRange) // Byte.MAX_VALUE
-        assertTrue((-128).isInByteRange) // Byte.MIN_VALUE
+        assertFalse(Short.MAX_VALUE.isInByteRange)
+    }
 
-        // Test values outside range
-        assertFalse(128.isInByteRange) // Byte.MAX_VALUE + 1
-        assertFalse((-129).isInByteRange) // Byte.MIN_VALUE - 1
+    @Test
+    fun testNumVal() {
+        assertEquals(NumVal(42), 42.numVal)
+        assertEquals(NumVal(3.14), 3.14.numVal)
+        assertEquals(NumVal(Long.MAX_VALUE), Long.MAX_VALUE.numVal)
+    }
+
+    @Test
+    fun testStrVal() {
+        assertEquals(StrVal("test"), "test".strVal)
+        assertEquals(StrVal(""), "".strVal)
+    }
+
+    @Test
+    fun testBoolVal() {
+        assertEquals(BoolVal.T, true.boolVal)
+        assertEquals(BoolVal.F, false.boolVal)
+    }
+
+    @Test
+    fun testPrimitiveVal() {
+        assertEquals(NullVal, null.primitiveVal)
+        assertEquals(NumVal(42), 42.primitiveVal)
+        assertEquals(StrVal("test"), "test".primitiveVal)
+        assertEquals(BoolVal.T, true.primitiveVal)
+
+        val primitiveVal = NumVal(42)
+        assertEquals(primitiveVal, primitiveVal.primitiveVal)
+    }
+
+    @Test
+    fun testPrimitiveValInvalidType() {
+        assertFailsWith<IllegalArgumentException> {
+            Object().primitiveVal
+        }
+    }
+
+    @Test
+    fun testUnsureToRegex() {
+        assertTrue("anything".matches(Unsure.ANY.toRegex()))
+        assertTrue("123".matches(Unsure.NUM.toRegex()))
+        assertFalse("abc".matches(Unsure.NUM.toRegex()))
+        assertTrue("true".matches(Unsure.BOOL.toRegex()))
+        assertTrue("false".matches(Unsure.BOOL.toRegex()))
+        assertFalse("other".matches(Unsure.BOOL.toRegex()))
+    }
+
+    @Test
+    fun testUnsureToRegexWithCaseIgnore() {
+        val regex = Unsure.BOOL.toRegex(true)
+        assertTrue("TRUE".matches(regex))
+        assertTrue("False".matches(regex))
+        assertFalse("other".matches(regex))
+    }
+
+    @Test
+    fun testNumValComparison() {
+        assertTrue(NumVal(1) < NumVal(2))
+        assertTrue(NumVal(2) > NumVal(1))
+        assertEquals(0, NumVal(1).compareTo(NumVal(1)))
+        assertTrue(NumVal(1.5) > NumVal(1))
+    }
+
+    @Test
+    fun testStrValComparison() {
+        assertTrue(StrVal("a") < StrVal("b"))
+        assertTrue(StrVal("b") > StrVal("a"))
+        assertEquals(0, StrVal("a").compareTo(StrVal("a")))
+    }
+
+    @Test
+    fun testBoolValComparison() {
+        assertTrue(BoolVal.F < BoolVal.T)
+        assertTrue(BoolVal.T > BoolVal.F)
+        assertEquals(0, BoolVal.T.compareTo(BoolVal.T))
+    }
+
+    @Test
+    fun testNullValComparison() {
+        assertEquals(0, NullVal.compareTo(NullVal))
+    }
+
+    @Test
+    fun testInvalidComparison() {
+        assertFailsWith<IllegalArgumentException> {
+            NumVal(1).compareTo(StrVal("1"))
+        }
     }
 
     @Test

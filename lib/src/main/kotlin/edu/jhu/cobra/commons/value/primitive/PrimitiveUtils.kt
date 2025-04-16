@@ -261,12 +261,12 @@ fun StrVal.toRegex(doCaseIgnore: Boolean = false): Regex {
  *
  * @return A string containing the regular expression pattern corresponding to the current [Unsure] type.
  */
-fun Unsure.toRegex() = when (this) {
+fun Unsure.toRegex(doCaseIgnore: Boolean = false) = when (this) {
     Unsure.ANY -> ".*"
     Unsure.STR -> ".*"
     Unsure.NUM -> "\\d+"
     Unsure.BOOL -> "(true|false)"
-}.toRegex()
+}.toRegex(if (doCaseIgnore) setOf(RegexOption.IGNORE_CASE) else setOf())
 
 /**
  * Converts this boolean to a [BoolVal] representation.

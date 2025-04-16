@@ -50,7 +50,7 @@ enum class Unsure(override val core: String) : IPrimitiveVal {
          * @param core The string representing the uncertain type.
          * @return The corresponding [Unsure] instance or `null` if no match is found.
          */
-        fun valueOf(core: String): Unsure? = when (core) {
+        fun new(core: String): Unsure? = when (core) {
             STR.core -> STR
             NUM.core -> NUM
             BOOL.core -> BOOL
