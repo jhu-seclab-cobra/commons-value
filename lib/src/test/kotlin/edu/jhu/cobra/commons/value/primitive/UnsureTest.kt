@@ -51,9 +51,9 @@ class UnsureTest {
 
     @Test
     fun testToString() {
-        assertEquals("__StrVal__", Unsure.STR.toString())
-        assertEquals("__NumVal__", Unsure.NUM.toString())
-        assertEquals("__BoolVal__", Unsure.BOOL.toString())
-        assertEquals("__IPrimitiveVal__", Unsure.ANY.toString())
+        assertEquals("Unsure{__StrVal__}", Unsure.STR.toString())
+        assertEquals("Unsure{__NumVal__}", Unsure.NUM.toString())
+        assertEquals("Unsure{__BoolVal__}", Unsure.BOOL.toString())
+        assertEquals("Unsure{__IPrimitiveVal__}", Unsure.ANY.toString())
     }
 } 

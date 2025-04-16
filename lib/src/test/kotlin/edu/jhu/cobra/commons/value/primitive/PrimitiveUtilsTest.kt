@@ -233,7 +233,7 @@ class PrimitiveUtilsTest {
     @Test
     fun testStrValToRegexConversion() {
         // Test basic pattern
-        val basic = (StrVal("Hello" + Unsure.STR)).toRegex()
+        val basic = (StrVal("Hello" + Unsure.STR.core)).toRegex()
         assertTrue(basic.matches("Hello World"))
         assertFalse(basic.matches("Hi World"))
 
