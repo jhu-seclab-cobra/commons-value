@@ -1,0 +1,36 @@
+---
+description: Kotlin coding standards for consistent, maintainable, and analyzable code
+globs: 
+alwaysApply: true
+---
+
+- Use English for all identifiers, comments, and documentation.
+- Explicitly declare types for variables, function parameters, and return values.
+- Follow naming conventions:
+  - `PascalCase` for class and object names
+  - `camelCase` for functions, variables, and parameters
+  - `snake_case` for file and directory names
+  - `UPPER_SNAKE_CASE` for constants
+- Function naming should begin with a verb and clearly describe the action or result.
+  - For booleans: use `is`, `has`, or `can` prefixes
+  - For actions: use `run`, `compute`, `create`, etc.
+- Avoid deeply nested control flows:
+  - Use early returns
+  - Extract helper functions when logic exceeds two levels
+- Functions should be ≤ 20 lines and serve a single responsibility.
+- Use `data class`es for immutable data structures; prefer `val` for fields.
+- Use `sealed class` or `enum class` for well-defined value sets.
+- Prefer higher-order functions (e.g., `map`, `filter`, `fold`) over imperative loops.
+- Avoid unnecessary object allocations in performance-critical code.
+- Use extension functions to improve readability when appropriate.
+- Avoid mutable global state; prefer dependency injection or context-passing.
+- Document public classes and functions using KDoc. Example:
+  ```kotlin
+  /**
+   * Computes the taint propagation graph for a given PHP function.
+   */
+  fun analyzeFunction(node: AstNode): FlowGraph
+  ```
+- Do not use `Any` in public APIs; define proper interfaces or generic types.
+- Avoid unnecessary blank lines and group related code blocks visually.
+- Write idiomatic Kotlin, not Java-style Kotlin; embrace null safety and functional features.

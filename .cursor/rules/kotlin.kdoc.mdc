@@ -1,0 +1,89 @@
+---
+description: KDoc standards with concise wording, inheritance rules, and fixed structure
+globs:
+  - "src/main/kotlin/**/*.kt"
+alwaysApply: true
+agentRequired: false
+---
+
+## General Principles
+- KDoc enables developers to understand and use the API without reading implementation code.
+- Cover **what**, **when**, and **how** to use; omit internal mechanics unless essential.
+- Every public class, interface, enum, object, and function must include KDoc **unless** it overrides documented behavior (see inheritance rule).
+- Use clear, simple English and avoid redundant wording.
+
+## Inheritance Rule
+- If a public function overrides a documented abstract or open function, **do not add KDoc** unless:
+  - The override changes semantics, parameters, return value, or thrown exceptions.
+  - Additional usage constraints or performance notes are required.
+- If KDoc is omitted, the function inherits documentation from its parent.
+
+## Required Section Order
+
+### Classes
+1. Summary – noun phrase describing what the class represents and its primary responsibility.  
+2. Details – concise paragraph on usage context, lifecycle, mutability, thread‑safety.  
+3. `@constructor` – only if the primary constructor has parameters.  
+4. `@param` – each constructor parameter: purpose, valid range, nullability.  
+5. `@property` – public properties declared in the primary constructor.  
+6. `@sample` – link to usage example (optional).  
+7. `@see` – related types or functions.
+
+### Functions
+1. Summary – one sentence starting with a verb describing what the function does.  
+2. Details – optional note on side effects, performance, threading constraints.  
+3. `@param` – each parameter: purpose, units, valid range, nullability.  
+4. `@return` – meaning and units of the return value (omit if `Unit`).  
+5. `@throws` – exceptions and triggering conditions.  
+6. `@sample` – usage example link (optional).  
+7. `@see` – related APIs.
+
+## Writing Guidelines
+- Use present tense (“Returns”, “Creates”).
+- Keep sentences short and direct; remove filler words.
+- Standard phrasing examples:  
+  - `@param size` The maximum size in bytes.  
+  - `@return` The computed hash as a hexadecimal string.  
+  - `@throws IllegalArgumentException` If `size` is negative.
+- Avoid repeating information obvious from code signatures.
+
+## Templates
+
+### Class Template
+```kotlin
+/**
+ * DiskCache stores parsed templates on disk with LRU eviction.
+ *
+ * Thread‑safe; instances can be shared across analyzers.
+ *
+ * @constructor Creates a cache in [directory] with a maximum size.
+ * @param directory Writable directory for cache files.
+ * @param maxBytes Maximum cache size in bytes; ≤ 0 disables eviction.
+ * @property stats Live cache statistics.
+ * @sample com.example.samples.DiskCacheSample
+ * @see MemoryCache
+ */
+class DiskCache(
+    private val directory: Path,
+    private val maxBytes: Long
+)
+```
+
+### Function Template
+```kotlin
+/**
+ * Parses PHP code into an abstract syntax tree (AST).
+ *
+ * @param code Non‑blank PHP source.
+ * @param mode Error‑handling strategy.
+ * @return Root [AstNode] of the parsed expression, or null if parsing fails in LENIENT mode.
+ * @throws ParseException If the code is invalid and mode is STRICT.
+ * @sample com.example.samples.ParseSample
+ */
+fun parse(code: String, mode: ParseMode = ParseMode.STRICT): AstNode?
+```
+
+### Override Example (no extra KDoc needed)
+```kotlin
+override fun close() = connection.close() // inherits KDoc from the parent interface
+```
