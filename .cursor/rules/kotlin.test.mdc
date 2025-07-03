@@ -1,0 +1,49 @@
+---
+description: Kotlin testing rules using kotlin.test with detailed edge‑case guidance
+globs:
+  - "src/test/kotlin/**/*.kt"
+alwaysApply: true
+agentRequired: false
+---
+
+## Core Principles
+- Use `kotlin.test` assertions (`assertEquals`, `assertFailsWith`, etc.).
+- Cover each public API with tests for normal, boundary, and error cases.
+- Follow Arrange–Act–Assert; name tests with `function_condition_expected`.
+- Keep tests independent and deterministic.
+- Target ≥ 90 % coverage using Kover or Jacoco.
+
+## Extreme Case Guidelines
+- **Null Handling**  
+  - Pass `null` only to parameters that are declared nullable.  
+  - For non‑nullable parameters, test with equivalent edge values (empty string, empty collection, zero).
+- **Error Scenarios**  
+  - Use `assertFailsWith<ExceptionType>` to validate thrown exceptions.  
+  - Include invalid enum values, negative numbers where only positive allowed, and oversized inputs.
+- **Boundary Inputs**  
+  - Test lower/upper numeric limits (`0`, `Int.MIN_VALUE`, `Int.MAX_VALUE`).  
+  - Test empty and single‑element collections.
+
+## Syntax Accuracy
+- Specify parameter types explicitly in test helpers to avoid overload ambiguity.
+- Avoid unnecessary casts; rely on Kotlin’s type inference where clear.
+
+## Sample Tests
+
+```kotlin
+@Test
+fun parse_validPhp_returnsAst() {
+    val ast = parser.parse("<?php echo 1; ?>")
+    assertNotNull(ast)
+}
+
+@Test
+fun parse_emptyString_throwsParseException() {
+    assertFailsWith<ParseException> { parser.parse("") }
+}
+
+@Test
+fun sum_emptyList_returnsZero() {
+    assertEquals(0, calculator.sum(emptyList()))
+}
+```

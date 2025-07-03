@@ -1,0 +1,78 @@
+---
+description: README structure and content guidelines with separate development and runtime requirements
+globs:
+  - "README.md"
+alwaysApply: true
+agentRequired: false
+---
+
+## Required Section Order
+1. Project Title (H1, repository name only)
+2. Badges (optional) – CI, coverage, Maven Central
+3. Overview – ≤ 3 concise sentences explaining purpose and value
+4. Features – bullet list of key capabilities (3–6 items)
+5. Development Environment Requirements – tools and versions required for contributors
+6. Runtime Environment Requirements – target platforms and minimal versions for end users
+7. Installation – Gradle (Kotlin & Groovy DSL) and Maven snippets
+8. Quick Start – minimal runnable example; include build/run command
+9. Usage – detailed code samples and common API patterns
+10. Configuration / Advanced Usage (optional)
+11. Documentation / API Reference – link to generated KDoc or site
+12. Build & Test – commands such as `./gradlew build`, `./gradlew test`
+13. Contributing – branching model, code style, commit message rules
+14. License – SPDX identifier and short notice
+15. Acknowledgements (optional)
+
+## Section Details
+
+### Development Environment Requirements
+- JDK version, Kotlin compiler version, Gradle wrapper version.
+- Required tools: Docker, Node.js, or proprietary SDKs if any.
+- Platform notes: tested on macOS/Linux/Windows.
+
+### Runtime Environment Requirements
+- Supported JDK or Android API level.
+- Memory/CPU recommendations for production.
+- External services or environment variables needed.
+
+## Writing Guidelines
+- Use clear English; avoid marketing language and emoji.
+- Keep paragraphs short (≤ 3 lines); prefer bullet points for lists.
+- Use present tense and active voice (“This library provides …”).
+- Show code in fenced blocks with language identifier `kotlin`.
+- Include both Gradle Kotlin DSL and Groovy DSL snippets for dependencies.
+- Provide absolute or clear relative paths for file references.
+- Use tables only when they improve readability.
+
+## Templates
+
+### Badge Template (optional)
+```markdown
+[![CI](https://github.com/user/repo/actions/workflows/ci.yml/badge.svg)](https://github.com/user/repo/actions)
+[![Maven Central](https://img.shields.io/maven-central/v/com.github.user:project)](https://search.maven.org/artifact/com.github.user/project)
+```
+
+### Installation Snippet (Gradle Kotlin DSL)
+```kotlin
+// build.gradle.kts
+repositories {
+    mavenCentral()
+}
+dependencies {
+    implementation("com.github.user:project:<version>")
+}
+```
+
+### Quick Start Example
+```kotlin
+fun main() {
+    val client = ProjectClient()
+    client.run()
+}
+```
+
+### Build & Test Commands
+```shell
+./gradlew build      # compile and run linter
+./gradlew test       # execute unit tests
+```
