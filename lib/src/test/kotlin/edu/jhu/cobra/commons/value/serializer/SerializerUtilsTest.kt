@@ -153,9 +153,14 @@ class SerializerUtilsTest {
                 return testData[position++]
             }
 
-            // Other DataInput methods are not used in this test
-            override fun readFully(b: ByteArray) = throw UnsupportedOperationException()
-            override fun readFully(b: ByteArray, off: Int, len: Int) = throw UnsupportedOperationException()
+            override fun readFully(b: ByteArray) {
+                for (i in b.indices) b[i] = readByte()
+            }
+
+            override fun readFully(b: ByteArray, off: Int, len: Int) {
+                for (i in off until off + len) b[i] = readByte()
+            }
+
             override fun skipBytes(n: Int) = throw UnsupportedOperationException()
             override fun readUnsignedByte() = throw UnsupportedOperationException()
             override fun readUnsignedShort() = throw UnsupportedOperationException()
@@ -217,12 +222,10 @@ class SerializerUtilsTest {
         // Test reading zero bytes
         assertContentEquals(byteArrayOf(), dataInput.asByteSequence(0).toList().toByteArray())
 
-        // Test reading with EOF
-        assertFailsWith<EOFException> {
-            dataInput.asByteSequence(-1).toList()
-        }
+        // Test reading until EOF (returns remaining data)
+        assertContentEquals(byteArrayOf(4, 5), dataInput.asByteSequence(-1).toList().toByteArray())
 
-        // Test reading more than available
+        // Test reading more than available (throws EOF mid-read)
         assertFailsWith<EOFException> {
             dataInput.asByteSequence(10).toList()
         }

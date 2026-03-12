@@ -39,7 +39,7 @@ data class SetVal(override val core: LinkedHashSet<IValue> = LinkedHashSet()) : 
      *
      * @param value Vararg elements to initialize the set with.
      */
-    constructor(vararg value: IValue) : this(LinkedHashSet<IValue>().apply { addAll(value) })
+    constructor(vararg value: IValue) : this(LinkedHashSet<IValue>(ceil(value.size / 0.75).toInt()).apply { addAll(value) })
 
     /**
      * Constructs a [SetVal] from a sequence of [IValue] elements.

@@ -217,9 +217,7 @@ fun CharBuffer.getString(size: Int): String = getBuffer(size).toString()
 fun DataInput.asByteArray(size: Int): ByteArray {
     if (size == 0) return ByteArray(0)
     return if (size > 0) {
-        val buffer = ByteBuffer.allocate(size)
-        repeat(size) { buffer.put(readByte()) }
-        buffer.typedFlip().array()
+        ByteArray(size).also { readFully(it) }
     } else buildList {
         val errors = runCatching { while (true) add(readByte()) }
         errors.onFailure { if (it !is EOFException) throw it }
@@ -238,5 +236,5 @@ fun DataInput.asByteSequence(available: Int) = sequence {
     if (available == 0) return@sequence
     if (available > 0) repeat(available) { yield(readByte()) }
     else kotlin.runCatching { while (true) yield(readByte()) }
-        .onFailure { if (it is EOFException) throw it }
+        .onFailure { if (it !is EOFException) throw it }
 }

@@ -1,12 +1,49 @@
 # commons-value Performance
 
 Run with `./gradlew performanceTest`. Dataset: 100,000 random values (10,000 for collections).
+Pipeline: `.claude/rules/performance.md` defines the optimization workflow.
+
+---
+
+## Current Baseline
+
+Last updated after P5-4 (round 5 complete).
+
+### Serializer Throughput (ops/s)
+
+| Scenario | ByteArray | ByteBuffer | CharBuffer |
+|----------|-----------|------------|------------|
+| Primitive serialize | 31,700,000 | 52,100,000 | 24,100,000 |
+| Primitive deserialize | 44,800,000 | 51,900,000 | 17,200,000 |
+| Mixed serialize | 7,200,000 | 6,700,000 | 5,500,000 |
+| Mixed deserialize | 7,800,000 | 7,500,000 | 3,650,000 |
+| Collection serialize | 3,300,000 | 2,900,000 | 3,000,000 |
+| Collection deserialize | 3,700,000 | 3,700,000 | 2,000,000 |
+
+Value creation throughput: 42,500,000 ops/s (6 value types x 600,000 iterations).
+
+### Memory Allocation per Operation (bytes/op)
+
+| Scenario | ByteArray | ByteBuffer | CharBuffer |
+|----------|-----------|------------|------------|
+| Primitive | 221 ser / 221 deser | 244 ser / 122 deser | 309 ser / 309 deser |
+| Collection | 2,061 ser / 1,030 deser | 2,061 ser / 1,030 deser | 3,092 ser / 3,092 deser |
+
+Measured via `Runtime.totalMemory() - freeMemory()` delta after forced GC. Approximate.
+
+### Serialized Size (1000 random values)
+
+| Serializer | Bytes | Relative |
+|------------|-------|----------|
+| ByteBuffer | ~101,000 | 1.00x |
+| ByteArray | ~106,000 | 1.05x |
+| CharBuffer | ~239,000 | 2.37x |
 
 ---
 
 ## Key Improvements (measured per-optimization)
 
-The most impactful improvements are in the ByteArray serializer deserialization path:
+Each row shows the delta from applying that single optimization.
 
 | Optimization | Metric | Before | After | Change |
 |-------------|--------|--------|-------|--------|
@@ -22,46 +59,13 @@ The most impactful improvements are in the ByteArray serializer deserialization 
 | P4-3 Bulk array copy | ByteBuffer prim deserialize | 39.3M | 50.8M | **+29.3%** |
 | P4-3 Bulk array copy | ByteBuffer mixed deserialize | 5.8M | 7.0M | **+19.8%** |
 | P4-4 Vararg spread removal | ByteArray prim serialize | 16.7M | 30.7M | **+84.2%** |
-
-Measured incrementally: each row shows the delta from applying that single optimization.
-
-### Current Benchmark Results
-
-Run with `./gradlew performanceTest` after all optimizations applied.
-
-#### Serializer Throughput (ops/s)
-
-| Scenario | ByteArray | ByteBuffer | CharBuffer |
-|----------|-----------|------------|------------|
-| Primitive serialize | 30,000,000 | 52,900,000 | 23,500,000 |
-| Primitive deserialize | 43,800,000 | 52,300,000 | 17,100,000 |
-| Mixed serialize | 7,200,000 | 6,500,000 | 5,300,000 |
-| Mixed deserialize | 7,800,000 | 7,400,000 | 3,500,000 |
-| Collection serialize | 3,400,000 | 3,200,000 | 2,800,000 |
-| Collection deserialize | 3,900,000 | 3,800,000 | 1,900,000 |
-
-Value creation throughput: 40,600,000 ops/s (6 value types × 600,000 iterations).
-
-#### Memory Allocation per Operation (bytes/op)
-
-| Scenario | ByteArray | ByteBuffer | CharBuffer |
-|----------|-----------|------------|------------|
-| Primitive | 221 ser / 221 deser | 243 ser / 121 deser | 306 ser / 306 deser |
-| Collection | 2,040 ser / 1,020 deser | 2,040 ser / 1,020 deser | 3,060 ser / 3,060 deser |
-
-Measured via `Runtime.totalMemory() - freeMemory()` delta after forced GC. Approximate.
-
-#### Serialized Size (1000 random values)
-
-| Serializer | Bytes | Relative |
-|------------|-------|----------|
-| ByteBuffer | ~89,000 | 1.00x |
-| ByteArray | ~93,000 | 1.05x |
-| CharBuffer | ~212,000 | 2.38x |
+| P5-1~4 (combined) | ByteArray mixed deserialize | 7.3M | 7.8M | **+6.9%** |
+| P5-1~4 (combined) | ByteArray coll deserialize | 3.3M | 3.7M | **+10.5%** |
+| P5-1~4 (combined) | CharBuffer coll deserialize | 1.9M | 2.0M | **+5.1%** |
 
 ---
 
-## Completed Optimizations (10 items)
+## Completed Optimizations (14 items)
 
 ### P0-1. Dead code in ByteBuffer List deserialization
 
@@ -129,9 +133,33 @@ Measured via `Runtime.totalMemory() - freeMemory()` delta after forced GC. Appro
 **Change:** Replaced `arrayListOf(*value)` with `ArrayList(size).apply { addAll(value) }` and `hashMapOf(*value)` with pre-sized `HashMap.apply { forEach put }` to avoid array copy from spread operator.
 **Impact:** ByteArray primitive serialize **+84.2%** (16.7M -> 30.7M). Indirect improvement via JIT compilation behavior change.
 
+### P5-1. `DataInput.asByteArray()` bulk read
+
+**File:** `SerializerUtils.kt`
+**Change:** Replaced `ByteBuffer.allocate(size)` + byte-by-byte `readByte()` loop + `typedFlip().array()` with `ByteArray(size).also { readFully(it) }`. Eliminates ByteBuffer allocation and leverages `DataInput.readFully()` bulk read.
+**Impact:** Eliminates ByteBuffer allocation per call. Not on serializer hot path (DataInput extensions).
+
+### P5-2. `SetVal(vararg)` constructor pre-sizing
+
+**File:** `SetVal.kt`
+**Change:** Added capacity pre-sizing `LinkedHashSet(ceil(value.size / 0.75))` to the vararg constructor, matching the MapVal pattern from P4-4. Avoids rehash on large vararg construction.
+**Impact:** Part of combined P5 round: ByteArray coll deser **+10.5%**, CharBuffer coll deser **+5.1%**.
+
+### P5-3. ByteBuffer collection `fold` to `forEach`
+
+**File:** `DftByteBufferSerializerImpl.kt`
+**Change:** Replaced `allElements.fold(buffer) { acc, element -> acc.put(element) }` with `allElements.forEach { buffer.put(it) }` in ListVal and SetVal serialization. Avoids lambda accumulator overhead.
+**Impact:** Part of combined P5 round. No isolated measurement (applied together with P5-1, P5-2, P5-4).
+
+### P5-4. `DataInput.asByteSequence()` EOF handling bug fix
+
+**File:** `SerializerUtils.kt`
+**Change:** Fixed inverted EOF check: `.onFailure { if (it is EOFException) throw it }` was throwing on EOF and swallowing other exceptions. Corrected to `if (it !is EOFException) throw it`, consistent with `asByteArray()` behavior.
+**Impact:** Bug fix. `asByteSequence(-1)` now correctly reads until EOF and returns data instead of throwing.
+
 ---
 
-## Evaluated & Rejected (11 items)
+## Evaluated & Rejected (13 items)
 
 | ID | Optimization | Result | Reason |
 |----|-------------|--------|--------|
@@ -146,14 +174,23 @@ Measured via `Runtime.totalMemory() - freeMemory()` delta after forced GC. Appro
 | P4-2 | ByteBuffer collection single-allocation | Not tested | Skipped due to JIT sensitivity risk (P4-1, P2-5, P2-6 precedent) |
 | P4-5 | `String.asCharBuffer()` zero-copy wrap | CharBuffer mixed ser **-16%**, coll ser **-22%** | Read-only CharBuffer from `CharBuffer.wrap(String)` adds overhead in `put(CharBuffer)` |
 | P4-6 | ByteArray collection pre-size hint | Not tested | Wire format lacks element count; pre-scan cost/benefit questionable with JIT risk |
+| P5-5 | Type byte dispatch array lookup | Not tested | High JIT risk: `when(byte)` already compiles to efficient `tableswitch`; adding array indirection may deoptimize |
+| P5-6 | CharBuffer constant string caching | Not tested | Medium JIT risk: any structural change to `DftCharBufferSerializerImpl` risks cross-class deoptimization (P4-1, P2-6 precedent) |
+
+---
+
+## Candidates
+
+_Empty — round 5 complete. To start a new round, add candidates here following the pipeline in `.claude/rules/performance.md`._
 
 ---
 
 ## Remaining Known Bottlenecks
 
-- **ByteArray `serialize()` method body size.** The `serialize()` when-expression is large (~80 lines), which may prevent JIT inlining for primitive paths. Extracting collection cases was attempted (P4-1) but caused cross-class JIT deoptimization. ByteArray primitive serialize (30M) still trails ByteBuffer (53M).
+- **ByteArray `serialize()` method body size.** The `serialize()` when-expression is large (~80 lines), which may prevent JIT inlining for primitive paths. Extracting collection cases was attempted (P4-1) but caused cross-class JIT deoptimization. ByteArray primitive serialize (32M) still trails ByteBuffer (52M).
 - **ByteBuffer collection per-element allocation.** Each child `serialize()` call allocates its own ByteBuffer. Skipped (P4-2) due to JIT sensitivity risk.
 - **`data class` NumVal boxing equality.** Evaluated as P3-10 — too invasive for current API.
+- **Benchmark noise floor.** CharBuffer primitive serialize shows 3-4x variance between runs due to test execution order affecting JIT compilation. Current benchmark methodology cannot reliably detect < 5% changes.
 
 ---
 
@@ -170,3 +207,5 @@ Measured via `Runtime.totalMemory() - freeMemory()` delta after forced GC. Appro
 5. **Structural improvements matter.** RangeVal (P2-7), isInLongRange (P2-8), and NumberFormat removal (P2-9) improved memory usage, type safety, and thread safety respectively, even without measurable throughput gains.
 
 6. **Utility function overhead compounds.** `ByteBuffer.getArray()` byte-by-byte copy (P4-3) was a hidden ~30% overhead on ByteBuffer primitive paths — a one-line fix yielded the largest single-optimization gain in the ByteBuffer serializer. Read-only CharBuffer wrappers (P4-5) add ~16-22% overhead from buffer type checks in `put(CharBuffer)`.
+
+7. **Bulk I/O APIs outperform element-by-element.** `DataInput.readFully()` (P5-1), `ByteBuffer.get(ByteArray)` (P4-3), and `System.arraycopy` via `copyInto` (P1-1) consistently outperform iterative byte-by-byte patterns. Always prefer platform bulk APIs when available.
