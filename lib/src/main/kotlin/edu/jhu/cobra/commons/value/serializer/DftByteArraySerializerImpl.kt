@@ -35,7 +35,13 @@ object DftByteArraySerializerImpl : IValSerializer<ByteArray> {
      */
     override fun serialize(value: IValue): ByteArray = when (value) {
         is NullVal -> byteArrayOf(Type.NULL.byte)
-        is StrVal -> byteArrayOf(Type.STR.byte, *value.core.toByteArray())
+        is StrVal -> {
+            val bytes = value.core.toByteArray()
+            ByteArray(1 + bytes.size).also {
+                it[0] = Type.STR.byte
+                bytes.copyInto(it, 1)
+            }
+        }
         is BoolVal -> byteArrayOf(Type.BOOL.byte, if (value.core) 1 else 0)
         is Unsure -> when (value) {
             Unsure.NUM -> byteArrayOf(Type.UNSURE_NUM.byte)
@@ -46,52 +52,111 @@ object DftByteArraySerializerImpl : IValSerializer<ByteArray> {
 
         is NumVal -> when (val num = value.core) {
             is Byte -> byteArrayOf(Type.NUM_BYTE.byte, num)
-            is Short -> ByteBuffer.allocate(3).put(Type.NUM_SHORT.byte).putShort(num).array()
-            is Int -> ByteBuffer.allocate(5).put(Type.NUM_INT.byte).putInt(num).array()
-            is Long -> ByteBuffer.allocate(9).put(Type.NUM_LONG.byte).putLong(num).array()
-            is Float -> ByteBuffer.allocate(5).put(Type.NUM_FLOAT.byte).putFloat(num).array()
-            is Double -> ByteBuffer.allocate(9).put(Type.NUM_DOUBLE.byte).putDouble(num).array()
-            else -> byteArrayOf(Type.NUM_OTHERS.byte, *num.toString().toByteArray())
-        }
-
-        is RangeVal -> { // type | first size | first bytes | second bytes
-            val (firstBytes, secondBytes) = serialize(value.core[0]) to serialize(value.core[1])
-            val buffer = ByteBuffer.allocate(1 + 4 + firstBytes.size + secondBytes.size)
-            buffer.apply { put(Type.RANGE.byte); putInt(firstBytes.size); put(firstBytes); put(secondBytes) }.array()
-        }
-
-        is ListVal -> { // type | size1 | element1 | size2 | element2 | ...
-            val listBytes = value.map { serialize(it) } // serialize each element
-            val bufferSize = 1 + listBytes.sumOf { 4 + it.size }
-            val buffer = ByteBuffer.allocate(bufferSize)
-            buffer.put(Type.LIST.byte) // list type indicator
-            listBytes.forEach { buffer.putInt(it.size); buffer.put(it) }
-            buffer.array()
-        }
-
-        is SetVal -> { // type | size1 | element1 | size2 | element2 | ...
-            val listBytes = value.map { serialize(it) } // serialize each element
-            val bufferSize = 1 + listBytes.sumOf { 4 + it.size }
-            val buffer = ByteBuffer.allocate(bufferSize)
-            buffer.put(Type.SET.byte) // list type indicator
-            listBytes.forEach { buffer.putInt(it.size); buffer.put(it) }
-            buffer.array()
-        }
-
-        is MapVal -> { // type | size_keyN | keyN | size_valueN | valueN
-            val mapEntriesBytes = value.map { (k, v) -> k.toByteArray() to serialize(v) }
-            val bufferSize = 1 + mapEntriesBytes.sumOf { (k, v) -> 4 + k.size + 4 + v.size }
-            val buffer = ByteBuffer.allocate(bufferSize).apply { put(Type.MAP.byte) }
-            mapEntriesBytes.forEach { (keyBytes, valueBytes) ->
-                buffer.putInt(keyBytes.size); buffer.put(keyBytes)
-                buffer.putInt(valueBytes.size); buffer.put(valueBytes)
+            is Short -> shortToBytes(Type.NUM_SHORT.byte, num)
+            is Int -> intToBytes(Type.NUM_INT.byte, num)
+            is Long -> longToBytes(Type.NUM_LONG.byte, num)
+            is Float -> intToBytes(Type.NUM_FLOAT.byte, java.lang.Float.floatToRawIntBits(num))
+            is Double -> longToBytes(Type.NUM_DOUBLE.byte, java.lang.Double.doubleToRawLongBits(num))
+            else -> {
+                val bytes = num.toString().toByteArray()
+                ByteArray(1 + bytes.size).also {
+                    it[0] = Type.NUM_OTHERS.byte
+                    bytes.copyInto(it, 1)
+                }
             }
-            buffer.array()
+        }
+
+        is RangeVal -> {
+            val firstBytes = serialize(value.start)
+            val secondBytes = serialize(value.endInclusive)
+            val result = ByteArray(1 + 4 + firstBytes.size + secondBytes.size)
+            result[0] = Type.RANGE.byte
+            intInto(result, 1, firstBytes.size)
+            firstBytes.copyInto(result, 5)
+            secondBytes.copyInto(result, 5 + firstBytes.size)
+            result
+        }
+
+        is ListVal -> {
+            val listBytes = value.map { serialize(it) }
+            val result = ByteArray(1 + listBytes.sumOf { 4 + it.size })
+            result[0] = Type.LIST.byte
+            var offset = 1
+            listBytes.forEach { bytes ->
+                intInto(result, offset, bytes.size); offset += 4
+                bytes.copyInto(result, offset); offset += bytes.size
+            }
+            result
+        }
+
+        is SetVal -> {
+            val listBytes = value.map { serialize(it) }
+            val result = ByteArray(1 + listBytes.sumOf { 4 + it.size })
+            result[0] = Type.SET.byte
+            var offset = 1
+            listBytes.forEach { bytes ->
+                intInto(result, offset, bytes.size); offset += 4
+                bytes.copyInto(result, offset); offset += bytes.size
+            }
+            result
+        }
+
+        is MapVal -> {
+            val mapEntriesBytes = value.map { (k, v) -> k.toByteArray() to serialize(v) }
+            val result = ByteArray(1 + mapEntriesBytes.sumOf { (k, v) -> 4 + k.size + 4 + v.size })
+            result[0] = Type.MAP.byte
+            var offset = 1
+            mapEntriesBytes.forEach { (keyBytes, valueBytes) ->
+                intInto(result, offset, keyBytes.size); offset += 4
+                keyBytes.copyInto(result, offset); offset += keyBytes.size
+                intInto(result, offset, valueBytes.size); offset += 4
+                valueBytes.copyInto(result, offset); offset += valueBytes.size
+            }
+            result
         }
 
         else -> throw IllegalArgumentException("Unknown value type: $value")
     }
 
+    private fun shortToBytes(type: Byte, v: Short): ByteArray {
+        val arr = ByteArray(3)
+        arr[0] = type
+        arr[1] = (v.toInt() shr 8).toByte()
+        arr[2] = v.toByte()
+        return arr
+    }
+
+    private fun intToBytes(type: Byte, v: Int): ByteArray {
+        val arr = ByteArray(5)
+        arr[0] = type
+        arr[1] = (v shr 24).toByte()
+        arr[2] = (v shr 16).toByte()
+        arr[3] = (v shr 8).toByte()
+        arr[4] = v.toByte()
+        return arr
+    }
+
+    private fun longToBytes(type: Byte, v: Long): ByteArray {
+        val arr = ByteArray(9)
+        arr[0] = type
+        arr[1] = (v shr 56).toByte()
+        arr[2] = (v shr 48).toByte()
+        arr[3] = (v shr 40).toByte()
+        arr[4] = (v shr 32).toByte()
+        arr[5] = (v shr 24).toByte()
+        arr[6] = (v shr 16).toByte()
+        arr[7] = (v shr 8).toByte()
+        arr[8] = v.toByte()
+        return arr
+    }
+
+    // Writes an Int (big-endian) into the array at the given offset.
+    private fun intInto(arr: ByteArray, offset: Int, v: Int) {
+        arr[offset] = (v shr 24).toByte()
+        arr[offset + 1] = (v shr 16).toByte()
+        arr[offset + 2] = (v shr 8).toByte()
+        arr[offset + 3] = v.toByte()
+    }
 
     /**
      * Deserializes a byte array into an [IValue] instance.
@@ -111,70 +176,79 @@ object DftByteArraySerializerImpl : IValSerializer<ByteArray> {
      * @return The deserialized [IValue] instance.
      * @throws IllegalArgumentException If the material contains an unknown or unsupported type identifier.
      */
-    override fun deserialize(material: ByteArray): IValue = when (material.firstOrNull()) {
+    override fun deserialize(material: ByteArray): IValue {
+        require(material.isNotEmpty()) { "Empty byte array" }
+        return deserializeFrom(ByteBuffer.wrap(material))
+    }
+
+    // Shared-buffer deserialization: reads directly from a ByteBuffer, avoiding per-value wrap allocations.
+    // For collections, uses limit-based windowing instead of copying sub-arrays.
+    private fun deserializeFrom(buffer: ByteBuffer): IValue = when (buffer.get()) {
         Type.NULL.byte -> NullVal
-        Type.STR.byte -> StrVal(material.decodeToString(1))
-        Type.BOOL.byte -> BoolVal(material[1] == 1.toByte())
+        Type.STR.byte -> {
+            val bytes = ByteArray(buffer.remaining()).also { buffer.get(it) }
+            StrVal(bytes.decodeToString())
+        }
+        Type.BOOL.byte -> BoolVal(buffer.get() == 1.toByte())
         Type.UNSURE_ANY.byte -> Unsure.ANY
         Type.UNSURE_NUM.byte -> Unsure.NUM
         Type.UNSURE_STR.byte -> Unsure.STR
         Type.UNSURE_BOOL.byte -> Unsure.BOOL
-        Type.NUM_BYTE.byte -> NumVal(material[1])
-        Type.NUM_SHORT.byte -> NumVal(ByteBuffer.wrap(material, 1, 2).short)
-        Type.NUM_INT.byte -> NumVal(ByteBuffer.wrap(material, 1, 4).int)
-        Type.NUM_LONG.byte -> NumVal(ByteBuffer.wrap(material, 1, 8).long)
-        Type.NUM_FLOAT.byte -> NumVal(ByteBuffer.wrap(material, 1, 4).float)
-        Type.NUM_DOUBLE.byte -> NumVal(ByteBuffer.wrap(material, 1, 8).double)
-        Type.NUM_OTHERS.byte -> NumVal(NumberUtils.createNumber(material.decodeToString(1)))
-        Type.RANGE.byte -> { // type | first size | first bytes | second bytes
-            val buffer = ByteBuffer.wrap(material, 1, material.size - 1)
-            val firstBytesSize = buffer.getInt() // read the size of the first bytes
-            val firstBytes = ByteArray(firstBytesSize).also { buffer.get(it) }
-            val firstNumber = deserialize(firstBytes) as NumVal
-            val secondBytes = ByteArray(buffer.remaining()).also { buffer.get(it) }
-            val secondNumber = deserialize(secondBytes) as NumVal
-            RangeVal(firstNumber, secondNumber)
+        Type.NUM_BYTE.byte -> NumVal(buffer.get())
+        Type.NUM_SHORT.byte -> NumVal(buffer.short)
+        Type.NUM_INT.byte -> NumVal(buffer.int)
+        Type.NUM_LONG.byte -> NumVal(buffer.long)
+        Type.NUM_FLOAT.byte -> NumVal(buffer.float)
+        Type.NUM_DOUBLE.byte -> NumVal(buffer.double)
+        Type.NUM_OTHERS.byte -> {
+            val bytes = ByteArray(buffer.remaining()).also { buffer.get(it) }
+            NumVal(NumberUtils.createNumber(bytes.decodeToString()))
         }
-
-        Type.LIST.byte -> { // type | size_keyN | keyN | size_valueN | valueN
-            val buffer = if (material.size == 1) ByteBuffer.allocate(0)
-            else ByteBuffer.wrap(material, 1, material.size - 1)
+        Type.RANGE.byte -> {
+            val firstSize = buffer.getInt()
+            val savedLimit = buffer.limit()
+            buffer.limit(buffer.position() + firstSize)
+            val first = deserializeFrom(buffer) as NumVal
+            buffer.limit(savedLimit)
+            val second = deserializeFrom(buffer) as NumVal
+            RangeVal(first, second)
+        }
+        Type.LIST.byte -> {
             val list = ListVal()
             while (buffer.hasRemaining()) {
-                val elementSize = buffer.getInt() // read the size of the element bytes
-                val elementBytes = ByteArray(elementSize).also { buffer.get(it) }
-                list.plusAssign(deserialize(elementBytes))
+                val elementSize = buffer.getInt()
+                val savedLimit = buffer.limit()
+                buffer.limit(buffer.position() + elementSize)
+                list.plusAssign(deserializeFrom(buffer))
+                buffer.limit(savedLimit)
             }
             list
         }
-
-        Type.SET.byte -> { // type | size_keyN | keyN | size_valueN | valueN
-            val buffer = if (material.size == 1) ByteBuffer.allocate(0)
-            else ByteBuffer.wrap(material, 1, material.size - 1)
+        Type.SET.byte -> {
             val set = SetVal()
             while (buffer.hasRemaining()) {
-                val elementSize = buffer.getInt() // read the size of the element bytes
-                val elementBytes = ByteArray(elementSize).also { buffer.get(it) }
-                set.plusAssign(deserialize(elementBytes))
+                val elementSize = buffer.getInt()
+                val savedLimit = buffer.limit()
+                buffer.limit(buffer.position() + elementSize)
+                set.plusAssign(deserializeFrom(buffer))
+                buffer.limit(savedLimit)
             }
             set
         }
-
-        Type.MAP.byte -> { // type | size_keyN | keyN | size_valueN | valueN
+        Type.MAP.byte -> {
             val map = MapVal()
-            val buffer = if (material.size == 1) ByteBuffer.allocate(0)
-            else ByteBuffer.wrap(material, 1, material.size - 1)
             while (buffer.hasRemaining()) {
-                val keySize = buffer.getInt() // read the size of the key bytes
+                val keySize = buffer.getInt()
                 val keyBytes = ByteArray(keySize).also { buffer.get(it) }
                 val key = keyBytes.decodeToString()
-                val valueSize = buffer.getInt() // read the size of the value bytes
-                val valueBytes = ByteArray(valueSize).also { buffer.get(it) }
-                map[key] = deserialize(valueBytes)
+                val valueSize = buffer.getInt()
+                val savedLimit = buffer.limit()
+                buffer.limit(buffer.position() + valueSize)
+                map[key] = deserializeFrom(buffer)
+                buffer.limit(savedLimit)
             }
             map
         }
-
-        else -> throw IllegalArgumentException("Unknown value type: ${material.firstOrNull()}")
+        else -> throw IllegalArgumentException("Unknown value type: ${buffer.get(buffer.position() - 1)}")
     }
 }
