@@ -40,7 +40,7 @@ data class MapVal(override val core: HashMap<String, IValue> = HashMap()) : ICol
      *
      * @param value Vararg key-value pairs to initialize the map with.
      */
-    constructor(vararg value: Pair<String, IValue>) : this(hashMapOf(*value))
+    constructor(vararg value: Pair<String, IValue>) : this(HashMap<String, IValue>(ceil(value.size / 0.75).toInt()).apply { value.forEach { (k, v) -> put(k, v) } })
 
     /**
      * Constructs a [MapVal] from a sequence of key-value pairs.

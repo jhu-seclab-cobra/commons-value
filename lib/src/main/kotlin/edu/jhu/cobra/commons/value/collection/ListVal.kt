@@ -66,7 +66,7 @@ data class ListVal(override val core: ArrayList<IValue> = ArrayList(5)) : IColle
      *
      * @param value Vararg elements to initialize the [ListVal] with.
      */
-    constructor(vararg value: IValue) : this(arrayListOf(*value))
+    constructor(vararg value: IValue) : this(ArrayList<IValue>(value.size).apply { addAll(value) })
 
     /**
      * Retrieves the element at the specified [index].
