@@ -77,14 +77,16 @@ object DftByteBufferSerializerImpl : IValSerializer<ByteBuffer> {
             val allElements = value.map { element -> serialize(element) }
             val bufferSize = 1 + 4 + allElements.sumOf { array -> array.limit() }
             val buffer = ByteBuffer.allocate(bufferSize).put(Type.LIST).putInt(allElements.size)
-            allElements.fold(buffer) { acc, element -> acc.put(element) }.typedFlip()
+            allElements.forEach { buffer.put(it) }
+            buffer.typedFlip()
         }
 
         is SetVal -> { // 1 byte type | count | element1 | element2 | ...
             val allElements = value.map { element -> serialize(element) }
             val bufferSize = 1 + 4 + allElements.sumOf { array -> array.limit() }
             val buffer = ByteBuffer.allocate(bufferSize).put(Type.SET).putInt(allElements.size)
-            allElements.fold(buffer) { acc, element -> acc.put(element) }.typedFlip()
+            allElements.forEach { buffer.put(it) }
+            buffer.typedFlip()
         }
 
         is MapVal -> { // 1 byte type | count | size_keyN | keyN | size_valueN | valueN
