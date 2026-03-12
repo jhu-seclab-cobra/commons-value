@@ -60,7 +60,7 @@ class ICollectionValTest {
         assertTrue(listVal.core is ArrayList<*>)
         assertTrue(setVal.core is HashSet<*>)
         assertTrue(mapVal.core is HashMap<*, *>)
-        assertTrue(rangeVal.core is ArrayList<*>)
+        assertTrue(rangeVal.core is List<*>)
     }
 
     @Test

@@ -1,23 +1,24 @@
 package edu.jhu.cobra.commons.value
 
 /**
- * Represents a range of integer values, providing range operations.
+ * Represents a range of numeric values defined by a start and end boundary.
  *
- * @property core The internal list of start and end values.
- * @property first The starting value of the range.
- * @property last The ending value of the range, inclusive.
+ * @property start The starting value of the range.
+ * @property endInclusive The ending value of the range, inclusive.
  */
-data class RangeVal(override val core: ArrayList<NumVal> = ArrayList(2)) : ICollectionVal {
+data class RangeVal(val start: NumVal, val endInclusive: NumVal) : ICollectionVal {
+
+    override val core: List<NumVal> get() = listOf(start, endInclusive)
 
     /**
-     * Returns the first (starting) value of the range.
+     * Returns the starting value of the range as a [Number].
      */
-    val first: Number get() = core.first().core
+    val first: Number get() = start.core
 
     /**
-     * Returns the last (ending) value of the range, inclusive.
+     * Returns the ending value of the range (inclusive) as a [Number].
      */
-    val last: Number get() = core.last().core
+    val last: Number get() = endInclusive.core
 
     /**
      * Constructs a [RangeVal] from two numVals representing the start and end.
@@ -25,16 +26,7 @@ data class RangeVal(override val core: ArrayList<NumVal> = ArrayList(2)) : IColl
      * @param start The starting value of the range.
      * @param endInclude The ending value of the range, inclusive.
      */
-    constructor(start: NumVal, endInclude: NumVal) : this(start.core, endInclude.core)
-
-    /**
-     * Constructs a [RangeVal] from two number values representing the start and end.
-     *
-     * @param start The starting value of the range.
-     * @param endInclude The ending value of the range, inclusive.
-     */
-    constructor(start: Number, endInclude: Number) : this(arrayListOf(start.numVal, endInclude.numVal))
-
+    constructor(start: Number, endInclude: Number) : this(start.numVal, endInclude.numVal)
 
     /**
      * Checks if the specified number is within the range.
@@ -93,13 +85,12 @@ data class RangeVal(override val core: ArrayList<NumVal> = ArrayList(2)) : IColl
     )
 
     /**
-     * Maps each value in the range to a new form using the provided transformation function.
+     * Maps the start and end values using the provided transformation function.
      *
      * @param transform The transformation function to apply.
-     * @return A list of the transformed values.
+     * @return A list of two transformed values (start and end).
      */
-    fun <R> map(transform: (NumVal) -> R): List<R> = core.map(transform)
+    fun <R> map(transform: (NumVal) -> R): List<R> = listOf(transform(start), transform(endInclusive))
 
     override fun toString(): String = "$first:$last"
-
 }

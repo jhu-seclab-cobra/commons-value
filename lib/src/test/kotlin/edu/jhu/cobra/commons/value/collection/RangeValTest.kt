@@ -6,17 +6,12 @@ import kotlin.test.*
 
 class RangeValTest {
     @Test
-    fun testDefaultConstructor() {
-        val rangeVal = RangeVal()
-        assertFailsWith<NoSuchElementException> { rangeVal.first }
-        assertFailsWith<NoSuchElementException> { rangeVal.last }
-    }
-
-    @Test
     fun testNumValConstructor() {
         val rangeVal = RangeVal(NumVal(1), NumVal(5))
         assertEquals(1, rangeVal.first)
         assertEquals(5, rangeVal.last)
+        assertEquals(NumVal(1), rangeVal.start)
+        assertEquals(NumVal(5), rangeVal.endInclusive)
     }
 
     @Test
