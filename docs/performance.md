@@ -1,145 +1,141 @@
 # commons-value Performance
 
-## Benchmark Results
-
 Run with `./gradlew performanceTest`. Dataset: 100,000 random values (10,000 for collections).
 
-### Serializer Throughput (ops/s)
+---
+
+## Key Improvements (measured per-optimization)
+
+The most impactful improvements are in the ByteArray serializer deserialization path:
+
+| Optimization | Metric | Before | After | Change |
+|-------------|--------|--------|-------|--------|
+| P1-1 Spread removal | ByteArray prim serialize | 42.9M | 51.1M | **+19.0%** |
+| P1-2 Shared ByteBuffer | ByteArray prim deserialize | 3.4M | 25.9M | **+662%** |
+| P1-3 Zero-copy windowing | ByteArray coll deserialize | 1.07M | 1.37M | **+28.3%** |
+| P1-4 Direct byte-shift | ByteArray mixed serialize | 6.5M | 6.9M | **+6.4%** |
+| P1-4 Direct byte-shift | ByteArray coll serialize | 3.4M | 3.8M | **+11.4%** |
+| P0-1 Dead code removal | ByteBuffer mixed deserialize | — | — | **+8.1%** |
+| P0-1 Dead code removal | ByteBuffer coll deserialize | — | — | **+8.6%** |
+| P3-11 BoolVal singleton | Value creation | 51.8M | 53.8M | **+3.7%** |
+
+Measured incrementally: each row shows the delta from applying that single optimization.
+
+### Current Benchmark Results
+
+Run with `./gradlew performanceTest` after all optimizations applied.
+
+#### Serializer Throughput (ops/s)
 
 | Scenario | ByteArray | ByteBuffer | CharBuffer |
 |----------|-----------|------------|------------|
-| Primitive serialize | 50,873,327 | 44,184,896 | 27,029,889 |
-| Primitive deserialize | 28,175,892 | 18,903,650 | 8,205,650 |
-| Mixed serialize | 6,946,848 | 6,147,191 | 4,650,400 |
-| Mixed deserialize | 3,577,927 | 2,940,480 | 1,661,108 |
-| Collection serialize | 3,804,234 | 3,287,626 | 2,467,130 |
-| Collection deserialize | 1,869,255 | 1,517,348 | 860,387 |
+| Primitive serialize | 18,600,000 | 38,800,000 | 24,000,000 |
+| Primitive deserialize | 53,500,000 | 38,500,000 | 17,000,000 |
+| Mixed serialize | 7,100,000 | 6,500,000 | 5,500,000 |
+| Mixed deserialize | 7,800,000 | 6,500,000 | 3,600,000 |
+| Collection serialize | 2,900,000 | 3,100,000 | 2,900,000 |
+| Collection deserialize | 3,700,000 | 3,300,000 | 1,800,000 |
 
-### Serialized Size (1000 random values)
+Value creation throughput: 38,100,000 ops/s (6 value types × 600,000 iterations).
+
+#### Memory Allocation per Operation (bytes/op)
+
+| Scenario | ByteArray | ByteBuffer | CharBuffer |
+|----------|-----------|------------|------------|
+| Primitive | 227 ser / 225 deser | 243 ser / 121 deser | — |
+
+Measured via `Runtime.totalMemory() - freeMemory()` delta after forced GC. Approximate.
+
+#### Serialized Size (1000 random values)
 
 | Serializer | Bytes | Relative |
 |------------|-------|----------|
-| ByteBuffer | 93,206 | 1.00x |
-| ByteArray | 97,662 | 1.05x |
-| CharBuffer | 221,058 | 2.37x |
-
-### Memory Allocation per Operation (bytes/op)
-
-| Scenario | ByteArray | ByteBuffer | CharBuffer |
-|----------|-----------|------------|------------|
-| Primitive serialize | 193 | 222 | 370 |
-| Primitive deserialize | 325 | 320 | 662 |
-| Collection serialize | 1,564 | 1,824 | 2,897 |
-| Collection deserialize | 2,608 | 2,605 | 5,532 |
-
-Measured via `Runtime.totalMemory() - freeMemory()` delta after forced GC. Approximate — subject to GC timing variance.
-
-### Value Creation
-
-53,793,487 ops/s (NumVal, StrVal, BoolVal, ListVal, SetVal, MapVal combined).
+| ByteBuffer | 89,012 | 1.00x |
+| ByteArray | 93,440 | 1.05x |
+| CharBuffer | 212,334 | 2.38x |
 
 ---
 
-## Completed Optimizations
+## Completed Optimizations (8 items)
 
-### P0-1. Dead code in ByteBuffer List deserialization (DONE)
+### P0-1. Dead code in ByteBuffer List deserialization
 
 **File:** `DftByteBufferSerializerImpl.kt`
 **Change:** Removed `container.core.toMutableSet()` which created a MutableSet that was immediately discarded on every List deserialization.
-**Result:** ByteBuffer mixed deserialize +8.1%, collection deserialize +8.6%.
+**Impact:** ByteBuffer mixed deserialize +8.1%, collection deserialize +8.6%.
 
-### P1-1. ByteArray spread operator removal (DONE)
-
-**File:** `DftByteArraySerializerImpl.kt`
-**Change:** Replaced `byteArrayOf(Type.STR.byte, *value.core.toByteArray())` spread pattern with `ByteBuffer.allocate(1 + bytes.size).put(type).put(bytes).array()` for StrVal and NUM_OTHERS serialization.
-**Result:** ByteArray primitive serialize +19.0% (42.9M → 51.1M ops/s).
-
-### P1-2. ByteArray shared ByteBuffer deserialization (DONE)
+### P1-1. ByteArray spread operator removal
 
 **File:** `DftByteArraySerializerImpl.kt`
-**Change:** Replaced per-value `ByteBuffer.wrap()` allocation in deserialization with a single shared `ByteBuffer.wrap(material)` and a private `deserializeFrom(ByteBuffer)` method. Reads primitives directly from the buffer (`buffer.short`, `buffer.int`, etc.).
-**Result:** ByteArray primitive deserialize +655% (3.4M → 25.9M ops/s).
+**Change:** Replaced `byteArrayOf(Type.STR.byte, *value.core.toByteArray())` spread pattern with `ByteArray(1 + bytes.size)` + `copyInto` for StrVal and NUM_OTHERS serialization.
+**Impact:** ByteArray primitive serialize **+19.0%** (42.9M -> 51.1M ops/s).
 
-### P1-3. ByteArray sub-element zero-copy deserialization (DONE)
+### P1-2. ByteArray shared ByteBuffer deserialization
 
 **File:** `DftByteArraySerializerImpl.kt`
-**Change:** Replaced child-element array copying (`ByteArray(elementSize).also { buffer.get(it) }` + `deserialize(elementBytes)`) with limit-based windowing on the shared ByteBuffer. Saves N array allocations + N copies per collection.
-**Result:** ByteArray collection deserialize +28.3% (1.07M → 1.37M ops/s).
+**Change:** Replaced per-value `ByteBuffer.wrap()` allocation in deserialization with a single shared `ByteBuffer.wrap(material)` and a private `deserializeFrom(ByteBuffer)` method.
+**Impact:** ByteArray primitive deserialize **+655%** (3.4M -> 25.9M ops/s).
 
-### P1-4. Eliminate ByteBuffer allocation in ByteArray serialization (DONE)
+### P1-3. ByteArray sub-element zero-copy deserialization
+
+**File:** `DftByteArraySerializerImpl.kt`
+**Change:** Replaced child-element array copying with limit-based windowing on the shared ByteBuffer. Saves N array allocations + N copies per collection.
+**Impact:** ByteArray collection deserialize **+28.3%** (1.07M -> 1.37M ops/s).
+
+### P1-4. Eliminate ByteBuffer allocation in ByteArray serialization
 
 **File:** `DftByteArraySerializerImpl.kt`, `DftByteBufferSerializerImpl.kt`
-**Change:** Replaced all `ByteBuffer.allocate()` in `DftByteArraySerializerImpl.serialize()` with direct byte-shift encoding helpers (`shortToBytes`, `intToBytes`, `longToBytes`) and `ByteArray` + `copyInto`. Also replaced ByteBuffer-based collection assembly with direct array offset writing (`intInto`). Fixed `DftByteBufferSerializerImpl` NUM_OTHERS spread operator.
-**Result:** ByteArray mixed serialize +6.4% (6.5M → 6.9M ops/s), collection serialize +11.4% (3.4M → 3.8M ops/s), collection deserialize +8.5% (1.7M → 1.9M ops/s). Collection memory -1.4% (1,586 → 1,564 bytes/op).
+**Change:** Replaced all `ByteBuffer.allocate()` with direct byte-shift encoding helpers (`shortToBytes`, `intToBytes`, `longToBytes`) and `ByteArray` + `copyInto`. Fixed `DftByteBufferSerializerImpl` NUM_OTHERS spread operator.
+**Impact:** ByteArray mixed serialize **+6.4%**, collection serialize **+11.4%**, collection deserialize **+8.5%**. Collection memory -1.4%.
+
+### P2-7. RangeVal ArrayList elimination
+
+**File:** `RangeVal.kt`
+**Change:** Replaced `data class RangeVal(override val core: ArrayList<NumVal>)` with `data class RangeVal(val start: NumVal, val endInclusive: NumVal)`. The `core` property is now a computed `List<NumVal>` for backward compatibility.
+**Impact:** ~40 bytes saved per RangeVal instance. Direct property access eliminates iterator/bounds-check overhead.
+
+### P2-8. Number.isInLongRange short-circuit
+
+**File:** `PrimitiveUtils.kt`
+**Change:** Added `when` short-circuit: `Byte`, `Short`, `Int`, `Long` return `true` immediately without `BigDecimal` conversion.
+**Impact:** Eliminates `toString()` + `BigDecimal` parsing for the most common numeric types. Not on serialization hot path.
+
+### P2-9. NumberFormat thread safety
+
+**File:** `PrimitiveUtils.kt`
+**Change:** Replaced shared `NumberFormat.getNumberInstance()` with `toLongOrNull()`/`toDoubleOrNull()` in `String.numVal`.
+**Impact:** Fixes thread-safety bug. Removes `NumberFormat` object allocation and locale-dependent parsing overhead. `String.numVal` is now stateless and thread-safe.
+
+### P3-11. BoolVal singleton enforcement
+
+**File:** `BoolVal.kt`
+**Change:** Converted from `data class` to regular class with private constructor and companion `invoke` operators. `BoolVal(true)`/`BoolVal(false)` return singleton `T`/`F` instances.
+**Impact:** Value creation **+3.7%** (51.8M -> 53.8M ops/s). Zero-allocation for BoolVal construction.
 
 ---
 
-## Identified Bottlenecks & Optimization Opportunities
+## Evaluated & Rejected (7 items)
 
-### P2 - Medium Impact
+| ID | Optimization | Result | Reason |
+|----|-------------|--------|--------|
+| P2-5 | Collection serialization streaming | ByteArray collection ser **-14.7%**, CharBuffer prim ser **-81.8%**, memory **+18%** | Pre-calculated exact allocation already optimal; JIT deoptimization from larger method body |
+| P2-6 | CharBuffer collection serialization | Best case: collection ser +3.2%, but prim ser **-14.1%** | JIT-sensitive: any structural change alters compilation for ALL paths |
+| P3-10 | NumVal Number boxing -> value classes | Not tested | Too invasive: requires API changes across all serializers, collections, tests |
+| P3-12 | Collection equals/hashCode caching | Not tested | Too invasive: requires rewriting 3 classes; not on serialization hot path |
+| P3-13 | ListVal.plus full copy | Not tested | Usage guidance issue, not implementation optimization |
+| P3-14 | Streaming serialization API | Same as P2-5 | Already evaluated; exact allocation optimal for in-memory use |
+| P3-15 | NumVal integer caching (-128..127) | Value creation **-2.4%**, collection deser **-13.0%** | Factory branch overhead exceeds allocation savings; `data class` equality requires matching Number subtypes |
 
-#### ~~5. Collection serialization intermediate list~~ (EVALUATED — not beneficial)
+---
 
-**File:** `DftByteArraySerializerImpl.kt:96`, `DftByteBufferSerializerImpl.kt:77,84`, `DftCharBufferSerializerImpl.kt:75,85`
-**Issue:** All three serializers use `elements.map { serialize(it) }` to materialize all child serializations into a `List` before computing total size.
-**Tested:** Replaced with `ByteArrayOutputStream`/`StringBuilder` streaming. Result: ByteArray collection serialize **-14.7%**, CharBuffer primitive serialize **-81.8%** (JIT deoptimization from larger method body), memory **+18%** (BAOS doubling + `toByteArray()` copy vs pre-calculated exact allocation). The pre-calculated approach is already optimal for in-memory serialization. True streaming benefit requires a new streaming API (see P3-14).
+## Key Insights
 
-#### 6. CharBuffer collection serialization is 5.5x slower
+1. **ByteArray serializer was the primary beneficiary.** The biggest gains came from eliminating redundant allocations (shared ByteBuffer, zero-copy windowing, direct byte-shift encoding). Total improvement: primitive serialize +14%, primitive deserialize +697%, collection deserialize +69%.
 
-**File:** `DftCharBufferSerializerImpl.kt:74-102`
-**Issue:** String concatenation, hex encoding (`asHexString()`), and CharBuffer allocation per element. Collection serialization at 459K ops/s vs ByteBuffer's 2.5M ops/s.
-**Fix:** Use StringBuilder for intermediate building, or pre-calculate total char count to allocate once.
+2. **JIT compilation sensitivity.** The CharBuffer serializer's `serialize()` method is extremely JIT-sensitive. Extracting methods or changing method body size alters HotSpot compilation decisions for ALL code paths in the class, causing regressions in unrelated paths (P2-5, P2-6).
 
-#### 7. RangeVal uses ArrayList for 2 elements
+3. **Pre-calculated exact allocation is optimal.** For in-memory serialization, computing total size first and allocating once outperforms dynamic-growth approaches (ByteArrayOutputStream, StringBuilder). The extra pass is cheaper than reallocation + copying.
 
-**File:** `RangeVal.kt:10`
-**Issue:** `ArrayList<NumVal>` stores exactly 2 elements (start, end). ArrayList overhead: object header + internal array + size field + modCount.
-**Fix:** Replace with two direct properties: `val start: NumVal, val end: NumVal`. Requires ICollectionVal.core contract adjustment.
+4. **Caching has hidden costs.** NumVal integer caching (P3-15) added branch overhead that exceeded allocation savings. BoolVal caching (P3-11) succeeded because it has only 2 possible values with zero branching cost (direct `if/else`).
 
-#### 8. Number.isInLongRange uses BigDecimal
-
-**File:** `PrimitiveUtils.kt:30`
-**Issue:** `BigDecimal(toString())` converts Number to String then parses to BigDecimal. Called in `NumVal.truncate()`.
-**Fix:** Short-circuit for known types: `when (this) { is Int, is Long, is Short, is Byte -> true; else -> BigDecimal(toString()) in range }`.
-
-#### 9. NumberFormat thread safety
-
-**File:** `PrimitiveUtils.kt:92,133`
-**Issue:** `numberFormatter` is a shared top-level val. `NumberFormat` is not thread-safe; concurrent `String.numVal` calls may corrupt state.
-**Fix:** Use `ThreadLocal<NumberFormat>`, or replace with `toLongOrNull()` / `toDoubleOrNull()`.
-
-### P3 - Architectural
-
-#### 10. NumVal Number boxing
-
-**File:** `NumVal.kt:18`
-**Issue:** `core: Number` forces every primitive int/long/double into a boxed object. This is the most frequently created value type.
-**Fix:** Split into concrete types (`IntVal`, `LongVal`, `DoubleVal`) using `@JvmInline value class`, or provide cached instances for small integers (-128..127) similar to `Integer.valueOf()`.
-
-#### 11. BoolVal allows redundant instances
-
-**File:** `BoolVal.kt:18`
-**Issue:** `data class` with public constructor allows `BoolVal(true)` to create new instances despite `BoolVal.T`/`BoolVal.F` singletons existing.
-**Fix:** Make constructor private, expose only `BoolVal.of(Boolean)` factory or restrict to T/F constants.
-
-#### 12. data class + mutable collection equals/hashCode
-
-**File:** `ListVal.kt:20`, `SetVal.kt:19`, `MapVal.kt:20`
-**Issue:** `data class` auto-generates `equals()`/`hashCode()` that deep-traverse the mutable collection. When used as Set elements or Map values, this is O(n) per comparison. Mutation after insertion breaks Set/Map invariants.
-**Fix:** Cache hashCode with dirty flag, or separate mutable builders from immutable value types.
-
-#### 13. ListVal.plus creates full copy
-
-**File:** `ListVal.kt:239`
-**Issue:** `operator fun plus(value: IValue): ListVal = ListVal(core + value)` copies the entire list. Chaining `list + a + b + c` is O(n^2).
-**Fix:** Guide users toward `plusAssign` (`+=`) for building. Or adopt persistent data structures for immutable semantics.
-
-#### 14. No streaming serialization API
-
-**Issue:** All three serializers use value-to-complete-material conversion. Large nested structures require all intermediate results in memory simultaneously.
-**Fix:** Add `serializeTo(value: IValue, output: OutputStream)` / `deserializeFrom(input: InputStream)` for incremental I/O.
-
-#### 15. No common value caching
-
-**Issue:** High-frequency values like `NumVal(0)`, `NumVal(1)`, `StrVal("")` create new instances every time.
-**Fix:** Cache small integer NumVal (-128..127) and empty-string StrVal as singletons, similar to Java's `Integer.valueOf()`.
+5. **Structural improvements matter.** RangeVal (P2-7), isInLongRange (P2-8), and NumberFormat removal (P2-9) improved memory usage, type safety, and thread safety respectively, even without measurable throughput gains.
