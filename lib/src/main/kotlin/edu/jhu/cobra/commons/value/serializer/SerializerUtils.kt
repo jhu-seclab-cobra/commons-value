@@ -68,7 +68,7 @@ fun Int.asHexString(): String = Integer.toHexString(this)
  * @throws BufferUnderflowException if there are fewer bytes remaining than [size]
  */
 fun ByteBuffer.getArray(size: Int) =
-    ByteArray(size).also { bs -> repeat(size) { bs[it] = get() } }
+    ByteArray(size).also { get(it) }
 
 /**
  * Reads a string from the [ByteBuffer].

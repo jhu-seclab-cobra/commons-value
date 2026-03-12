@@ -18,6 +18,10 @@ The most impactful improvements are in the ByteArray serializer deserialization 
 | P0-1 Dead code removal | ByteBuffer mixed deserialize | — | — | **+8.1%** |
 | P0-1 Dead code removal | ByteBuffer coll deserialize | — | — | **+8.6%** |
 | P3-11 BoolVal singleton | Value creation | 51.8M | 53.8M | **+3.7%** |
+| P4-3 Bulk array copy | ByteBuffer prim serialize | 36.8M | 49.9M | **+35.6%** |
+| P4-3 Bulk array copy | ByteBuffer prim deserialize | 39.3M | 50.8M | **+29.3%** |
+| P4-3 Bulk array copy | ByteBuffer mixed deserialize | 5.8M | 7.0M | **+19.8%** |
+| P4-4 Vararg spread removal | ByteArray prim serialize | 16.7M | 30.7M | **+84.2%** |
 
 Measured incrementally: each row shows the delta from applying that single optimization.
 
@@ -29,20 +33,21 @@ Run with `./gradlew performanceTest` after all optimizations applied.
 
 | Scenario | ByteArray | ByteBuffer | CharBuffer |
 |----------|-----------|------------|------------|
-| Primitive serialize | 18,600,000 | 38,800,000 | 24,000,000 |
-| Primitive deserialize | 53,500,000 | 38,500,000 | 17,000,000 |
-| Mixed serialize | 7,100,000 | 6,500,000 | 5,500,000 |
-| Mixed deserialize | 7,800,000 | 6,500,000 | 3,600,000 |
-| Collection serialize | 2,900,000 | 3,100,000 | 2,900,000 |
-| Collection deserialize | 3,700,000 | 3,300,000 | 1,800,000 |
+| Primitive serialize | 30,000,000 | 52,900,000 | 23,500,000 |
+| Primitive deserialize | 43,800,000 | 52,300,000 | 17,100,000 |
+| Mixed serialize | 7,200,000 | 6,500,000 | 5,300,000 |
+| Mixed deserialize | 7,800,000 | 7,400,000 | 3,500,000 |
+| Collection serialize | 3,400,000 | 3,200,000 | 2,800,000 |
+| Collection deserialize | 3,900,000 | 3,800,000 | 1,900,000 |
 
-Value creation throughput: 38,100,000 ops/s (6 value types × 600,000 iterations).
+Value creation throughput: 40,600,000 ops/s (6 value types × 600,000 iterations).
 
 #### Memory Allocation per Operation (bytes/op)
 
 | Scenario | ByteArray | ByteBuffer | CharBuffer |
 |----------|-----------|------------|------------|
-| Primitive | 227 ser / 225 deser | 243 ser / 121 deser | — |
+| Primitive | 221 ser / 221 deser | 243 ser / 121 deser | 306 ser / 306 deser |
+| Collection | 2,040 ser / 1,020 deser | 2,040 ser / 1,020 deser | 3,060 ser / 3,060 deser |
 
 Measured via `Runtime.totalMemory() - freeMemory()` delta after forced GC. Approximate.
 
@@ -50,13 +55,13 @@ Measured via `Runtime.totalMemory() - freeMemory()` delta after forced GC. Appro
 
 | Serializer | Bytes | Relative |
 |------------|-------|----------|
-| ByteBuffer | 89,012 | 1.00x |
-| ByteArray | 93,440 | 1.05x |
-| CharBuffer | 212,334 | 2.38x |
+| ByteBuffer | ~89,000 | 1.00x |
+| ByteArray | ~93,000 | 1.05x |
+| CharBuffer | ~212,000 | 2.38x |
 
 ---
 
-## Completed Optimizations (8 items)
+## Completed Optimizations (10 items)
 
 ### P0-1. Dead code in ByteBuffer List deserialization
 
@@ -112,9 +117,21 @@ Measured via `Runtime.totalMemory() - freeMemory()` delta after forced GC. Appro
 **Change:** Converted from `data class` to regular class with private constructor and companion `invoke` operators. `BoolVal(true)`/`BoolVal(false)` return singleton `T`/`F` instances.
 **Impact:** Value creation **+3.7%** (51.8M -> 53.8M ops/s). Zero-allocation for BoolVal construction.
 
+### P4-3. `ByteBuffer.getArray()` bulk copy
+
+**File:** `SerializerUtils.kt`
+**Change:** Replaced byte-by-byte `repeat(size) { bs[it] = get() }` with bulk `ByteBuffer.get(ByteArray)` in `ByteBuffer.getArray()`.
+**Impact:** ByteBuffer primitive serialize **+35.6%** (36.8M -> 49.9M), primitive deserialize **+29.3%**, mixed deserialize **+19.8%**.
+
+### P4-4. `ListVal(vararg)` / `MapVal(vararg)` spread operator removal
+
+**File:** `ListVal.kt`, `MapVal.kt`
+**Change:** Replaced `arrayListOf(*value)` with `ArrayList(size).apply { addAll(value) }` and `hashMapOf(*value)` with pre-sized `HashMap.apply { forEach put }` to avoid array copy from spread operator.
+**Impact:** ByteArray primitive serialize **+84.2%** (16.7M -> 30.7M). Indirect improvement via JIT compilation behavior change.
+
 ---
 
-## Evaluated & Rejected (7 items)
+## Evaluated & Rejected (11 items)
 
 | ID | Optimization | Result | Reason |
 |----|-------------|--------|--------|
@@ -125,6 +142,18 @@ Measured via `Runtime.totalMemory() - freeMemory()` delta after forced GC. Appro
 | P3-13 | ListVal.plus full copy | Not tested | Usage guidance issue, not implementation optimization |
 | P3-14 | Streaming serialization API | Same as P2-5 | Already evaluated; exact allocation optimal for in-memory use |
 | P3-15 | NumVal integer caching (-128..127) | Value creation **-2.4%**, collection deser **-13.0%** | Factory branch overhead exceeds allocation savings; `data class` equality requires matching Number subtypes |
+| P4-1 | ByteArray serialize method extraction | CharBuffer prim ser **-75%** | Extracting collection serialization into separate methods caused cross-class JIT deoptimization |
+| P4-2 | ByteBuffer collection single-allocation | Not tested | Skipped due to JIT sensitivity risk (P4-1, P2-5, P2-6 precedent) |
+| P4-5 | `String.asCharBuffer()` zero-copy wrap | CharBuffer mixed ser **-16%**, coll ser **-22%** | Read-only CharBuffer from `CharBuffer.wrap(String)` adds overhead in `put(CharBuffer)` |
+| P4-6 | ByteArray collection pre-size hint | Not tested | Wire format lacks element count; pre-scan cost/benefit questionable with JIT risk |
+
+---
+
+## Remaining Known Bottlenecks
+
+- **ByteArray `serialize()` method body size.** The `serialize()` when-expression is large (~80 lines), which may prevent JIT inlining for primitive paths. Extracting collection cases was attempted (P4-1) but caused cross-class JIT deoptimization. ByteArray primitive serialize (30M) still trails ByteBuffer (53M).
+- **ByteBuffer collection per-element allocation.** Each child `serialize()` call allocates its own ByteBuffer. Skipped (P4-2) due to JIT sensitivity risk.
+- **`data class` NumVal boxing equality.** Evaluated as P3-10 — too invasive for current API.
 
 ---
 
@@ -132,10 +161,12 @@ Measured via `Runtime.totalMemory() - freeMemory()` delta after forced GC. Appro
 
 1. **ByteArray serializer was the primary beneficiary.** The biggest gains came from eliminating redundant allocations (shared ByteBuffer, zero-copy windowing, direct byte-shift encoding). Total improvement: primitive serialize +14%, primitive deserialize +697%, collection deserialize +69%.
 
-2. **JIT compilation sensitivity.** The CharBuffer serializer's `serialize()` method is extremely JIT-sensitive. Extracting methods or changing method body size alters HotSpot compilation decisions for ALL code paths in the class, causing regressions in unrelated paths (P2-5, P2-6).
+2. **JIT compilation sensitivity — cross-class effects.** Method extraction or structural changes cause regressions not only within the same class (P2-5, P2-6) but across entirely different serializer classes running in the same JVM (P4-1: ByteArray method extraction caused CharBuffer -75%). HotSpot's compilation budget, inlining heuristics, and class loading order all interact unpredictably.
 
 3. **Pre-calculated exact allocation is optimal.** For in-memory serialization, computing total size first and allocating once outperforms dynamic-growth approaches (ByteArrayOutputStream, StringBuilder). The extra pass is cheaper than reallocation + copying.
 
 4. **Caching has hidden costs.** NumVal integer caching (P3-15) added branch overhead that exceeded allocation savings. BoolVal caching (P3-11) succeeded because it has only 2 possible values with zero branching cost (direct `if/else`).
 
 5. **Structural improvements matter.** RangeVal (P2-7), isInLongRange (P2-8), and NumberFormat removal (P2-9) improved memory usage, type safety, and thread safety respectively, even without measurable throughput gains.
+
+6. **Utility function overhead compounds.** `ByteBuffer.getArray()` byte-by-byte copy (P4-3) was a hidden ~30% overhead on ByteBuffer primitive paths — a one-line fix yielded the largest single-optimization gain in the ByteBuffer serializer. Read-only CharBuffer wrappers (P4-5) add ~16-22% overhead from buffer type checks in `put(CharBuffer)`.
