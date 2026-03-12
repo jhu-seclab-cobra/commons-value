@@ -3,61 +3,42 @@ package edu.jhu.cobra.commons.value
 /**
  * Represents a boolean value in the storage system.
  *
- * This class encapsulates a boolean value and provides utility functions for common boolean operations.
+ * Only two instances exist: [T] for `true` and [F] for `false`.
+ * Use [BoolVal]`(true)` or [BoolVal]`(false)` to obtain the corresponding singleton.
  *
  * @property core The actual boolean value encapsulated by this instance.
- *
- * Example usage:
- * ```kotlin
- * val boolVal = BoolVal(true)
- * println(!boolVal) // Outputs: BoolVal{false}
- * println(boolVal and BoolVal(false)) // Outputs: BoolVal{false}
- * println(boolVal.isTrue()) // Outputs: true
- * ```
  */
-data class BoolVal(override val core: Boolean) : IPrimitiveVal {
+class BoolVal private constructor(override val core: Boolean) : IPrimitiveVal {
 
     companion object {
         /**
          * A constant instance representing the boolean value `true`.
-         *
-         * Example usage:
-         * ```kotlin
-         * println(BoolVal.T) // Outputs: BoolVal{true}
-         * ```
          */
         val T = BoolVal(true)
 
         /**
          * A constant instance representing the boolean value `false`.
-         *
-         * Example usage:
-         * ```kotlin
-         * println(BoolVal.F) // Outputs: BoolVal{false}
-         * ```
          */
         val F = BoolVal(false)
+
+        /**
+         * Returns the singleton [BoolVal] for the given boolean value.
+         *
+         * @param value The boolean value.
+         * @return [T] if `true`, [F] if `false`.
+         */
+        operator fun invoke(value: Boolean): BoolVal = if (value) T else F
+
+        /**
+         * Returns the singleton [BoolVal] for `false`.
+         *
+         * @return [F]
+         */
+        operator fun invoke(): BoolVal = F
     }
 
     /**
-     * Default constructor initializing to `false`.
-     *
-     * Example usage:
-     * ```kotlin
-     * val defaultBool = BoolVal()
-     * println(defaultBool) // Outputs: BoolVal{false}
-     * ```
-     */
-    constructor() : this(false)
-
-    /**
      * Checks if the boolean value is `true`.
-     *
-     * Example usage:
-     * ```kotlin
-     * val boolVal = BoolVal(true)
-     * println(boolVal.isTrue()) // Outputs: true
-     * ```
      *
      * @return `true` if the value is `true`, `false` otherwise.
      */
@@ -66,26 +47,14 @@ data class BoolVal(override val core: Boolean) : IPrimitiveVal {
     /**
      * Checks if the boolean value is `false`.
      *
-     * Example usage:
-     * ```kotlin
-     * val boolVal = BoolVal(false)
-     * println(boolVal.isFalse()) // Outputs: true
-     * ```
-     *
      * @return `true` if the value is `false`, `false` otherwise.
      */
     fun isFalse(): Boolean = !core
 
-    /**
-     * Provides a string representation of the boolean value.
-     *
-     * Example usage:
-     * ```kotlin
-     * val boolVal = BoolVal(true)
-     * println(boolVal) // Outputs: BoolVal{true}
-     * ```
-     *
-     * @return A string in the format "BoolVal{core}".
-     */
+    override fun equals(other: Any?): Boolean =
+        this === other || (other is BoolVal && core == other.core)
+
+    override fun hashCode(): Int = core.hashCode()
+
     override fun toString(): String = "BoolVal{$core}"
 }

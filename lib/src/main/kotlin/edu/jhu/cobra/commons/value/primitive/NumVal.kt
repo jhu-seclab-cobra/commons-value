@@ -22,13 +22,6 @@ data class NumVal(override val core: Number) : IPrimitiveVal {
          * Truncates the given `NumVal` to the smallest possible integer type that can
          * fully represent its value without precision loss.
          *
-         * Example usage:
-         * ```kotlin
-         * val numVal = NumVal(123456L)
-         * val truncated = NumVal.truncate(numVal)
-         * println(truncated) // Outputs: NumVal{123456}
-         * ```
-         *
          * @param numVal The `NumVal` instance to be truncated.
          * @return A new `NumVal` truncated to the appropriate integer type.
          */
