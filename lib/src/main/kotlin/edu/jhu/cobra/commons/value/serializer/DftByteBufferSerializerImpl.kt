@@ -62,7 +62,10 @@ object DftByteBufferSerializerImpl : IValSerializer<ByteBuffer> {
             is Long -> ByteBuffer.allocate(9).put(Type.NUM_LONG.byte).putLong(num).typedFlip()
             is Float -> ByteBuffer.allocate(5).put(Type.NUM_FLOAT.byte).putFloat(num).typedFlip()
             is Double -> ByteBuffer.allocate(9).put(Type.NUM_DOUBLE.byte).putDouble(num).typedFlip()
-            else -> byteBufferOf(Type.NUM_OTHERS.byte, *num.toString().toByteArray())
+            else -> {
+                val bytes = num.toString().toByteArray()
+                ByteBuffer.allocate(1 + bytes.size).put(Type.NUM_OTHERS.byte).put(bytes).typedFlip()
+            }
         }
 
         is RangeVal -> { // 1 byte type | element1 | element2
@@ -139,8 +142,7 @@ object DftByteBufferSerializerImpl : IValSerializer<ByteBuffer> {
                     val element = deserialize(material)
                     container.plusAssign(value = element)
                 }
-                container.core.toMutableSet()
-                container // Return the container with all elements
+                container
             }
 
             Type.SET.byte -> { // count | element1 | element2 | ...

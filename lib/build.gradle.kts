@@ -18,6 +18,7 @@ repositories {
 dependencies {
     implementation("org.apache.commons:commons-lang3:3.13.0")
     testImplementation(kotlin("test"))
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.2")
 }
 
 kotlin {
@@ -30,6 +31,33 @@ java {
     targetCompatibility = targetJavaVersion
     withSourcesJar()
     withJavadocJar()
+}
+
+tasks.test {
+    useJUnitPlatform {
+        excludeTags("performance")
+    }
+}
+
+tasks.register<Test>("performanceTest") {
+    description = "Runs performance tests."
+    group = "verification"
+    useJUnitPlatform {
+        includeTags("performance")
+    }
+    testLogging {
+        showStandardStreams = true
+    }
+    jvmArgs("-Xmx2g", "-Xms1g")
+}
+
+kover {
+    currentProject {
+        instrumentation {
+            excludedClasses.add("*PerformanceTest*")
+            disabledForTestTasks.add("performanceTest")
+        }
+    }
 }
 
 publishing {

@@ -1,6 +1,6 @@
 package edu.jhu.cobra.commons.value.serializer
 
-import org.junit.Test
+import kotlin.test.Test
 import java.io.DataInput
 import java.io.EOFException
 import java.nio.BufferUnderflowException
