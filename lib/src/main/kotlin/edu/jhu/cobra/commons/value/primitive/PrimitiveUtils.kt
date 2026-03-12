@@ -3,7 +3,7 @@ package edu.jhu.cobra.commons.value
 import java.io.File
 import java.math.BigDecimal
 import java.nio.file.Path
-import java.text.NumberFormat
+import java.text.ParseException
 import kotlin.io.path.pathString
 
 private val BIG_LONG_MAX_VALUE = BigDecimal.valueOf(Long.MAX_VALUE)
@@ -12,8 +12,8 @@ private val BIG_LONG_MIN_VALUE = BigDecimal.valueOf(Long.MIN_VALUE)
 /**
  * Checks if this number is within the valid range of a [Long].
  *
- * This property converts the number to a [BigDecimal] and checks if it falls within
- * the inclusive range of [Long.MIN_VALUE] to [Long.MAX_VALUE].
+ * For types that always fit ([Byte], [Short], [Int], [Long]), returns `true` immediately.
+ * For other types, converts to [BigDecimal] and checks against [Long.MIN_VALUE]..[Long.MAX_VALUE].
  *
  * Example:
  * ```kotlin
@@ -27,7 +27,10 @@ private val BIG_LONG_MIN_VALUE = BigDecimal.valueOf(Long.MIN_VALUE)
  * @return `true` if the number can be represented as a [Long], `false` otherwise
  */
 val Number.isInLongRange: Boolean
-    get() = BigDecimal(toString()) in BIG_LONG_MIN_VALUE..BIG_LONG_MAX_VALUE
+    get() = when (this) {
+        is Byte, is Short, is Int, is Long -> true
+        else -> BigDecimal(toString()) in BIG_LONG_MIN_VALUE..BIG_LONG_MAX_VALUE
+    }
 
 /**
  * Checks if this number is within the valid range of an [Int].
@@ -89,8 +92,6 @@ val Number.isInShortRange: Boolean
 val Number.isInByteRange: Boolean
     get() = toLong().let { it >= Byte.MIN_VALUE && it <= Byte.MAX_VALUE }
 
-private val numberFormatter = NumberFormat.getNumberInstance()
-
 /**
  * Converts this number to a [NumVal] representation.
  *
@@ -127,14 +128,17 @@ val Number.numVal: NumVal get() = NumVal(this)
  *
  * @return A [NumVal] containing the parsed number
  * @throws ParseException if the string cannot be parsed as a number
+ * @see Number.numVal
  */
 val String.numVal: NumVal
     get() {
-        val number = numberFormatter.parse(this)
-        if ("." in this) return number.numVal
-        val longNum = number.toLong()
+        if ("." in this) {
+            val d = toDoubleOrNull() ?: throw ParseException("Cannot parse '$this' as number", 0)
+            return d.numVal
+        }
+        val longNum = toLongOrNull() ?: throw ParseException("Cannot parse '$this' as number", 0)
         return if (longNum < Int.MIN_VALUE || longNum > Int.MAX_VALUE) longNum.numVal
-        else NumVal(number.toInt())
+        else NumVal(longNum.toInt())
     }
 
 /**
