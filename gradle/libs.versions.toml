@@ -1,8 +1,7 @@
 [versions]
-kotlin = "2.0.21"
+kotlin = "2.2.21"
 kover = "0.9.1"
-javaSource = "8"
-javaTarget = "8"
+jvm = "21"
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
