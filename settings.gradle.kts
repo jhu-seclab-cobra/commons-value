@@ -3,4 +3,7 @@ plugins {
 }
 
 rootProject.name = "commons-value"
-include("lib")
+
+// Unique module identifier to avoid composite build name collisions (gradle/gradle#847)
+include("jhu-seclab-cobra-commons-value")
+project(":jhu-seclab-cobra-commons-value").projectDir = file("lib")
