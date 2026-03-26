@@ -10,10 +10,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Set up JDK
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: 17
@@ -22,10 +22,10 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: Generate coverage report
-        run: ./gradlew :lib:test :lib:koverXmlReport
+        run: ./gradlew :jhu-seclab-cobra-commons-value:test :jhu-seclab-cobra-commons-value:koverXmlReport
 
       - name: Upload to Codecov
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          files: ./lib/build/reports/kover/report.xml
+          files: ./commons-value/build/reports/kover/report.xml
