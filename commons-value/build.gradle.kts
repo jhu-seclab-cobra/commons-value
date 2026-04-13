@@ -18,6 +18,7 @@ dependencies {
     implementation("org.apache.commons:commons-lang3:3.13.0")
     testImplementation(kotlin("test"))
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.2")
+    testImplementation("org.junit.jupiter:junit-jupiter-params:5.10.2")
 }
 
 kotlin {
@@ -36,6 +37,8 @@ tasks.test {
     useJUnitPlatform {
         excludeTags("performance")
     }
+    maxHeapSize = "1g"
+    setForkEvery(1)
 }
 
 tasks.register<Test>("performanceTest") {

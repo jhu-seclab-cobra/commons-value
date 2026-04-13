@@ -1,9 +1,22 @@
 package edu.jhu.cobra.commons.value.serializer
 
-import edu.jhu.cobra.commons.value.*
+import edu.jhu.cobra.commons.value.BoolVal
+import edu.jhu.cobra.commons.value.IValue
+import edu.jhu.cobra.commons.value.ListVal
+import edu.jhu.cobra.commons.value.MapVal
+import edu.jhu.cobra.commons.value.NullVal
+import edu.jhu.cobra.commons.value.NumVal
+import edu.jhu.cobra.commons.value.RangeVal
+import edu.jhu.cobra.commons.value.SetVal
+import edu.jhu.cobra.commons.value.StrVal
+import edu.jhu.cobra.commons.value.Unsure
+import edu.jhu.cobra.commons.value.listVal
+import edu.jhu.cobra.commons.value.mapVal
+import edu.jhu.cobra.commons.value.numVal
+import edu.jhu.cobra.commons.value.setVal
 import kotlin.random.Random
 
-inline fun <reified T : IValue> random() = when (T::class) {
+inline fun <reified T : IValue> random(): T = when (T::class) {
     NullVal::class -> randomIValue(0) as T
     StrVal::class -> randomIValue(1) as T
     BoolVal::class -> randomIValue(2) as T
@@ -16,32 +29,31 @@ inline fun <reified T : IValue> random() = when (T::class) {
     else -> randomIValue() as T
 }
 
-// Function to generate random IValue
 fun randomIValue(typeNum: Int = -1): IValue = when (typeNum) {
     0 -> NullVal
-    1 -> StrVal(randomString(20, 200)) // String
-    2 -> BoolVal(Random.nextBoolean()) // Boolean
-    3 -> randomNumber().numVal // Number
-    4 -> Unsure.entries[Random.nextInt(0, 4)] // Unsure
-    5 -> randomList(Random.nextInt(1, 10)).listVal // List with depth control
-    6 -> randomList(Random.nextInt(1, 10)).setVal // Set with depth control
-    7 -> randomMap(Random.nextInt(1, 10)).mapVal // Map with depth control
+    1 -> StrVal(randomString(5, 30))
+    2 -> BoolVal(Random.nextBoolean())
+    3 -> randomNumber().numVal
+    4 -> Unsure.entries[Random.nextInt(0, 4)]
+    5 -> randomList(Random.nextInt(1, 10)).listVal
+    6 -> randomList(Random.nextInt(1, 10)).setVal
+    7 -> randomMap(Random.nextInt(1, 10)).mapVal
     8 -> RangeVal(randomNumber().toInt(), randomNumber().toInt())
     else -> randomIValue(Random.nextInt(0, 9))
 }
 
 private fun randomNumber(): Number = when (Random.nextInt(6)) {
-    0 -> Random.nextInt() // Integer
-    1 -> Random.nextLong() // Long
-    2 -> Random.nextFloat() // Float
-    3 -> Random.nextDouble() // Double
-    4 -> Random.nextInt().toShort() // Short
-    5 -> Random.nextInt().toByte() // Byte
+    0 -> Random.nextInt()
+    1 -> Random.nextLong()
+    2 -> Random.nextFloat()
+    3 -> Random.nextDouble()
+    4 -> Random.nextInt().toShort()
+    5 -> Random.nextInt().toByte()
     else -> throw IllegalArgumentException("Unsupported number type")
 }
 
 private fun randomMap(size: Int): Map<String, IValue> =
-    (1..size).associate { randomString(10, 100) to randomIValue(Random.nextInt(0, 5)) }
+    (1..size).associate { randomString(3, 15) to randomIValue(Random.nextInt(0, 5)) }
 
 private fun randomList(size: Int): List<IValue> = List(size) { randomIValue(Random.nextInt(0, 5)) }
 

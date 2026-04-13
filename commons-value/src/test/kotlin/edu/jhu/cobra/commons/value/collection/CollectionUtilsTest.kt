@@ -1,155 +1,233 @@
 package edu.jhu.cobra.commons.value.collection
 
-import edu.jhu.cobra.commons.value.*
+import edu.jhu.cobra.commons.value.BoolVal
+import edu.jhu.cobra.commons.value.ListVal
+import edu.jhu.cobra.commons.value.MapVal
+import edu.jhu.cobra.commons.value.NumVal
+import edu.jhu.cobra.commons.value.SetVal
+import edu.jhu.cobra.commons.value.StrVal
+import edu.jhu.cobra.commons.value.listVal
+import edu.jhu.cobra.commons.value.mapVal
+import edu.jhu.cobra.commons.value.orEmpty
+import edu.jhu.cobra.commons.value.rangeVal
+import edu.jhu.cobra.commons.value.setVal
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
-class CollectionUtilsTest {
+/**
+ * Black-box tests for collection extension functions derived from design-collection.md
+ * and CollectionUtils.kt specifications.
+ *
+ * Collection.listVal:
+ * - `should convert mixed collection to ListVal`
+ * - `should convert empty collection to empty ListVal`
+ * - `should throw IllegalArgumentException for unconvertible element in listVal`
+ *
+ * Collection.setVal:
+ * - `should convert collection to SetVal removing duplicates`
+ * - `should convert empty collection to empty SetVal`
+ * - `should throw IllegalArgumentException for unconvertible element in setVal`
+ *
+ * Set.setVal:
+ * - `should convert Set to SetVal`
+ *
+ * Map.mapVal:
+ * - `should convert map to MapVal`
+ * - `should convert empty map to empty MapVal`
+ * - `should throw IllegalArgumentException for unconvertible value in mapVal`
+ *
+ * IntRange.rangeVal:
+ * - `should convert IntRange to RangeVal`
+ *
+ * ListVal?.orEmpty:
+ * - `should return empty ListVal when null`
+ * - `should return same ListVal when non-null`
+ *
+ * SetVal?.orEmpty:
+ * - `should return empty SetVal when null`
+ * - `should return same SetVal when non-null`
+ *
+ * MapVal?.orEmpty:
+ * - `should return empty MapVal when null`
+ * - `should return same MapVal when non-null`
+ *
+ * Boundary:
+ * - `should convert nested collections to nested IValue`
+ */
+internal class CollectionUtilsTest {
+
+    // -- Collection.listVal --
+
     @Test
-    fun testCollectionToListVal() {
+    fun `should convert mixed collection to ListVal`() {
         val collection = listOf(1, "text", true)
-        val listVal = collection.listVal
-
-        assertEquals(3, listVal.size)
-        assertTrue(listVal[0] is NumVal)
-        assertTrue(listVal[1] is StrVal)
-        assertTrue(listVal[2] is BoolVal)
-        assertEquals(1, (listVal[0] as NumVal).core)
-        assertEquals("text", (listVal[1] as StrVal).core)
-        assertEquals(true, (listVal[2] as BoolVal).core)
+        val result = collection.listVal
+        assertEquals(3, result.size)
+        assertEquals(NumVal(1), result[0])
+        assertEquals(StrVal("text"), result[1])
+        assertEquals(BoolVal.T, result[2])
     }
 
     @Test
-    fun testCollectionToSetVal() {
+    fun `should convert empty collection to empty ListVal`() {
+        val result = emptyList<Any>().listVal
+        assertEquals(0, result.size)
+        assertTrue(result.isEmpty())
+    }
+
+    @Test
+    fun `should throw IllegalArgumentException for unconvertible element in listVal`() {
+        class Custom
+        assertFailsWith<IllegalArgumentException> {
+            listOf(Custom()).listVal
+        }
+    }
+
+    // -- Collection.setVal --
+
+    @Test
+    fun `should convert collection to SetVal removing duplicates`() {
         val collection = listOf(1, 1, 2, "text")
-        val setVal = collection.setVal
-
-        assertEquals(3, setVal.size)
-        assertTrue(setVal.contains(NumVal(1)))
-        assertTrue(setVal.contains(NumVal(2)))
-        assertTrue(setVal.contains(StrVal("text")))
+        val result = collection.setVal
+        assertEquals(3, result.size)
+        assertTrue(result.contains(NumVal(1)))
+        assertTrue(result.contains(NumVal(2)))
+        assertTrue(result.contains(StrVal("text")))
     }
 
     @Test
-    fun testListValOrEmpty() {
-        val nullList: ListVal? = null
-        val emptyList = nullList.orEmpty()
-
-        assertEquals(0, emptyList.size)
-
-        val nonEmptyList = ListVal(StrVal("item"))
-        val sameList = nonEmptyList.orEmpty()
-        assertEquals(1, sameList.size)
-        assertEquals(StrVal("item"), sameList[0])
+    fun `should convert empty collection to empty SetVal`() {
+        val result = emptyList<Any>().setVal
+        assertEquals(0, result.size)
+        assertTrue(result.isEmpty())
     }
 
     @Test
-    fun testMapToMapVal() {
-        val map = mapOf("key" to 1, "value" to true)
-        val mapVal = map.mapVal
-
-        assertEquals(2, mapVal.size)
-        assertEquals(NumVal(1), mapVal["key"])
-        assertEquals(BoolVal.T, mapVal["value"])
+    fun `should throw IllegalArgumentException for unconvertible element in setVal`() {
+        class Custom
+        assertFailsWith<IllegalArgumentException> {
+            listOf(Custom()).setVal
+        }
     }
 
-    @Test
-    fun testMapValOrEmpty() {
-        val nullMap: MapVal? = null
-        val emptyMap = nullMap.orEmpty()
-
-        assertEquals(0, emptyMap.size)
-
-        val nonEmptyMap = MapVal("key" to StrVal("value"))
-        val sameMap = nonEmptyMap.orEmpty()
-        assertEquals(1, sameMap.size)
-        assertEquals(StrVal("value"), sameMap["key"])
-    }
+    // -- Set.setVal --
 
     @Test
-    fun testSetToSetVal() {
+    fun `should convert Set to SetVal`() {
         val set = setOf(1, true, "text")
-        val setVal = set.setVal
+        val result = set.setVal
+        assertEquals(3, result.size)
+        assertTrue(result.contains(NumVal(1)))
+        assertTrue(result.contains(BoolVal.T))
+        assertTrue(result.contains(StrVal("text")))
+    }
 
-        assertEquals(3, setVal.size)
-        assertTrue(setVal.contains(NumVal(1)))
-        assertTrue(setVal.contains(BoolVal.T))
-        assertTrue(setVal.contains(StrVal("text")))
+    // -- Map.mapVal --
+
+    @Test
+    fun `should convert map to MapVal`() {
+        val map = mapOf("k1" to 42, "k2" to true)
+        val result = map.mapVal
+        assertEquals(2, result.size)
+        assertEquals(NumVal(42), result["k1"])
+        assertEquals(BoolVal.T, result["k2"])
     }
 
     @Test
-    fun testSetValOrEmpty() {
-        val nullSet: SetVal? = null
-        val emptySet = nullSet.orEmpty()
-
-        assertEquals(0, emptySet.size)
-
-        val nonEmptySet = SetVal(NumVal(1))
-        val sameSet = nonEmptySet.orEmpty()
-        assertEquals(1, sameSet.size)
-        assertTrue(sameSet.contains(NumVal(1)))
+    fun `should convert empty map to empty MapVal`() {
+        val result = emptyMap<String, Any>().mapVal
+        assertEquals(0, result.size)
+        assertTrue(result.isEmpty())
     }
 
     @Test
-    fun testIntRangeToRangeVal() {
+    fun `should throw IllegalArgumentException for unconvertible value in mapVal`() {
+        class Custom
+        assertFailsWith<IllegalArgumentException> {
+            mapOf("k" to Custom()).mapVal
+        }
+    }
+
+    // -- IntRange.rangeVal --
+
+    @Test
+    fun `should convert IntRange to RangeVal`() {
         val range = 1..10
-        val rangeVal = range.rangeVal
+        val result = range.rangeVal
+        assertEquals(1, result.first)
+        assertEquals(10, result.last)
+    }
 
-        assertEquals(1, rangeVal.first)
-        assertEquals(10, rangeVal.last)
+    // -- ListVal?.orEmpty --
+
+    @Test
+    fun `should return empty ListVal when null`() {
+        val nullList: ListVal? = null
+        val result = nullList.orEmpty()
+        assertEquals(0, result.size)
+        assertTrue(result.isEmpty())
     }
 
     @Test
-    fun testInvalidValueConversion() {
-        class InvalidValue
+    fun `should return same ListVal when non-null`() {
+        val list = ListVal(StrVal("a"))
+        val result = list.orEmpty()
+        assertEquals(1, result.size)
+        assertEquals(StrVal("a"), result[0])
+    }
 
-        val collection = listOf(InvalidValue())
+    // -- SetVal?.orEmpty --
 
-        assertFailsWith<IllegalArgumentException> {
-            collection.listVal
-        }
-
-        assertFailsWith<IllegalArgumentException> {
-            collection.setVal
-        }
-
-        val map = mapOf("key" to InvalidValue())
-        assertFailsWith<IllegalArgumentException> {
-            map.mapVal
-        }
+    @Test
+    fun `should return empty SetVal when null`() {
+        val nullSet: SetVal? = null
+        val result = nullSet.orEmpty()
+        assertEquals(0, result.size)
+        assertTrue(result.isEmpty())
     }
 
     @Test
-    fun testEmptyCollections() {
-        val emptyList = emptyList<Any>().listVal
-        assertEquals(0, emptyList.size)
+    fun `should return same SetVal when non-null`() {
+        val set = SetVal(NumVal(1))
+        val result = set.orEmpty()
+        assertEquals(1, result.size)
+        assertTrue(result.contains(NumVal(1)))
+    }
 
-        val emptySet = emptySet<Any>().setVal
-        assertEquals(0, emptySet.size)
+    // -- MapVal?.orEmpty --
 
-        val emptyMap = emptyMap<Any, Any>().mapVal
-        assertEquals(0, emptyMap.size)
+    @Test
+    fun `should return empty MapVal when null`() {
+        val nullMap: MapVal? = null
+        val result = nullMap.orEmpty()
+        assertEquals(0, result.size)
+        assertTrue(result.isEmpty())
     }
 
     @Test
-    fun testNestedCollections() {
-        val nestedList = listOf(listOf(1, 2), listOf("a", "b"))
-        val listVal = nestedList.listVal
-
-        assertEquals(2, listVal.size)
-        assertTrue(listVal[0] is ListVal)
-        assertTrue(listVal[1] is ListVal)
-
-        val innerList1 = listVal[0] as ListVal
-        val innerList2 = listVal[1] as ListVal
-
-        assertEquals(2, innerList1.size)
-        assertEquals(2, innerList2.size)
-        assertEquals(NumVal(1), innerList1[0])
-        assertEquals(NumVal(2), innerList1[1])
-        assertEquals(StrVal("a"), innerList2[0])
-        assertEquals(StrVal("b"), innerList2[1])
+    fun `should return same MapVal when non-null`() {
+        val map = MapVal("k" to StrVal("v"))
+        val result = map.orEmpty()
+        assertEquals(1, result.size)
+        assertEquals(StrVal("v"), result["k"])
     }
-} 
+
+    // -- Boundary --
+
+    @Test
+    fun `should convert nested collections to nested IValue`() {
+        val nested = listOf(listOf(1, 2), listOf("a", "b"))
+        val result = nested.listVal
+        assertEquals(2, result.size)
+        assertTrue(result[0] is ListVal)
+        assertTrue(result[1] is ListVal)
+        val inner0 = result[0] as ListVal
+        val inner1 = result[1] as ListVal
+        assertEquals(NumVal(1), inner0[0])
+        assertEquals(NumVal(2), inner0[1])
+        assertEquals(StrVal("a"), inner1[0])
+        assertEquals(StrVal("b"), inner1[1])
+    }
+}

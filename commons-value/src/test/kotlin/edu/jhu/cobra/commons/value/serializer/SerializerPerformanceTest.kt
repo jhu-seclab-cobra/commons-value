@@ -1,18 +1,37 @@
 package edu.jhu.cobra.commons.value.serializer
 
 import edu.jhu.cobra.commons.value.BoolVal
+import edu.jhu.cobra.commons.value.IValue
 import edu.jhu.cobra.commons.value.ListVal
 import edu.jhu.cobra.commons.value.MapVal
 import edu.jhu.cobra.commons.value.NumVal
 import edu.jhu.cobra.commons.value.SetVal
 import edu.jhu.cobra.commons.value.StrVal
-import edu.jhu.cobra.commons.value.numVal
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
+/**
+ * Performance benchmarks for the three [IValSerializer] implementations.
+ *
+ * - `ByteArraySerializer primitive data round-trip` — Throughput for primitives via ByteArray.
+ * - `ByteArraySerializer mixed data round-trip` — Throughput for mixed values via ByteArray.
+ * - `ByteArraySerializer collection data round-trip` — Throughput for collections via ByteArray.
+ * - `ByteBufferSerializer primitive data round-trip` — Throughput for primitives via ByteBuffer.
+ * - `ByteBufferSerializer mixed data round-trip` — Throughput for mixed values via ByteBuffer.
+ * - `ByteBufferSerializer collection data round-trip` — Throughput for collections via ByteBuffer.
+ * - `CharBufferSerializer primitive data round-trip` — Throughput for primitives via CharBuffer.
+ * - `CharBufferSerializer mixed data round-trip` — Throughput for mixed values via CharBuffer.
+ * - `CharBufferSerializer collection data round-trip` — Throughput for collections via CharBuffer.
+ * - `ByteArraySerializer memory allocation` — Memory per-op for ByteArray primitives.
+ * - `ByteBufferSerializer memory allocation` — Memory per-op for ByteBuffer primitives.
+ * - `CharBufferSerializer memory allocation` — Memory per-op for CharBuffer primitives.
+ * - `collection serialization memory allocation` — Memory per-op for collections across all serializers.
+ * - `serialized size comparison` — Output size comparison across all three serializers.
+ * - `value creation throughput` — Throughput for creating value type instances.
+ */
 @Tag("performance")
-class SerializerPerformanceTest {
+internal class SerializerPerformanceTest {
 
     private val primitiveDataSet = List(100_000) { randomIValue(it % 5) }
     private val collectionDataSet = List(10_000) { randomIValue(5 + it % 4) }
@@ -115,7 +134,7 @@ class SerializerPerformanceTest {
                 MapVal("k" to NumVal(i))
             }
         }
-        val times = (1..measureRuns).map { _ ->
+        val times = (1..measureRuns).map {
             val start = System.nanoTime()
             repeat(valueCreationCount) { i ->
                 NumVal(i)
@@ -134,9 +153,8 @@ class SerializerPerformanceTest {
     private fun <T : Any> benchmarkSerializer(
         label: String,
         serializer: IValSerializer<T>,
-        dataSet: List<edu.jhu.cobra.commons.value.IValue>,
+        dataSet: List<IValue>,
     ) {
-        // warmup
         repeat(warmupRuns) {
             dataSet.forEach { value ->
                 val s = serializer.serialize(value)
@@ -144,19 +162,15 @@ class SerializerPerformanceTest {
                 assertEquals(value, d)
             }
         }
-        // measure serialize
-        val serTimes = (1..measureRuns).map { _ ->
+        val serTimes = (1..measureRuns).map {
             val start = System.nanoTime()
             dataSet.forEach { serializer.serialize(it) }
             (System.nanoTime() - start) / 1_000_000.0
         }
         printStats("$label-serialize", serTimes, dataSet.size.toLong())
 
-        // pre-serialize for deserialization benchmark
         val serialized = dataSet.map { serializer.serialize(it) }
-        // measure deserialize
-        val deserTimes = (1..measureRuns).map { _ ->
-            // rewind ByteBuffers/CharBuffers for re-read
+        val deserTimes = (1..measureRuns).map {
             serialized.forEach { if (it is java.nio.Buffer) it.rewind() }
             val start = System.nanoTime()
             serialized.forEach { serializer.deserialize(it) }
@@ -168,9 +182,8 @@ class SerializerPerformanceTest {
     private fun <T : Any> measureMemory(
         label: String,
         serializer: IValSerializer<T>,
-        dataSet: List<edu.jhu.cobra.commons.value.IValue>,
+        dataSet: List<IValue>,
     ) {
-        // warmup
         dataSet.forEach { serializer.deserialize(serializer.serialize(it)) }
 
         val runtime = Runtime.getRuntime()

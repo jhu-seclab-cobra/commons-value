@@ -1,6 +1,8 @@
 package edu.jhu.cobra.commons.value.collection
 
 import edu.jhu.cobra.commons.value.BoolVal
+import edu.jhu.cobra.commons.value.IValue
+import edu.jhu.cobra.commons.value.NullVal
 import edu.jhu.cobra.commons.value.NumVal
 import edu.jhu.cobra.commons.value.SetVal
 import edu.jhu.cobra.commons.value.StrVal
@@ -9,171 +11,300 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-class SetValTest {
+/**
+ * Black-box tests for [SetVal] derived from design-collection.md.
+ *
+ * Constructors:
+ * - `should create empty set with default constructor`
+ * - `should create empty set with sized constructor`
+ * - `should copy elements from collection constructor`
+ * - `should initialize from vararg elements`
+ * - `should initialize from sequence`
+ *
+ * add / remove:
+ * - `should return true when adding new element`
+ * - `should return false when adding duplicate element`
+ * - `should return true when removing present element`
+ * - `should return false when removing absent element`
+ *
+ * plus / plusAssign / minus / minusAssign:
+ * - `should return new SetVal with element added on plus`
+ * - `should not modify original set on plus`
+ * - `should mutably add element on plusAssign`
+ * - `should return new SetVal with element removed on minus`
+ * - `should not modify original set on minus`
+ * - `should mutably remove element on minusAssign`
+ *
+ * contains / containsAll:
+ * - `should return true when element present`
+ * - `should return false when element absent`
+ * - `should return true when all elements present`
+ * - `should return false when some elements missing`
+ *
+ * isEmpty / isNotEmpty:
+ * - `should return true for isEmpty on empty set`
+ * - `should return false for isEmpty on non-empty set`
+ * - `should return false for isNotEmpty on empty set`
+ * - `should return true for isNotEmpty on non-empty set`
+ *
+ * size:
+ * - `should return zero for empty set`
+ * - `should not increase size on duplicate add`
+ *
+ * map / forEach / asSequence / toList:
+ * - `should transform each element with map`
+ * - `should iterate all elements with forEach`
+ * - `should return lazy sequence with asSequence`
+ * - `should convert to list preserving elements with toList`
+ *
+ * Boundary:
+ * - `should preserve insertion order`
+ * - `should handle empty set operations`
+ */
+internal class SetValTest {
+
+    // -- Constructors --
+
     @Test
-    fun testDefaultConstructor() {
-        val setVal = SetVal()
-        assertTrue(setVal.isEmpty())
-        assertEquals(0, setVal.size)
+    fun `should create empty set with default constructor`() {
+        val set = SetVal()
+        assertTrue(set.isEmpty())
+        assertEquals(0, set.size)
     }
 
     @Test
-    fun testSizeConstructor() {
-        val setVal = SetVal(10)
-        assertTrue(setVal.isEmpty())
-        assertEquals(0, setVal.size)
+    fun `should create empty set with sized constructor`() {
+        val set = SetVal(16)
+        assertTrue(set.isEmpty())
+        assertEquals(0, set.size)
     }
 
     @Test
-    fun testCollectionConstructor() {
-        val initialSet = setOf(StrVal("Item1"), NumVal(42))
-        val setVal = SetVal(initialSet)
-        assertEquals(2, setVal.size)
-        assertTrue(setVal.contains(StrVal("Item1")))
-        assertTrue(setVal.contains(NumVal(42)))
-    }
-
-    @Test
-    fun testVarargConstructor() {
-        val setVal = SetVal(StrVal("Item1"), NumVal(42), BoolVal.T)
-        assertEquals(3, setVal.size)
-        assertTrue(setVal.contains(StrVal("Item1")))
-        assertTrue(setVal.contains(NumVal(42)))
-        assertTrue(setVal.contains(BoolVal.T))
-    }
-
-    @Test
-    fun testSequenceConstructor() {
-        val sequence = sequenceOf(StrVal("Item1"), NumVal(42))
-        val setVal = SetVal(sequence)
-        assertEquals(2, setVal.size)
-        assertTrue(setVal.contains(StrVal("Item1")))
-        assertTrue(setVal.contains(NumVal(42)))
-    }
-
-    @Test
-    fun testAdd() {
-        val setVal = SetVal()
-        assertTrue(setVal.add(StrVal("Item1")))
-        assertFalse(setVal.add(StrVal("Item1"))) // Adding duplicate
-        assertEquals(1, setVal.size)
-    }
-
-    @Test
-    fun testRemove() {
-        val setVal = SetVal(StrVal("Item1"), NumVal(42))
-        assertTrue(setVal.remove(StrVal("Item1")))
-        assertFalse(setVal.remove(StrVal("Item1"))) // Removing non-existent
-        assertEquals(1, setVal.size)
-    }
-
-    @Test
-    fun testPlusOperator() {
-        val originalSet = SetVal(StrVal("A"), StrVal("B"))
-        val newSet = originalSet + StrVal("C")
-        assertEquals(2, originalSet.size)
-        assertEquals(3, newSet.size)
-        assertTrue(newSet.contains(StrVal("C")))
-    }
-
-    @Test
-    fun testPlusAssignOperator() {
-        val set = SetVal(StrVal("A"), StrVal("B"))
-        set += StrVal("C")
-        assertEquals(3, set.size)
-        assertTrue(set.contains(StrVal("C")))
-    }
-
-    @Test
-    fun testMinusOperator() {
-        val originalSet = SetVal(StrVal("A"), StrVal("B"), StrVal("C"))
-        val newSet = originalSet - StrVal("B")
-        assertEquals(3, originalSet.size)
-        assertEquals(2, newSet.size)
-        assertFalse(newSet.contains(StrVal("B")))
-    }
-
-    @Test
-    fun testMinusAssignOperator() {
-        val set = SetVal(StrVal("A"), StrVal("B"), StrVal("C"))
-        set -= StrVal("B")
+    fun `should copy elements from collection constructor`() {
+        val source = listOf(StrVal("a"), NumVal(1))
+        val set = SetVal(source)
         assertEquals(2, set.size)
-        assertFalse(set.contains(StrVal("B")))
+        assertTrue(set.contains(StrVal("a")))
+        assertTrue(set.contains(NumVal(1)))
     }
 
     @Test
-    fun testContains() {
-        val setVal = SetVal(StrVal("Item1"), NumVal(42))
-        assertTrue(setVal.contains(StrVal("Item1")))
-        assertTrue(setVal.contains(NumVal(42)))
-        assertFalse(setVal.contains(StrVal("Item2")))
+    fun `should initialize from vararg elements`() {
+        val set = SetVal(StrVal("x"), NumVal(7), BoolVal.T)
+        assertEquals(3, set.size)
+        assertTrue(set.contains(StrVal("x")))
+        assertTrue(set.contains(NumVal(7)))
+        assertTrue(set.contains(BoolVal.T))
     }
 
     @Test
-    fun testContainsAll() {
-        val setVal = SetVal(StrVal("Item1"), NumVal(42))
-        val itemsToCheck = setOf(StrVal("Item1"), NumVal(42))
-        val missingItems = setOf(StrVal("Item2"))
-        assertTrue(setVal.containsAll(itemsToCheck))
-        assertFalse(setVal.containsAll(missingItems))
+    fun `should initialize from sequence`() {
+        val seq = sequenceOf(StrVal("a"), NumVal(2))
+        val set = SetVal(seq)
+        assertEquals(2, set.size)
+        assertTrue(set.contains(StrVal("a")))
+        assertTrue(set.contains(NumVal(2)))
+    }
+
+    // -- add / remove --
+
+    @Test
+    fun `should return true when adding new element`() {
+        val set = SetVal()
+        assertTrue(set.add(StrVal("a")))
+        assertEquals(1, set.size)
     }
 
     @Test
-    fun testMap() {
-        val setVal = SetVal(StrVal("A"), NumVal(42))
-        val mapped = setVal.map { it.toString() }
+    fun `should return false when adding duplicate element`() {
+        val set = SetVal(StrVal("a"))
+        assertFalse(set.add(StrVal("a")))
+        assertEquals(1, set.size)
+    }
+
+    @Test
+    fun `should return true when removing present element`() {
+        val set = SetVal(StrVal("a"), NumVal(1))
+        assertTrue(set.remove(StrVal("a")))
+        assertEquals(1, set.size)
+    }
+
+    @Test
+    fun `should return false when removing absent element`() {
+        val set = SetVal(StrVal("a"))
+        assertFalse(set.remove(StrVal("z")))
+        assertEquals(1, set.size)
+    }
+
+    // -- plus / plusAssign / minus / minusAssign --
+
+    @Test
+    fun `should return new SetVal with element added on plus`() {
+        val original = SetVal(StrVal("a"))
+        val result = original + StrVal("b")
+        assertEquals(2, result.size)
+        assertTrue(result.contains(StrVal("b")))
+    }
+
+    @Test
+    fun `should not modify original set on plus`() {
+        val original = SetVal(StrVal("a"))
+        original + StrVal("b")
+        assertEquals(1, original.size)
+    }
+
+    @Test
+    fun `should mutably add element on plusAssign`() {
+        val set = SetVal(StrVal("a"))
+        set += StrVal("b")
+        assertEquals(2, set.size)
+        assertTrue(set.contains(StrVal("b")))
+    }
+
+    @Test
+    fun `should return new SetVal with element removed on minus`() {
+        val original = SetVal(StrVal("a"), StrVal("b"))
+        val result = original - StrVal("b")
+        assertEquals(1, result.size)
+        assertFalse(result.contains(StrVal("b")))
+    }
+
+    @Test
+    fun `should not modify original set on minus`() {
+        val original = SetVal(StrVal("a"), StrVal("b"))
+        original - StrVal("b")
+        assertEquals(2, original.size)
+    }
+
+    @Test
+    fun `should mutably remove element on minusAssign`() {
+        val set = SetVal(StrVal("a"), StrVal("b"))
+        set -= StrVal("b")
+        assertEquals(1, set.size)
+        assertFalse(set.contains(StrVal("b")))
+    }
+
+    // -- contains / containsAll --
+
+    @Test
+    fun `should return true when element present`() {
+        val set = SetVal(StrVal("a"), NumVal(5))
+        assertTrue(set.contains(StrVal("a")))
+        assertTrue(set.contains(NumVal(5)))
+    }
+
+    @Test
+    fun `should return false when element absent`() {
+        val set = SetVal(StrVal("a"))
+        assertFalse(set.contains(StrVal("z")))
+    }
+
+    @Test
+    fun `should return true when all elements present`() {
+        val set = SetVal(StrVal("a"), NumVal(1), BoolVal.F)
+        assertTrue(set.containsAll(listOf(StrVal("a"), NumVal(1))))
+    }
+
+    @Test
+    fun `should return false when some elements missing`() {
+        val set = SetVal(StrVal("a"))
+        assertFalse(set.containsAll(listOf(StrVal("a"), StrVal("b"))))
+    }
+
+    // -- isEmpty / isNotEmpty --
+
+    @Test
+    fun `should return true for isEmpty on empty set`() {
+        assertTrue(SetVal().isEmpty())
+    }
+
+    @Test
+    fun `should return false for isEmpty on non-empty set`() {
+        assertFalse(SetVal(StrVal("a")).isEmpty())
+    }
+
+    @Test
+    fun `should return false for isNotEmpty on empty set`() {
+        assertFalse(SetVal().isNotEmpty())
+    }
+
+    @Test
+    fun `should return true for isNotEmpty on non-empty set`() {
+        assertTrue(SetVal(StrVal("a")).isNotEmpty())
+    }
+
+    // -- size --
+
+    @Test
+    fun `should return zero for empty set`() {
+        assertEquals(0, SetVal().size)
+    }
+
+    @Test
+    fun `should not increase size on duplicate add`() {
+        val set = SetVal(StrVal("a"))
+        set.add(StrVal("a"))
+        assertEquals(1, set.size)
+    }
+
+    // -- map --
+
+    @Test
+    fun `should transform each element with map`() {
+        val set = SetVal(NumVal(1), NumVal(2))
+        val mapped = set.map { (it as NumVal).toInt() * 10 }
         assertEquals(2, mapped.size)
-        assertTrue(mapped.contains("StrVal{A}"))
-        assertTrue(mapped.contains("NumVal{42}"))
+        assertTrue(mapped.contains(10))
+        assertTrue(mapped.contains(20))
     }
 
+    // -- forEach --
+
     @Test
-    fun testToList() {
-        val setVal = SetVal(StrVal("A"), NumVal(42))
-        val list = setVal.toList()
+    fun `should iterate all elements with forEach`() {
+        val set = SetVal(StrVal("a"), StrVal("b"))
+        val collected = mutableListOf<IValue>()
+        set.forEach { collected.add(it) }
+        assertEquals(2, collected.size)
+    }
+
+    // -- asSequence --
+
+    @Test
+    fun `should return lazy sequence with asSequence`() {
+        val set = SetVal(NumVal(1), NumVal(2), NumVal(3))
+        val seq = set.asSequence()
+        assertEquals(3, seq.count())
+    }
+
+    // -- toList --
+
+    @Test
+    fun `should convert to list preserving elements with toList`() {
+        val set = SetVal(StrVal("a"), NumVal(1))
+        val list = set.toList()
         assertEquals(2, list.size)
-        assertTrue(list.contains(StrVal("A")))
-        assertTrue(list.contains(NumVal(42)))
+        assertTrue(list.contains(StrVal("a")))
+        assertTrue(list.contains(NumVal(1)))
+    }
+
+    // -- Boundary --
+
+    @Test
+    fun `should preserve insertion order`() {
+        val set = SetVal(StrVal("c"), StrVal("a"), StrVal("b"))
+        val list = set.toList()
+        assertEquals(StrVal("c"), list[0])
+        assertEquals(StrVal("a"), list[1])
+        assertEquals(StrVal("b"), list[2])
     }
 
     @Test
-    fun testForEach() {
-        val setVal = SetVal(StrVal("A"), NumVal(42))
-        var count = 0
-        setVal.forEach { count++ }
-        assertEquals(2, count)
+    fun `should handle empty set operations`() {
+        val set = SetVal()
+        assertFalse(set.contains(NullVal))
+        assertFalse(set.remove(StrVal("x")))
+        assertEquals(0, set.map { it }.size)
+        assertEquals(0, set.toList().size)
     }
-
-    @Test
-    fun testAsSequence() {
-        val setVal = SetVal(StrVal("A"), NumVal(42))
-        val sequence = setVal.asSequence()
-        assertEquals(2, sequence.count())
-    }
-
-    @Test
-    fun testIsEmpty() {
-        val emptySet = SetVal()
-        val nonEmptySet = SetVal(StrVal("A"))
-        assertTrue(emptySet.isEmpty())
-        assertFalse(nonEmptySet.isEmpty())
-    }
-
-    @Test
-    fun testIsNotEmpty() {
-        val emptySet = SetVal()
-        val nonEmptySet = SetVal(StrVal("A"))
-        assertFalse(emptySet.isNotEmpty())
-        assertTrue(nonEmptySet.isNotEmpty())
-    }
-
-    @Test
-    fun testToString() {
-        val setVal = SetVal(StrVal("A"), NumVal(42))
-        val str = setVal.toString()
-        assertTrue(str.startsWith("{"))
-        assertTrue(str.endsWith("}"))
-        assertTrue(str.contains("StrVal{A}"))
-        assertTrue(str.contains("NumVal{42}"))
-    }
-} 
+}

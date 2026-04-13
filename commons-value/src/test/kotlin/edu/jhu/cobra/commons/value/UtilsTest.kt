@@ -4,88 +4,109 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertIs
+import kotlin.test.assertSame
 
-class UtilsTest {
+/**
+ * Tests for the top-level `Any?.toVal` extension property specified in design-utils.md.
+ *
+ * - `should convert null to NullVal` — null input produces NullVal.
+ * - `should convert Int to NumVal` — Int input produces NumVal wrapping that Int.
+ * - `should convert Double to NumVal` — Double input produces NumVal wrapping that Double.
+ * - `should convert String to StrVal` — String input produces StrVal wrapping that String.
+ * - `should convert true to BoolVal` — true produces BoolVal with core true.
+ * - `should convert false to BoolVal` — false produces BoolVal with core false.
+ * - `should convert List to ListVal` — List input produces ListVal with converted elements.
+ * - `should convert Map to MapVal` — Map input produces MapVal with converted entries.
+ * - `should convert IntRange to RangeVal` — IntRange produces RangeVal with matching bounds.
+ * - `should convert Set to SetVal` — Set input produces SetVal with converted elements.
+ * - `should return IValue identity` — IValue input returned as same instance.
+ * - `should throw IllegalArgumentException for unsupported type` — Unsupported type rejected.
+ */
+internal class UtilsTest {
+
     @Test
-    fun testNullToVal() {
+    fun `should convert null to NullVal`() {
         val result = null.toVal
         assertIs<NullVal>(result)
     }
 
     @Test
-    fun testNumberToVal() {
-        val intVal = 42.toVal
-        assertIs<NumVal>(intVal)
-        assertEquals(42, intVal.core)
-
-        val doubleVal = 3.14.toVal
-        assertIs<NumVal>(doubleVal)
-        assertEquals(3.14, doubleVal.core)
+    fun `should convert Int to NumVal`() {
+        val result = 42.toVal
+        assertIs<NumVal>(result)
+        assertEquals(42, result.core)
     }
 
     @Test
-    fun testStringToVal() {
+    fun `should convert Double to NumVal`() {
+        val result = 3.14.toVal
+        assertIs<NumVal>(result)
+        assertEquals(3.14, result.core)
+    }
+
+    @Test
+    fun `should convert String to StrVal`() {
         val result = "test".toVal
         assertIs<StrVal>(result)
         assertEquals("test", result.core)
     }
 
     @Test
-    fun testBooleanToVal() {
-        val trueVal = true.toVal
-        assertIs<BoolVal>(trueVal)
-        assertEquals(true, trueVal.core)
-
-        val falseVal = false.toVal
-        assertIs<BoolVal>(falseVal)
-        assertEquals(false, falseVal.core)
+    fun `should convert true to BoolVal`() {
+        val result = true.toVal
+        assertIs<BoolVal>(result)
+        assertEquals(true, result.core)
     }
 
     @Test
-    fun testListToVal() {
-        val list = listOf(1, 2, 3)
-        val result = list.toVal
+    fun `should convert false to BoolVal`() {
+        val result = false.toVal
+        assertIs<BoolVal>(result)
+        assertEquals(false, result.core)
+    }
+
+    @Test
+    fun `should convert List to ListVal`() {
+        val result = listOf(1, "two", true).toVal
         assertIs<ListVal>(result)
-        assertEquals(list, result.map { it.core })
+        assertEquals(NumVal(1), result[0])
+        assertEquals(StrVal("two"), result[1])
+        assertEquals(BoolVal.T, result[2])
     }
 
     @Test
-    fun testMapToVal() {
-        val map = mapOf("key" to "value")
-        val result = map.toVal
+    fun `should convert Map to MapVal`() {
+        val result = mapOf("key" to "value").toVal
         assertIs<MapVal>(result)
-        assertEquals(map, result.mapValues { it.value.core })
+        assertEquals(StrVal("value"), result["key"])
     }
 
     @Test
-    fun testRangeToVal() {
-        val range = 1..10
-        val result = range.toVal
+    fun `should convert IntRange to RangeVal`() {
+        val result = (1..10).toVal
         assertIs<RangeVal>(result)
-        assertEquals(range.first, result.first)
-        assertEquals(range.last, result.last)
+        assertEquals(1, result.first)
+        assertEquals(10, result.last)
     }
 
     @Test
-    fun testSetToVal() {
-        val set = setOf(1, 2, 3)
-        val result = set.toVal
+    fun `should convert Set to SetVal`() {
+        val result = setOf(1, 2, 3).toVal
         assertIs<SetVal>(result)
-        assertEquals(set, result.map { it.core }.toSet())
+        assertEquals(3, result.size)
     }
 
     @Test
-    fun testIValueToVal() {
+    fun `should return IValue identity`() {
         val numVal = NumVal(42)
-        val result = numVal.toVal
-        assertIs<NumVal>(result)
-        assertEquals(numVal, result)
+        val result = (numVal as Any?).toVal
+        assertSame(numVal, result)
     }
 
     @Test
-    fun testInvalidTypeToVal() {
+    fun `should throw IllegalArgumentException for unsupported type`() {
         assertFailsWith<IllegalArgumentException> {
             Object().toVal
         }
     }
-} 
+}

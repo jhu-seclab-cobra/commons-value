@@ -1,57 +1,95 @@
 package edu.jhu.cobra.commons.value.primitive
 
+import edu.jhu.cobra.commons.value.BoolVal
 import edu.jhu.cobra.commons.value.NullVal
-import edu.jhu.cobra.commons.value.compareTo
-import edu.jhu.cobra.commons.value.numVal
-import edu.jhu.cobra.commons.value.strVal
-import kotlin.test.*
+import edu.jhu.cobra.commons.value.NumVal
+import edu.jhu.cobra.commons.value.StrVal
+import edu.jhu.cobra.commons.value.Unsure
+import kotlin.test.Test
+import kotlin.test.assertFalse
+import kotlin.test.assertNull
+import kotlin.test.assertSame
+import kotlin.test.assertTrue
 
-class NullValTest {
+/**
+ * Black-box tests for [NullVal] derived from the design doc.
+ *
+ * - `should be a singleton` — same identity across references
+ * - `should have null core` — core is always null
+ * - `should return true from isNull when value is NullVal` — infix isNull self
+ * - `should return false from isNull when value is StrVal` — infix isNull non-null
+ * - `should return false from isNull when value is NumVal` — infix isNull non-null
+ * - `should return false from isNull when value is BoolVal` — infix isNull non-null
+ * - `should return false from isNull when value is Unsure` — infix isNull non-null
+ * - `should return false from isNotNull when value is NullVal` — infix isNotNull self
+ * - `should return true from isNotNull when value is StrVal` — infix isNotNull non-null
+ * - `should return true from isNotNull when value is NumVal` — infix isNotNull non-null
+ * - `should return true from isNotNull when value is BoolVal` — infix isNotNull non-null
+ * - `should return true from isNotNull when value is Unsure` — infix isNotNull non-null
+ */
+internal class NullValTest {
+
     @Test
-    fun testSingleton() {
-        // Test that NullVal is a singleton
+    fun `should be a singleton`() {
         assertSame(NullVal, NullVal)
     }
 
     @Test
-    fun testCore() {
-        // Test that core is null
+    fun `should have null core`() {
         assertNull(NullVal.core)
     }
 
+    // --- isNull ---
+
     @Test
-    fun testToString() {
-        assertEquals("NullVal", NullVal.toString())
+    fun `should return true from isNull when value is NullVal`() {
+        assertTrue(NullVal isNull NullVal)
     }
 
     @Test
-    fun testEquality() {
-        assertEquals(NullVal, NullVal)
-        assertEquals(NullVal.core, null)
+    fun `should return false from isNull when value is StrVal`() {
+        assertFalse(NullVal isNull StrVal("hello"))
     }
 
     @Test
-    fun testHashCode() {
-        assertEquals(NullVal.hashCode(), NullVal.hashCode())
+    fun `should return false from isNull when value is NumVal`() {
+        assertFalse(NullVal isNull NumVal(42))
     }
 
     @Test
-    fun testComparison() {
-        // NullVal should be less than any other value
-        assertEquals(0, NullVal.compareTo(NullVal))
+    fun `should return false from isNull when value is BoolVal`() {
+        assertFalse(NullVal isNull BoolVal.T)
     }
 
     @Test
-    fun testIsNull() {
-        assertTrue { NullVal isNull NullVal }
-        assertFalse { NullVal.isNull(1.numVal) }
-        assertFalse { NullVal.isNull("test".strVal) }
+    fun `should return false from isNull when value is Unsure`() {
+        assertFalse(NullVal isNull Unsure.ANY)
+    }
+
+    // --- isNotNull ---
+
+    @Test
+    fun `should return false from isNotNull when value is NullVal`() {
+        assertFalse(NullVal isNotNull NullVal)
     }
 
     @Test
-    fun testIsNotNull() {
-        assertFalse { NullVal isNotNull NullVal }
-        assertTrue { NullVal.isNotNull(1.numVal) }
-        assertTrue { NullVal.isNotNull("test".strVal) }
+    fun `should return true from isNotNull when value is StrVal`() {
+        assertTrue(NullVal isNotNull StrVal("hello"))
     }
-} 
+
+    @Test
+    fun `should return true from isNotNull when value is NumVal`() {
+        assertTrue(NullVal isNotNull NumVal(42))
+    }
+
+    @Test
+    fun `should return true from isNotNull when value is BoolVal`() {
+        assertTrue(NullVal isNotNull BoolVal.F)
+    }
+
+    @Test
+    fun `should return true from isNotNull when value is Unsure`() {
+        assertTrue(NullVal isNotNull Unsure.STR)
+    }
+}

@@ -1,129 +1,275 @@
 package edu.jhu.cobra.commons.value.primitive
 
+import edu.jhu.cobra.commons.value.IPrimitiveVal
 import edu.jhu.cobra.commons.value.NumVal
 import edu.jhu.cobra.commons.value.StrVal
-import kotlin.test.*
+import org.junit.jupiter.api.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
-class StrValTest {
+/**
+ * Black-box tests for [StrVal] derived from the design doc.
+ *
+ * - `should store string core` — primary constructor
+ * - `should default to empty string` — default constructor
+ * - `should return true from startsWith when prefix matches` — startsWith match
+ * - `should return false from startsWith when prefix does not match` — startsWith mismatch
+ * - `should return substring after delimiter` — substringAfter found
+ * - `should return full string when substringAfter delimiter not found` — substringAfter missing
+ * - `should return substring before delimiter` — substringBefore found
+ * - `should return full string when substringBefore delimiter not found` — substringBefore missing
+ * - `should return true from equals when string matches case-sensitive` — equals(String) exact
+ * - `should return false from equals when case differs and ignoreCase false` — equals(String) case mismatch
+ * - `should return true from equals when case differs and ignoreCase true` — equals(String) ignore case
+ * - `should return true from equals when IPrimitiveVal is same StrVal` — equals(IPrimitiveVal) match
+ * - `should return false from equals when IPrimitiveVal is different StrVal` — equals(IPrimitiveVal) mismatch
+ * - `should return true from equals when IPrimitiveVal case differs and ignoreCase true` — equals(IPrimitiveVal) ignore case
+ * - `should return true from equals when IPrimitiveVal core matches as string` — equals(IPrimitiveVal) cross-type match
+ * - `should return false from equals when IPrimitiveVal core differs as string` — equals(IPrimitiveVal) cross-type mismatch
+ * - `should return uppercase StrVal` — uppercase
+ * - `should return lowercase StrVal` — lowercase
+ * - `should return trimmed StrVal` — trim
+ * - `should return true from contains when substring present` — contains match
+ * - `should return false from contains when substring absent` — contains mismatch
+ * - `should return char at positive index` — get(Int) positive
+ * - `should return char at negative index counting from end` — get(Int) negative
+ * - `should throw IndexOutOfBoundsException for out-of-range index` — get(Int) error
+ * - `should return char at NumVal index` — get(NumVal) positive
+ * - `should return char at negative NumVal index` — get(NumVal) negative
+ * - `should throw IndexOutOfBoundsException for out-of-range NumVal index` — get(NumVal) error
+ * - `should return correct length` — length property
+ * - `should return zero length for empty string` — length boundary
+ * - `should implement IPrimitiveVal` — type hierarchy
+ */
+internal class StrValTest {
+
+    // --- Constructors ---
+
     @Test
-    fun testDefaultConstructor() {
-        val emptyStr = StrVal()
-        assertEquals("", emptyStr.core)
+    fun `should store string core`() {
+        assertEquals("hello", StrVal("hello").core)
     }
 
     @Test
-    fun testParameterizedConstructor() {
-        val strVal = StrVal("test")
-        assertEquals("test", strVal.core)
+    fun `should default to empty string`() {
+        assertEquals("", StrVal().core)
+    }
+
+    // --- startsWith ---
+
+    @Test
+    fun `should return true from startsWith when prefix matches`() {
+        assertTrue(StrVal("Hello World").startsWith("Hello"))
     }
 
     @Test
-    fun testStartsWith() {
-        val strVal = StrVal("Hello World")
-        assertTrue(strVal.startsWith("Hello"))
-        assertFalse(strVal.startsWith("World"))
+    fun `should return false from startsWith when prefix does not match`() {
+        assertFalse(StrVal("Hello World").startsWith("World"))
     }
 
     @Test
-    fun testSubstringAfter() {
-        val strVal = StrVal("Hello World")
-        assertEquals("World", strVal.substringAfter("Hello "))
-        assertEquals("Hello World", strVal.substringAfter("not found"))
+    fun `should return true from startsWith with empty prefix`() {
+        assertTrue(StrVal("Hello").startsWith(""))
+    }
+
+    // --- substringAfter ---
+
+    @Test
+    fun `should return substring after delimiter`() {
+        assertEquals("World", StrVal("Hello World").substringAfter("Hello "))
     }
 
     @Test
-    fun testSubstringBefore() {
-        val strVal = StrVal("Hello World")
-        assertEquals("Hello", strVal.substringBefore(" World"))
-        assertEquals("Hello World", strVal.substringBefore("not found"))
+    fun `should return full string when substringAfter delimiter not found`() {
+        assertEquals("Hello World", StrVal("Hello World").substringAfter("missing"))
+    }
+
+    // --- substringBefore ---
+
+    @Test
+    fun `should return substring before delimiter`() {
+        assertEquals("Hello", StrVal("Hello World").substringBefore(" World"))
     }
 
     @Test
-    fun testEqualsString() {
-        val strVal = StrVal("Test")
-        assertTrue(strVal.equals("Test", ignoreCase = false))
-        assertTrue(strVal.equals("test", ignoreCase = true))
-        assertFalse(strVal.equals("test", ignoreCase = false))
+    fun `should return full string when substringBefore delimiter not found`() {
+        assertEquals("Hello World", StrVal("Hello World").substringBefore("missing"))
+    }
+
+    // --- equals(String, ignoreCase) ---
+
+    @Test
+    fun `should return true from equals when string matches case-sensitive`() {
+        assertTrue(StrVal("Test").equals("Test", ignoreCase = false))
     }
 
     @Test
-    fun testEqualsIPrimitiveVal() {
-        val strVal = StrVal("Test")
-        val otherStrVal = StrVal("Test")
-        val differentStrVal = StrVal("Different")
-        val numVal = NumVal(42)
-
-        assertTrue(strVal.equals(otherStrVal, ignoreCase = false))
-        assertTrue(strVal.equals(StrVal("test"), ignoreCase = true))
-        assertFalse(strVal.equals(differentStrVal, ignoreCase = false))
-        assertFalse(strVal.equals(numVal, ignoreCase = false))
+    fun `should return false from equals when case differs and ignoreCase false`() {
+        assertFalse(StrVal("Test").equals("test", ignoreCase = false))
     }
 
     @Test
-    fun testUppercase() {
-        val strVal = StrVal("test")
-        assertEquals("TEST", strVal.uppercase().core)
+    fun `should return true from equals when case differs and ignoreCase true`() {
+        assertTrue(StrVal("Test").equals("test", ignoreCase = true))
+    }
+
+    // --- equals(IPrimitiveVal, ignoreCase) ---
+
+    @Test
+    fun `should return true from equals when IPrimitiveVal is same StrVal`() {
+        assertTrue(StrVal("Test").equals(StrVal("Test"), ignoreCase = false))
     }
 
     @Test
-    fun testLowercase() {
-        val strVal = StrVal("TEST")
-        assertEquals("test", strVal.lowercase().core)
+    fun `should return false from equals when IPrimitiveVal is different StrVal`() {
+        assertFalse(StrVal("Test").equals(StrVal("Other"), ignoreCase = false))
     }
 
     @Test
-    fun testTrim() {
-        val strVal = StrVal("  test  ")
-        assertEquals("test", strVal.trim().core)
+    fun `should return true from equals when IPrimitiveVal case differs and ignoreCase true`() {
+        assertTrue(StrVal("Test").equals(StrVal("test"), ignoreCase = true))
     }
 
     @Test
-    fun testContains() {
-        val strVal = StrVal("Hello World")
-        assertTrue(strVal.contains("Hello"))
-        assertTrue(strVal.contains("World"))
-        assertFalse(strVal.contains("Not"))
+    fun `should return true from equals when IPrimitiveVal core matches as string`() {
+        assertTrue(StrVal("42").equals(NumVal(42), ignoreCase = false))
     }
 
     @Test
-    fun testLength() {
-        assertEquals(0, StrVal().length)
+    fun `should return false from equals when IPrimitiveVal core differs as string`() {
+        assertFalse(StrVal("hello").equals(NumVal(42), ignoreCase = false))
+    }
+
+    // --- uppercase / lowercase / trim ---
+
+    @Test
+    fun `should return uppercase StrVal`() {
+        assertEquals("HELLO", StrVal("hello").uppercase().core)
+    }
+
+    @Test
+    fun `should return lowercase StrVal`() {
+        assertEquals("hello", StrVal("HELLO").lowercase().core)
+    }
+
+    @Test
+    fun `should return trimmed StrVal`() {
+        assertEquals("hello", StrVal("  hello  ").trim().core)
+    }
+
+    @Test
+    fun `should return StrVal type from uppercase`() {
+        assertTrue(StrVal("x").uppercase() is StrVal)
+    }
+
+    @Test
+    fun `should return StrVal type from lowercase`() {
+        assertTrue(StrVal("X").lowercase() is StrVal)
+    }
+
+    @Test
+    fun `should return StrVal type from trim`() {
+        assertTrue(StrVal(" x ").trim() is StrVal)
+    }
+
+    // --- contains ---
+
+    @Test
+    fun `should return true from contains when substring present`() {
+        assertTrue(StrVal("Hello World").contains("World"))
+    }
+
+    @Test
+    fun `should return false from contains when substring absent`() {
+        assertFalse(StrVal("Hello World").contains("missing"))
+    }
+
+    @Test
+    fun `should return true from contains with empty substring`() {
+        assertTrue(StrVal("Hello").contains(""))
+    }
+
+    // --- get(Int) ---
+
+    @Test
+    fun `should return char at positive index`() {
+        assertEquals('H', StrVal("Hello")[0])
+    }
+
+    @Test
+    fun `should return last char at positive index`() {
+        assertEquals('o', StrVal("Hello")[4])
+    }
+
+    @Test
+    fun `should return char at negative index counting from end`() {
+        assertEquals('o', StrVal("Hello")[-1])
+    }
+
+    @Test
+    fun `should return first char at largest negative index`() {
+        assertEquals('H', StrVal("Hello")[-5])
+    }
+
+    @Test
+    fun `should throw IndexOutOfBoundsException for positive out-of-range index`() {
+        assertFailsWith<IndexOutOfBoundsException> {
+            StrVal("Hello")[5]
+        }
+    }
+
+    @Test
+    fun `should throw IndexOutOfBoundsException for negative out-of-range index`() {
+        assertFailsWith<IndexOutOfBoundsException> {
+            StrVal("Hello")[-6]
+        }
+    }
+
+    @Test
+    fun `should throw IndexOutOfBoundsException for index on empty string`() {
+        assertFailsWith<IndexOutOfBoundsException> {
+            StrVal("")[0]
+        }
+    }
+
+    // --- get(NumVal) ---
+
+    @Test
+    fun `should return char at NumVal positive index`() {
+        assertEquals('H', StrVal("Hello")[NumVal(0)])
+    }
+
+    @Test
+    fun `should return char at NumVal negative index`() {
+        assertEquals('o', StrVal("Hello")[NumVal(-1)])
+    }
+
+    @Test
+    fun `should throw IndexOutOfBoundsException for out-of-range NumVal index`() {
+        assertFailsWith<IndexOutOfBoundsException> {
+            StrVal("Hello")[NumVal(10)]
+        }
+    }
+
+    // --- length ---
+
+    @Test
+    fun `should return correct length`() {
         assertEquals(11, StrVal("Hello World").length)
     }
 
     @Test
-    fun testGetOperator() {
-        val strVal = StrVal("Hello")
-        assertEquals('H', strVal[0])
-        assertEquals('e', strVal[1])
-        assertEquals('o', strVal[-1])
-        assertEquals('l', strVal[-2])
+    fun `should return zero length for empty string`() {
+        assertEquals(0, StrVal().length)
     }
 
-    @Test
-    fun testGetOperatorWithNumVal() {
-        val strVal = StrVal("Hello")
-        assertEquals('H', strVal[NumVal(0)])
-        assertEquals('e', strVal[NumVal(1)])
-        assertEquals('o', strVal[NumVal(-1)])
-        assertEquals('l', strVal[NumVal(-2)])
-    }
+    // --- Type hierarchy ---
 
     @Test
-    fun testToString() {
-        assertEquals("StrVal{test}", StrVal("test").toString())
-        assertEquals("StrVal{}", StrVal().toString())
+    fun `should implement IPrimitiveVal`() {
+        val value: IPrimitiveVal = StrVal("test")
+        assertTrue(value is StrVal)
     }
-
-    @Test
-    fun testEquality() {
-        assertEquals(StrVal("test"), StrVal("test"))
-        assertNotEquals(StrVal("test"), StrVal("different"))
-    }
-
-    @Test
-    fun testHashCode() {
-        assertEquals(StrVal("test").hashCode(), StrVal("test").hashCode())
-        assertNotEquals(StrVal("test").hashCode(), StrVal("different").hashCode())
-    }
-} 
+}

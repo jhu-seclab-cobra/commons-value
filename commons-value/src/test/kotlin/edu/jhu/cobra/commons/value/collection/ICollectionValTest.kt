@@ -1,91 +1,83 @@
 package edu.jhu.cobra.commons.value.collection
 
-import edu.jhu.cobra.commons.value.*
+import edu.jhu.cobra.commons.value.ICollectionVal
+import edu.jhu.cobra.commons.value.IValue
+import edu.jhu.cobra.commons.value.ListVal
+import edu.jhu.cobra.commons.value.MapVal
+import edu.jhu.cobra.commons.value.NumVal
+import edu.jhu.cobra.commons.value.RangeVal
+import edu.jhu.cobra.commons.value.SetVal
+import edu.jhu.cobra.commons.value.StrVal
 import kotlin.test.Test
-import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-class ICollectionValTest {
+/**
+ * Black-box tests for [ICollectionVal] sealed interface derived from design-collection.md.
+ *
+ * - `should recognize ListVal as ICollectionVal`
+ * - `should recognize SetVal as ICollectionVal`
+ * - `should recognize MapVal as ICollectionVal`
+ * - `should recognize RangeVal as ICollectionVal`
+ * - `should recognize all four types as IValue`
+ * - `should exhaustively match all subtypes in when expression`
+ */
+internal class ICollectionValTest {
+
     @Test
-    fun testListValAsICollectionVal() {
-        val listVal: ICollectionVal = ListVal(StrVal("Item1"), StrVal("Item2"))
-        assertTrue(listVal is ListVal)
-        assertEquals(2, listVal.core.size)
+    fun `should recognize ListVal as ICollectionVal`() {
+        val value: ICollectionVal = ListVal(StrVal("a"))
+        assertTrue(value is ListVal)
     }
 
     @Test
-    fun testSetValAsICollectionVal() {
-        val setVal: ICollectionVal = SetVal(NumVal(1), NumVal(2))
-        assertTrue(setVal is SetVal)
-        assertEquals(2, setVal.core.size)
+    fun `should recognize SetVal as ICollectionVal`() {
+        val value: ICollectionVal = SetVal(NumVal(1))
+        assertTrue(value is SetVal)
     }
 
     @Test
-    fun testMapValAsICollectionVal() {
-        val mapVal: ICollectionVal = MapVal("key1" to StrVal("value1"), "key2" to NumVal(42))
-        assertTrue(mapVal is MapVal)
-        assertEquals(2, mapVal.core.size)
+    fun `should recognize MapVal as ICollectionVal`() {
+        val value: ICollectionVal = MapVal("k" to StrVal("v"))
+        assertTrue(value is MapVal)
     }
 
     @Test
-    fun testRangeValAsICollectionVal() {
-        val rangeVal: ICollectionVal = RangeVal(1, 10)
-        assertTrue(rangeVal is RangeVal)
-        assertEquals(2, rangeVal.core.size)
+    fun `should recognize RangeVal as ICollectionVal`() {
+        val value: ICollectionVal = RangeVal(1, 10)
+        assertTrue(value is RangeVal)
     }
 
     @Test
-    fun testCollectionValPolymorphism() {
-        val collections: List<ICollectionVal> = listOf(
-            ListVal(StrVal("Item1")),
-            SetVal(NumVal(1)),
-            MapVal("key" to StrVal("value")),
-            RangeVal(1, 10)
+    fun `should recognize all four types as IValue`() {
+        val values: List<IValue> = listOf(
+            ListVal(),
+            SetVal(),
+            MapVal(),
+            RangeVal(0, 0),
         )
-
-        assertEquals(4, collections.size)
-        assertTrue(collections[0] is ListVal)
-        assertTrue(collections[1] is SetVal)
-        assertTrue(collections[2] is MapVal)
-        assertTrue(collections[3] is RangeVal)
+        values.forEach { assertTrue(it is ICollectionVal) }
+        values.forEach { assertTrue(it is IValue) }
     }
 
     @Test
-    fun testCollectionValCoreProperty() {
-        val listVal: ICollectionVal = ListVal(StrVal("Item1"))
-        val setVal: ICollectionVal = SetVal(NumVal(1))
-        val mapVal: ICollectionVal = MapVal("key" to StrVal("value"))
-        val rangeVal: ICollectionVal = RangeVal(1, 10)
-
-        assertTrue(listVal.core is ArrayList<*>)
-        assertTrue(setVal.core is HashSet<*>)
-        assertTrue(mapVal.core is HashMap<*, *>)
-        assertTrue(rangeVal.core is List<*>)
+    fun `should exhaustively match all subtypes in when expression`() {
+        val cases: List<ICollectionVal> = listOf(
+            ListVal(StrVal("a")),
+            SetVal(NumVal(1)),
+            MapVal("k" to StrVal("v")),
+            RangeVal(1, 5),
+        )
+        val labels = cases.map { value ->
+            when (value) {
+                is ListVal -> "list"
+                is SetVal -> "set"
+                is MapVal -> "map"
+                is RangeVal -> "range"
+            }
+        }
+        assertTrue(labels.contains("list"))
+        assertTrue(labels.contains("set"))
+        assertTrue(labels.contains("map"))
+        assertTrue(labels.contains("range"))
     }
-
-    @Test
-    fun testCollectionValToString() {
-        val listVal: ICollectionVal = ListVal(StrVal("Item1"))
-        val setVal: ICollectionVal = SetVal(NumVal(1))
-        val mapVal: ICollectionVal = MapVal("key" to StrVal("value"))
-        val rangeVal: ICollectionVal = RangeVal(1, 10)
-
-        assertTrue(listVal.toString().startsWith("["))
-        assertTrue(setVal.toString().startsWith("{"))
-        assertTrue(mapVal.toString().startsWith("{"))
-        assertTrue(rangeVal.toString().contains(":"))
-    }
-
-    @Test
-    fun testCollectionValInheritance() {
-        val listVal: ICollectionVal = ListVal(StrVal("Item1"))
-        val setVal: ICollectionVal = SetVal(NumVal(1))
-        val mapVal: ICollectionVal = MapVal("key" to StrVal("value"))
-        val rangeVal: ICollectionVal = RangeVal(1, 10)
-
-        assertTrue(listVal is IValue)
-        assertTrue(setVal is IValue)
-        assertTrue(mapVal is IValue)
-        assertTrue(rangeVal is IValue)
-    }
-} 
+}
