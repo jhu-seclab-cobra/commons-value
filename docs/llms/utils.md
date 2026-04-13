@@ -1,0 +1,70 @@
+# Extension Utilities
+
+> Kotlin extension properties and functions for native-to-IR conversion, comparison, and regex.
+
+## Quick Start
+
+```kotlin
+import edu.jhu.cobra.commons.value.*
+
+val n = 42.numVal           // NumVal(42)
+val s = "hello".strVal      // StrVal("hello")
+val b = true.boolVal        // BoolVal.T
+val v = null.toVal           // NullVal
+val list = listOf(1, 2).listVal  // ListVal(NumVal(1), NumVal(2))
+```
+
+## API
+
+### Primitive Conversion Extensions
+
+- **`Number.numVal: NumVal`** -- Wraps any `Number` in `NumVal`.
+- **`String.numVal: NumVal`** -- Parses string to `NumVal`. Integers parse as `Int` or `Long`; decimals parse as `Double`. Raises `ParseException` on invalid input.
+- **`String.strVal: StrVal`** -- Wraps string in `StrVal`.
+- **`Char.strVal: StrVal`** -- Wraps character as single-char `StrVal`.
+- **`Path.strVal: StrVal`** -- Wraps `java.nio.file.Path` as `StrVal`.
+- **`File.strVal: StrVal`** -- Wraps `java.io.File` path as `StrVal`.
+- **`Boolean.boolVal: BoolVal`** -- Returns `BoolVal.T` or `BoolVal.F`.
+- **`Any?.primitiveVal: IPrimitiveVal`** -- Converts `null`, `Number`, `String`, `Boolean`, or existing `IPrimitiveVal`. Raises `IllegalArgumentException` on unsupported types.
+- **`Any?.toVal: IValue`** -- Converts any supported type including collections (`List`, `Set`, `Map`, `IntRange`) and existing `IValue`. Raises `IllegalArgumentException` on unsupported types.
+
+### Collection Conversion Extensions
+
+- **`Collection<*>.listVal: ListVal`** -- Converts collection elements via `toVal`.
+- **`Collection<*>.setVal: SetVal`** -- Converts collection elements via `toVal`, deduplicating.
+- **`Set<*>.setVal: SetVal`** -- Converts set elements via `toVal`.
+- **`Map<*, *>.mapVal: MapVal`** -- Converts keys via `toString()`, values via `toVal`.
+- **`IntRange.rangeVal: RangeVal`** -- Converts `IntRange` to `RangeVal`.
+
+### Null-Safe Defaults
+
+- **`ListVal?.orEmpty(): ListVal`** -- Returns receiver or empty `ListVal`.
+- **`MapVal?.orEmpty(): MapVal`** -- Returns receiver or empty `MapVal`.
+- **`SetVal?.orEmpty(): SetVal`** -- Returns receiver or empty `SetVal`.
+
+### Comparison
+
+- **`IPrimitiveVal.compareTo(other: IPrimitiveVal): Int`** -- Compares same-type primitives. `NumVal` compares as `Double`; `StrVal` compares lexicographically; `BoolVal` compares `false < true`; `NullVal` equals `NullVal`. Raises `IllegalArgumentException` on cross-type comparison.
+
+### Regex
+
+- **`StrVal.toRegex(doCaseIgnore: Boolean = false): Regex`** -- Escapes special characters, replaces `Unsure` core strings with regex patterns (`.*`, `\d+`, `(true|false)`).
+- **`Unsure.toRegex(doCaseIgnore: Boolean = false): Regex`** -- Returns the regex pattern for the `Unsure` variant.
+
+### Range Checks (on `Number`)
+
+- **`Number.isInLongRange: Boolean`** -- `true` if representable as `Long`.
+- **`Number.isInIntRange: Boolean`** -- `true` if representable as `Int`.
+- **`Number.isInShortRange: Boolean`** -- `true` if representable as `Short`.
+- **`Number.isInByteRange: Boolean`** -- `true` if representable as `Byte`.
+
+### String Interop
+
+- **`String.startsWith(other: StrVal): Boolean`** -- Checks prefix against `StrVal.core`.
+
+## Gotchas
+
+- `String.numVal` throws `ParseException`, not `NumberFormatException`.
+- `Any?.toVal` delegates to type-specific extensions. Unsupported types raise `IllegalArgumentException`.
+- `Map<*, *>.mapVal` calls `toString()` on keys -- non-string keys lose type information.
+- `IPrimitiveVal.compareTo` does not support cross-type comparison (e.g., `NumVal` vs `StrVal`).
