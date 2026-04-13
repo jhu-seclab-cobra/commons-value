@@ -78,9 +78,11 @@ object DftByteBufferSerializerImpl : IValSerializer<ByteBuffer> {
             }
         }
 
-        is RangeVal -> { // 1 byte type | element1 | element2
-            val rangeBuffer = ByteBuffer.allocate(1 + 4 + 4).put(Type.RANGE.byte)
-            rangeBuffer.putInt(value.first.toInt()).putInt(value.last.toInt()).typedFlip()
+        is RangeVal -> { // 1 byte type | startNumVal | endNumVal
+            val startBuf = serialize(value.start)
+            val endBuf = serialize(value.endInclusive)
+            val buf = ByteBuffer.allocate(1 + startBuf.limit() + endBuf.limit()).put(Type.RANGE.byte)
+            buf.put(startBuf).put(endBuf).typedFlip()
         }
 
         is ListVal -> { // 1 byte type | count | element1 | element2 | ...
@@ -146,7 +148,7 @@ object DftByteBufferSerializerImpl : IValSerializer<ByteBuffer> {
             Type.UNSURE_STR.byte -> Unsure.STR
             Type.UNSURE_BOOL.byte -> Unsure.BOOL
             // element1 | element2
-            Type.RANGE.byte -> RangeVal(start = material.getInt(), endInclude = material.getInt())
+            Type.RANGE.byte -> RangeVal(start = deserialize(material) as NumVal, endInclusive = deserialize(material) as NumVal)
             Type.LIST.byte -> { // count | element1 | element2 | ...
                 val listDataCount = material.getInt()
                 val container = ListVal(size = listDataCount)
