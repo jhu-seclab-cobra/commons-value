@@ -1,5 +1,7 @@
 # commons-value Design
 
+Intermediate representation (IR) value type system for the Cobra static analysis engine. Types are JVM-hosted representations used for internal analysis, graph property storage, and serialization. They do not model any specific programming language's type system. Each language analyzer has its own adapter layer that maps between source language semantics and this IR.
+
 ## Design Overview
 
 - **Classes**: `StrVal`, `NumVal`, `BoolVal`, `NullVal`, `Unsure`, `ListVal`, `SetVal`, `MapVal`, `RangeVal`, `DftByteArraySerializerImpl`, `DftByteBufferSerializerImpl`, `DftCharBufferSerializerImpl`, `Type`
@@ -85,10 +87,12 @@
 
 ### BoolVal
 
-**Responsibility:** Wraps a `Boolean` as a system value with boolean utilities.
+**Responsibility:** Wraps a `Boolean` as a system value with boolean utilities. Singleton-enforced: private constructor prevents external instantiation.
 
 **State/Fields:**
 - `core: Boolean` — The actual boolean content.
+
+**Constructors:** Private. Instances obtained only through companion factory methods.
 
 **Methods:**
 
@@ -97,9 +101,11 @@
 | `isTrue()` | Returns true if core is true | — | `Boolean` | — |
 | `isFalse()` | Returns true if core is false | — | `Boolean` | — |
 
-**Companion Constants:**
+**Companion:**
 - `T: BoolVal` — Singleton for `true`.
 - `F: BoolVal` — Singleton for `false`.
+- `invoke(value: Boolean): BoolVal` — Factory returning `T` for true, `F` for false.
+- `invoke(): BoolVal` — Factory returning `F`.
 
 ---
 
@@ -114,8 +120,8 @@
 
 | Method | Behavior | Input | Output | Errors |
 |--------|----------|-------|--------|--------|
-| `isNull(value: IValue)` | Checks if value is NullVal | `value: IValue` | `Boolean` | — |
-| `isNotNull(value: IValue)` | Checks if value is not NullVal | `value: IValue` | `Boolean` | — |
+| `infix isNull(value: IValue)` | Checks if value is NullVal | `value: IValue` | `Boolean` | — |
+| `infix isNotNull(value: IValue)` | Checks if value is not NullVal | `value: IValue` | `Boolean` | — |
 
 ---
 
@@ -166,6 +172,7 @@
 | `flatMap(transform)` | Flat-maps each element | `transform: (IValue) -> List<R>` | `List<R>` | — |
 | `forEach(action)` | Iterates each element | `action: (IValue) -> Unit` | — | — |
 | `asSequence()` | Returns lazy sequence | — | `Sequence<IValue>` | — |
+| `toMutableSet()` | Converts to a mutable linked set | — | `LinkedHashSet<IValue>` | — |
 
 **Properties:**
 - `size: Int` — Number of elements.
@@ -240,7 +247,13 @@
 **Responsibility:** Represents an inclusive numeric range as a collection value.
 
 **State/Fields:**
-- `core: ArrayList<NumVal>` — Internal list holding exactly two NumVal elements (start and end).
+- `start: NumVal` — Starting value of the range.
+- `endInclusive: NumVal` — Ending value of the range (inclusive).
+- `core: List<NumVal>` — Computed property returning `listOf(start, endInclusive)`.
+
+**Constructors:**
+- `RangeVal(start: NumVal, endInclusive: NumVal)` — Primary constructor from two NumVal values.
+- `RangeVal(start: Number, endInclude: Number)` — Secondary constructor converting Numbers to NumVal.
 
 **Methods:**
 
@@ -249,14 +262,14 @@
 | `contains(num: Number)` | Checks if number is within range | `num: Number` | `Boolean` | — |
 | `contains(num: NumVal)` | Checks if NumVal is within range | `num: NumVal` | `Boolean` | — |
 | `contains(range: RangeVal)` | Checks if sub-range is fully contained | `range: RangeVal` | `Boolean` | — |
-| `before(range: RangeVal)` | Checks if this range ends before other starts | `range: RangeVal` | `Boolean` | — |
-| `after(range: RangeVal)` | Checks if this range starts after other ends | `range: RangeVal` | `Boolean` | — |
+| `infix before(range: RangeVal)` | Checks if this range ends before other starts | `range: RangeVal` | `Boolean` | — |
+| `infix after(range: RangeVal)` | Checks if this range starts after other ends | `range: RangeVal` | `Boolean` | — |
 | `plus(range: RangeVal)` | Combines two ranges into their union bounds | `range: RangeVal` | `RangeVal` | — |
 | `map(transform)` | Transforms start and end values | `transform: (NumVal) -> R` | `List<R>` | — |
 
 **Properties:**
-- `first: Number` — Start of range.
-- `last: Number` — End of range (inclusive).
+- `first: Number` — Start of range (delegates to `start.core`).
+- `last: Number` — End of range inclusive (delegates to `endInclusive.core`).
 
 ---
 
@@ -315,7 +328,7 @@
 
 **`Number.numVal: NumVal`** — Wraps Number as NumVal.
 
-**`String.numVal: NumVal`** — Parses string to number, returns NumVal. Uses locale-aware NumberFormat. Returns Int for integer values within Int range, Long for larger integers, preserves Double for decimals. Throws `ParseException` on invalid input.
+**`String.numVal: NumVal`** — Parses string to number, returns NumVal. Uses `toDoubleOrNull()` for strings containing `.`, otherwise `toLongOrNull()`. Returns Int for integer values within Int range, Long for larger integers, preserves Double for decimals. Stateless, thread-safe. Throws `ParseException` on invalid input.
 
 **`String.strVal: StrVal`** — Wraps String as StrVal.
 
@@ -422,7 +435,7 @@
 - `ListVal` may contain any mix of `IValue` subtypes, including nested collections.
 - `SetVal` preserves insertion order via `LinkedHashSet`.
 - `MapVal` keys are `String` only; values are any `IValue`.
-- `RangeVal` core always contains exactly two `NumVal` elements (start and end).
+- `RangeVal` stores `start` and `endInclusive` as `NumVal` properties; `core` is a computed `List<NumVal>` of these two elements.
 
 ### Serialization
 - Every serialized value starts with a type tag (byte or string).
