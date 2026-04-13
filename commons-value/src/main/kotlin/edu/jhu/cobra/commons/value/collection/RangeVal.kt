@@ -79,10 +79,11 @@ data class RangeVal(val start: NumVal, val endInclusive: NumVal) : ICollectionVa
      * @param range The other range to combine with.
      * @return A new [RangeVal] representing the combined range.
      */
-    operator fun plus(range: RangeVal): RangeVal = RangeVal(
-        minOf(this.first.toInt(), range.first.toInt()),
-        maxOf(this.last.toInt(), range.last.toInt()),
-    )
+    operator fun plus(range: RangeVal): RangeVal {
+        val newStart = if (this.first.toDouble() <= range.first.toDouble()) this.start else range.start
+        val newEnd = if (this.last.toDouble() >= range.last.toDouble()) this.endInclusive else range.endInclusive
+        return RangeVal(newStart, newEnd)
+    }
 
     /**
      * Maps the start and end values using the provided transformation function.

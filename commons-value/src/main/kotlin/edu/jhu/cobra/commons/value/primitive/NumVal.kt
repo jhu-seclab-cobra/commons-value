@@ -241,5 +241,5 @@ data class NumVal(override val core: Number) : IPrimitiveVal {
      * @param other The integer to compare with.
      * @return A comparison result.
      */
-    operator fun compareTo(other: Int): Int = core.toInt().compareTo(other)
+    operator fun compareTo(other: Int): Int = core.toDouble().compareTo(other.toDouble())
 }

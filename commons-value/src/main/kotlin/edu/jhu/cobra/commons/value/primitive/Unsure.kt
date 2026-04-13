@@ -76,8 +76,8 @@ enum class Unsure(override val core: String) : IPrimitiveVal {
             is StrVal -> STR
             is NumVal -> NUM
             is BoolVal -> BOOL
+            is NullVal -> ANY
             is Unsure -> example
-            else -> ANY
         }
 
         /**
