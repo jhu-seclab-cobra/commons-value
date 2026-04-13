@@ -34,15 +34,19 @@ Package root: `edu.jhu.cobra.commons.value`. Serializers: `edu.jhu.cobra.commons
 
 - [Full Reference](llms/full.txt): All L1 docs concatenated for single-load context.
 
+
 ---
 
 # Referenced Documents
+
 
 ## Source: llms/core.md
 
 # IR Value Types
 
 > Sealed type hierarchy for language-agnostic intermediate representation values.
+
+## Quick Start
 
 ```kotlin
 import edu.jhu.cobra.commons.value.*
@@ -65,6 +69,8 @@ when (val v: IValue = list[0]) {
 }
 ```
 
+## API
+
 ### Sealed Interfaces
 
 - **`IValue`** -- Root sealed interface. Property: `val core: Any?`.
@@ -72,6 +78,7 @@ when (val v: IValue = list[0]) {
 - **`ICollectionVal : IValue`** -- Sealed interface for collection IR values.
 
 ### Primitive Types
+
 - **`StrVal(core: String)`** -- String IR value. Default constructor creates empty string. Methods: `startsWith(String)`, `substringAfter(String)`, `substringBefore(String)`, `contains(String)`, `uppercase()`, `lowercase()`, `trim()`, `equals(String, ignoreCase)`, `length`, `get(Int)`, `get(NumVal)`.
 - **`NumVal(core: Number)`** -- Numeric IR value. Default constructor creates `0`. Methods: `toInt()`, `toDouble()`, `toFloat()`, `toLong()`, `toShort()`, `compareTo(Int)`. Properties: `isInt`, `isLong`, `isShort`, `isByte`, `isFloat`, `isDouble`, `isPrimitiveIntegerType`, `isPrimitiveFloatingType`. Static: `NumVal.truncate(NumVal): NumVal`.
 - **`BoolVal`** -- Boolean IR value. Private constructor; obtain via `BoolVal(true)`, `BoolVal(false)`, `BoolVal.T`, `BoolVal.F`. Methods: `isTrue()`, `isFalse()`.
@@ -79,6 +86,7 @@ when (val v: IValue = list[0]) {
 - **`Unsure`** -- Enum for unknown-but-typed values. Entries: `ANY`, `STR`, `NUM`, `BOOL`. Factory: `Unsure.new(String): Unsure?`, `Unsure.new(IPrimitiveVal): Unsure`, `Unsure.new<T>(): Unsure`. Operator: `String in Unsure`.
 
 ### Collection Types
+
 - **`ListVal(core: ArrayList<IValue>)`** -- Mutable ordered list. Constructors: `ListVal()`, `ListVal(size: Int)`, `ListVal(List<IValue>)`, `ListVal(vararg IValue)`. Operators: `get(Int)`, `set(Int, IValue)`, `plus(IValue)`, `plusAssign(IValue)`, `minus(IValue)`, `minusAssign(IValue)`. Methods: `size`, `contains(IValue)`, `containsAll(Collection)`, `indexOf(IValue)`, `lastIndexOf(IValue)`, `subList(Int, Int)`, `isEmpty()`, `isNotEmpty()`, `map {}`, `flatMap {}`, `forEach {}`, `asSequence()`, `toMutableSet()`.
 - **`SetVal(core: LinkedHashSet<IValue>)`** -- Mutable insertion-ordered set. Constructors: `SetVal()`, `SetVal(size: Int)`, `SetVal(Collection<IValue>)`, `SetVal(vararg IValue)`, `SetVal(Sequence<IValue>)`. Methods: `add(IValue)`, `remove(IValue)`, `contains(IValue)`, `containsAll(Collection)`, `size`, `isEmpty()`, `isNotEmpty()`, `map {}`, `forEach {}`, `asSequence()`, `toList()`. Operators: `plus`, `plusAssign`, `minus`, `minusAssign`.
 - **`MapVal(core: HashMap<String, IValue>)`** -- Mutable string-keyed map. Constructors: `MapVal()`, `MapVal(size: Int)`, `MapVal(Map<String, IValue>)`, `MapVal(vararg Pair<String, IValue>)`, `MapVal(Sequence<Pair>)`, `MapVal(List<Pair>)`. Operators: `get(String): IValue?`, `set(String, IValue)`, `plus(Pair)`, `minus(String)`, `contains(String)`. Methods: `add(String, IValue)`, `remove(String)`, `keys()`, `values()`, `size`, `isEmpty()`, `map {}`, `mapValues {}`, `flatMap {}`, `forEach {}`, `toList()`, `toTypeArray()`.
@@ -93,12 +101,17 @@ when (val v: IValue = list[0]) {
 - `Unsure.new(String)` returns `null` when the string does not match a known `Unsure.core` value.
 - `NumVal.core` retains the original `Number` subtype (`Int`, `Long`, `Double`, etc.). Use `NumVal.truncate()` to normalize to the smallest integer type.
 
+
 ---
+
+
 ## Source: llms/serializers.md
 
 # Serializers
 
 > Serialize and deserialize `IValue` instances to `ByteArray`, `ByteBuffer`, or `CharBuffer`.
+
+## Quick Start
 
 ```kotlin
 import edu.jhu.cobra.commons.value.*
@@ -109,16 +122,20 @@ val bytes = serializer.serialize(NumVal(42))
 val restored = serializer.deserialize(bytes) // NumVal(42)
 ```
 
+## API
+
 ### Interface
 
 - **`IValSerializer<Material : Any>`** -- Generic serialization interface. Methods: `serialize(IValue): Material`, `deserialize(Material): IValue`.
 
 ### Implementations
+
 - **`DftByteArraySerializerImpl : IValSerializer<ByteArray>`** -- Singleton. Compact binary encoding to `ByteArray`. Raises `IllegalArgumentException` on unknown `IValue` subtype or empty input.
 - **`DftByteBufferSerializerImpl : IValSerializer<ByteBuffer>`** -- Singleton. Binary encoding to `ByteBuffer`. Raises `IllegalArgumentException` on unknown type or empty buffer.
 - **`DftCharBufferSerializerImpl : IValSerializer<CharBuffer>`** -- Singleton. Human-readable text encoding to `CharBuffer`. Format: `TYPE:value:`. Raises `IllegalArgumentException` on unknown type.
 
 ### Type Enum
+
 - **`Type(byte: Byte, str: String)`** -- Internal type tag enum. Entries: `NULL`, `STR`, `BOOL`, `BOOL_TRUE`, `BOOL_FALSE`, `UNSURE_ANY`, `UNSURE_STR`, `UNSURE_NUM`, `UNSURE_BOOL`, `NUM_BYTE`, `NUM_SHORT`, `NUM_INT`, `NUM_LONG`, `NUM_FLOAT`, `NUM_DOUBLE`, `NUM_OTHERS`, `RANGE`, `LIST`, `SET`, `MAP`.
 
 ## Gotchas
@@ -129,12 +146,17 @@ val restored = serializer.deserialize(bytes) // NumVal(42)
 - All three serializers are `object` singletons. No instantiation needed.
 - Serializers handle nested collections (e.g., `ListVal` containing `MapVal`).
 
+
 ---
+
+
 ## Source: llms/utils.md
 
 # Extension Utilities
 
 > Kotlin extension properties and functions for native-to-IR conversion, comparison, and regex.
+
+## Quick Start
 
 ```kotlin
 import edu.jhu.cobra.commons.value.*
@@ -145,6 +167,8 @@ val b = true.boolVal        // BoolVal.T
 val v = null.toVal           // NullVal
 val list = listOf(1, 2).listVal  // ListVal(NumVal(1), NumVal(2))
 ```
+
+## API
 
 ### Primitive Conversion Extensions
 
@@ -198,3 +222,7 @@ val list = listOf(1, 2).listVal  // ListVal(NumVal(1), NumVal(2))
 - `Any?.toVal` delegates to type-specific extensions. Unsupported types raise `IllegalArgumentException`.
 - `Map<*, *>.mapVal` calls `toString()` on keys -- non-string keys lose type information.
 - `IPrimitiveVal.compareTo` does not support cross-type comparison (e.g., `NumVal` vs `StrVal`).
+
+
+---
+

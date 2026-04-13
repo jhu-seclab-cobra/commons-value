@@ -35,7 +35,7 @@ val map = MapVal("name" to StrVal("Alice"), "age" to NumVal(30))
 val list = ListVal(StrVal("a"), NumVal(1), BoolVal.T)
 val range = RangeVal(1, 100)
 
-val serializer = DftByteArraySerializerImpl()
+val serializer = DftByteArraySerializerImpl
 val bytes = serializer.serialize(map)
 val restored = serializer.deserialize(bytes) // MapVal
 ```
@@ -46,7 +46,7 @@ val restored = serializer.deserialize(bytes) // MapVal
 
 **Collections** (`ICollectionVal`): `ListVal`, `SetVal`, `MapVal` (String keys), `RangeVal`
 
-**Serializers** (`IValSerializer<Material>`): `DftByteArraySerializerImpl` (ByteArray), `DftByteBufferSerializerImpl` (ByteBuffer), `DftCharBufferSerializerImpl` (CharBuffer)
+**Serializers** (`IValSerializer<Material : Any>`): `DftByteArraySerializerImpl` (ByteArray), `DftByteBufferSerializerImpl` (ByteBuffer), `DftCharBufferSerializerImpl` (CharBuffer)
 
 Full type specifications and method details in [docs/design.md](./docs/design.md).
 
