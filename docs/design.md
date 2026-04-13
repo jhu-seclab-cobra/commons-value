@@ -1,14 +1,14 @@
 # commons-value Design
 
-Intermediate representation (IR) value type system for the Cobra static analysis engine. Types are JVM-hosted representations used for internal analysis, graph property storage, and serialization. They do not model any specific programming language's type system. Each language analyzer has its own adapter layer that maps between source language semantics and this IR.
+IR value type system for the Cobra static analysis engine.
 
 ## Design Overview
 
 - **Classes**: `StrVal`, `NumVal`, `BoolVal`, `NullVal`, `Unsure`, `ListVal`, `SetVal`, `MapVal`, `RangeVal`, `DftByteArraySerializerImpl`, `DftByteBufferSerializerImpl`, `DftCharBufferSerializerImpl`, `Type`
-- **Relationships**: `StrVal` implements `IPrimitiveVal`, `NumVal` implements `IPrimitiveVal`, `BoolVal` implements `IPrimitiveVal`, `NullVal` implements `IPrimitiveVal`, `Unsure` implements `IPrimitiveVal`, `ListVal` implements `ICollectionVal`, `SetVal` implements `ICollectionVal`, `MapVal` implements `ICollectionVal`, `RangeVal` implements `ICollectionVal`, `IPrimitiveVal` extends `IValue`, `ICollectionVal` extends `IValue`, `DftByteArraySerializerImpl` implements `IValSerializer<ByteArray>`, `DftByteBufferSerializerImpl` implements `IValSerializer<ByteBuffer>`, `DftCharBufferSerializerImpl` implements `IValSerializer<CharBuffer>`
-- **Abstract**: `IValue` (sealed, implemented by `IPrimitiveVal`, `ICollectionVal`), `IPrimitiveVal` (sealed, implemented by `StrVal`, `NumVal`, `BoolVal`, `NullVal`, `Unsure`), `ICollectionVal` (sealed, implemented by `ListVal`, `SetVal`, `MapVal`, `RangeVal`), `IValSerializer<Material>` (implemented by three serializer objects)
+- **Relationships**: `IPrimitiveVal` extends `IValue`, `ICollectionVal` extends `IValue`
+- **Abstract**: `IValue` (sealed, implemented by `IPrimitiveVal`, `ICollectionVal`), `IPrimitiveVal` (sealed, implemented by `StrVal`, `NumVal`, `BoolVal`, `NullVal`, `Unsure`), `ICollectionVal` (sealed, implemented by `ListVal`, `SetVal`, `MapVal`, `RangeVal`), `IValSerializer<Material>` (implemented by `DftByteArraySerializerImpl`, `DftByteBufferSerializerImpl`, `DftCharBufferSerializerImpl`)
 - **Exceptions**: `IllegalArgumentException` raised by value conversion and serialization on unknown types
-- **Dependency roles**: Data holders: `StrVal`, `NumVal`, `BoolVal`, `NullVal`, `Unsure`, `ListVal`, `SetVal`, `MapVal`, `RangeVal`, `Type`. Helpers: `DftByteArraySerializerImpl`, `DftByteBufferSerializerImpl`, `DftCharBufferSerializerImpl` (stateless singleton serializers, inputs by argument).
+- **Dependency roles**: Data holders: all value types, `Type`. Helpers: three serializer singletons (stateless, inputs by argument).
 
 ---
 
@@ -224,8 +224,7 @@ Intermediate representation (IR) value type system for the Cobra static analysis
 | `set(key: String, value: IValue)` | Sets key-value pair | `key: String`, `value: IValue` | — | — |
 | `add(key: String, value: IValue)` | Adds key-value pair | `key: String`, `value: IValue` | `IValue?` | — |
 | `plus(pair: Pair<String, IValue>)` | Adds pair | `pair: Pair<String, IValue>` | `IValue?` | — |
-| `minus(key: String)` | Removes by key | `key: String` | `IValue?` | — |
-| `remove(key: String)` | Removes by key | `key: String` | `IValue?` | — |
+| `minus(key: String)` / `remove(key: String)` | Removes by key, returns previous value | `key: String` | `IValue?` | — |
 | `keys()` | Returns all keys | — | `Set<String>` | — |
 | `values()` | Returns all values | — | `Collection<IValue>` | — |
 | `contains(key: String)` | Checks key presence | `key: String` | `Boolean` | — |
@@ -374,35 +373,11 @@ Intermediate representation (IR) value type system for the Cobra static analysis
 
 ### SerializerUtils (extension functions)
 
-**`String.asNumber(): Number`** — Parses string to Number via Apache Commons NumberUtils.
+**`String.asNumber(): Number`** — Parses string to Number via Apache Commons NumberUtils. Throws `NumberFormatException`.
 
-**`String.asHexInt(): Int`** — Parses hex string to Int.
+**`String.asHexInt(): Int`** — Parses hex string to Int. Throws `NumberFormatException`.
 
 **`Int.asHexString(): String`** — Converts Int to hex string.
-
-**`ByteBuffer.getArray(size: Int): ByteArray`** — Reads size bytes from buffer.
-
-**`ByteBuffer.getString(size: Int? = null): String`** — Reads string from buffer; if size is null, reads int prefix then that many bytes.
-
-**`ByteBuffer.put(type: Type): ByteBuffer`** — Writes Type's byte tag to buffer.
-
-**`ByteBuffer.typedFlip(): ByteBuffer`** — Type-safe flip for Java 8 compatibility.
-
-**`CharBuffer.typedFlip(): CharBuffer`** — Type-safe flip for Java 8 compatibility.
-
-**`CharBuffer.typedPosition(pos: Int): CharBuffer`** — Type-safe position for Java 8 compatibility.
-
-**`CharBuffer.remove(until: Char): Boolean`** — Advances position past delimiter char.
-
-**`CharBuffer.getBuffer(until: Char): CharBuffer`** — Reads chars into new buffer until delimiter.
-
-**`CharBuffer.getBuffer(size: Int): CharBuffer`** — Reads fixed-size chars into new buffer.
-
-**`CharBuffer.getString(until: Char): String`** — Reads chars as string until delimiter.
-
-**`CharBuffer.getString(size: Int): String`** — Reads fixed-size chars as string.
-
-**`String.asCharBuffer(): CharBuffer`** — Wraps string as CharBuffer.
 
 **`DataInput.asByteArray(size: Int): ByteArray`** — Reads bytes from DataInput; size=0 returns empty, size>0 reads exactly that many, size<0 reads until EOF.
 
@@ -426,19 +401,10 @@ Intermediate representation (IR) value type system for the Cobra static analysis
 
 ### Value Creation
 - `NumVal` accepts any `Number` subtype (Byte, Short, Int, Long, Float, Double, or others).
-- `StrVal` accepts any `String` (including empty).
-- `BoolVal` accepts `true` or `false`.
-- `NullVal` is a singleton; `core` is always `null`.
-- `Unsure` has exactly four entries: `ANY`, `STR`, `NUM`, `BOOL`.
-
-### Collection Constraints
 - `ListVal` may contain any mix of `IValue` subtypes, including nested collections.
-- `SetVal` preserves insertion order via `LinkedHashSet`.
 - `MapVal` keys are `String` only; values are any `IValue`.
-- `RangeVal` stores `start` and `endInclusive` as `NumVal` properties; `core` is a computed `List<NumVal>` of these two elements.
 
 ### Serialization
 - Every serialized value starts with a type tag (byte or string).
 - Type tags are unique and non-overlapping across all value types.
-- Collection serializers use element count for ByteBuffer/CharBuffer formats, and length-prefixed elements for ByteArray format.
-- Deserialization must reconstruct the exact same `IValue` subtype as the original.
+- Deserialization reconstructs the exact same `IValue` subtype as the original.

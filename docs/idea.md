@@ -54,7 +54,7 @@ Source Language                  commons-value IR                    Cross-Modul
 
 - **Name:** Collection Value
 - **Definition:** An aggregate structure containing multiple values. Four concrete forms exist: ordered list, unique set, string-keyed map, and numeric range. Collections support nesting and recursive structures.
-- **Scope:** Includes list, set, map, and range representations. Excludes language-specific collection semantics (e.g., PHP associative arrays).
+- **Scope:** Includes list, set, map, and range representations. Excludes language-specific collection semantics.
 - **Relationships:** Subtype of Value. Contains List Value, Set Value, Map Value, and Range Value. Elements are Values, enabling arbitrary nesting.
 
 - **Name:** Uncertain Value
@@ -80,7 +80,7 @@ Source Language                  commons-value IR                    Cross-Modul
 - **Name:** Language Adapter
 - **Definition:** The layer within each analysis module that maps between source language type semantics and the commons-value IR. Each language has different type rules (e.g., different integer widths, different collection structures). The adapter maps these to the appropriate IR types. The adapter layer is not part of commons-value itself but is the primary consumer interface.
 - **Scope:** Includes source-language-to-IR mapping logic. Excludes IR type definitions and serialization.
-- **Relationships:** Consumes Value Conversion to produce IR values. Owned by each analysis module (e.g., cobraphp-core), not by commons-value.
+- **Relationships:** Consumes Value Conversion to produce IR values. Owned by each analysis module, not by commons-value.
 
 ## 3. Contracts & Flow
 
