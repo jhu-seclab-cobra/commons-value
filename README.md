@@ -53,7 +53,10 @@ Full type specifications and method details in [docs/design.md](./docs/design.md
 ## Documentation
 
 - [docs/idea.md](./docs/idea.md) -- concepts, terminology, and system role
-- [docs/design.md](./docs/design.md) -- class specifications, methods, and validation rules
+- [docs/design.md](./docs/design.md) -- overview, primitive types, and validation rules
+- [docs/design-collection.md](./docs/design-collection.md) -- collection types
+- [docs/design-serializer.md](./docs/design-serializer.md) -- serializers and type tags
+- [docs/design-utils.md](./docs/design-utils.md) -- extension functions and exceptions
 
 ## License
 

@@ -2,6 +2,11 @@
 
 IR value type system for the Cobra static analysis engine.
 
+Related design documents:
+- [Collection types](design-collection.md)
+- [Serializers](design-serializer.md)
+- [Extension functions and exceptions](design-utils.md)
+
 ## Design Overview
 
 - **Classes**: `StrVal`, `NumVal`, `BoolVal`, `NullVal`, `Unsure`, `ListVal`, `SetVal`, `MapVal`, `RangeVal`, `DftByteArraySerializerImpl`, `DftByteBufferSerializerImpl`, `DftCharBufferSerializerImpl`, `Type`
@@ -16,7 +21,7 @@ IR value type system for the Cobra static analysis engine.
 
 ### IValue
 
-**Responsibility:** Root sealed interface for all value types in the system.
+**Responsibility:** Root sealed interface for all IR value types.
 
 **State/Fields:**
 - `core: Any?` — The actual data content of the value.
@@ -33,7 +38,7 @@ IR value type system for the Cobra static analysis engine.
 
 ### StrVal
 
-**Responsibility:** Wraps a `String` as a system value with string manipulation utilities.
+**Responsibility:** Wraps a `String` as an IR value with string manipulation utilities.
 
 **State/Fields:**
 - `core: String` — The actual string content.
@@ -61,7 +66,7 @@ IR value type system for the Cobra static analysis engine.
 
 ### NumVal
 
-**Responsibility:** Wraps a `Number` as a system value with numeric type introspection and conversion.
+**Responsibility:** Wraps a `Number` as an IR value with numeric type introspection and conversion.
 
 **State/Fields:**
 - `core: Number` — The actual numeric content (Byte, Short, Int, Long, Float, Double, or other Number).
@@ -87,7 +92,7 @@ IR value type system for the Cobra static analysis engine.
 
 ### BoolVal
 
-**Responsibility:** Wraps a `Boolean` as a system value with boolean utilities. Singleton-enforced: private constructor prevents external instantiation.
+**Responsibility:** Wraps a `Boolean` as an IR value. Singleton-enforced: private constructor prevents external instantiation.
 
 **State/Fields:**
 - `core: Boolean` — The actual boolean content.
@@ -111,7 +116,7 @@ IR value type system for the Cobra static analysis engine.
 
 ### NullVal
 
-**Responsibility:** Singleton representing a null value in the system.
+**Responsibility:** Singleton representing a null value in the IR.
 
 **State/Fields:**
 - `core: null` — Always null.
@@ -142,258 +147,6 @@ IR value type system for the Cobra static analysis engine.
 | `new(example: IPrimitiveVal)` (companion) | Infers Unsure type from example value | `example: IPrimitiveVal` | `Unsure` | — |
 | `new<T>()` (companion, reified) | Creates Unsure from generic type | — | `Unsure` | — |
 | `contains(string: String)` (companion) | Checks if string is a valid Unsure identifier | `string: String` | `Boolean` | — |
-
----
-
-### ListVal
-
-**Responsibility:** Wraps an `ArrayList<IValue>` as a mutable ordered collection value.
-
-**State/Fields:**
-- `core: ArrayList<IValue>` — The internal list storage.
-
-**Methods:**
-
-| Method | Behavior | Input | Output | Errors |
-|--------|----------|-------|--------|--------|
-| `get(index: Int)` | Returns element at index | `index: Int` | `IValue` | `IndexOutOfBoundsException` |
-| `set(index: Int, value: IValue)` | Replaces element at index | `index: Int`, `value: IValue` | — | `IndexOutOfBoundsException` |
-| `contains(value: IValue)` | Checks element membership | `value: IValue` | `Boolean` | — |
-| `containsAll(values: Collection<IValue>)` | Checks all elements present | `values: Collection<IValue>` | `Boolean` | — |
-| `indexOf(value: IValue)` | First index of element, or -1 | `value: IValue` | `Int` | — |
-| `lastIndexOf(value: IValue)` | Last index of element, or -1 | `value: IValue` | `Int` | — |
-| `subList(fromIndex: Int, toIndex: Int)` | Returns sub-range as new ListVal | `fromIndex: Int`, `toIndex: Int` | `ListVal` | `IndexOutOfBoundsException`, `IllegalArgumentException` |
-| `plus(value: IValue)` | Returns new ListVal with element appended | `value: IValue` | `ListVal` | — |
-| `plusAssign(value: IValue)` | Mutably appends element | `value: IValue` | — | — |
-| `minus(value: IValue)` | Returns new ListVal with element removed | `value: IValue` | `ListVal` | — |
-| `minusAssign(value: IValue)` | Mutably removes element | `value: IValue` | — | — |
-| `isEmpty()` / `isNotEmpty()` | Emptiness checks | — | `Boolean` | — |
-| `map(transform)` | Transforms each element | `transform: (IValue) -> R` | `List<R>` | — |
-| `flatMap(transform)` | Flat-maps each element | `transform: (IValue) -> List<R>` | `List<R>` | — |
-| `forEach(action)` | Iterates each element | `action: (IValue) -> Unit` | — | — |
-| `asSequence()` | Returns lazy sequence | — | `Sequence<IValue>` | — |
-| `toMutableSet()` | Converts to a mutable linked set | — | `LinkedHashSet<IValue>` | — |
-
-**Properties:**
-- `size: Int` — Number of elements.
-
----
-
-### SetVal
-
-**Responsibility:** Wraps a `LinkedHashSet<IValue>` as a mutable ordered set value.
-
-**State/Fields:**
-- `core: LinkedHashSet<IValue>` — The internal set storage (preserves insertion order).
-
-**Methods:**
-
-| Method | Behavior | Input | Output | Errors |
-|--------|----------|-------|--------|--------|
-| `add(new: IValue)` | Adds element, returns true if new | `new: IValue` | `Boolean` | — |
-| `remove(prev: IValue)` | Removes element, returns true if present | `prev: IValue` | `Boolean` | — |
-| `plus(new: IValue)` | Returns new SetVal with element added | `new: IValue` | `SetVal` | — |
-| `plusAssign(value: IValue)` | Mutably adds element | `value: IValue` | — | — |
-| `minus(prev: IValue)` | Returns new SetVal with element removed | `prev: IValue` | `SetVal` | — |
-| `minusAssign(prev: IValue)` | Mutably removes element | `prev: IValue` | — | — |
-| `contains(value: IValue)` | Checks element membership | `value: IValue` | `Boolean` | — |
-| `containsAll(values: Collection<IValue>)` | Checks all elements present | `values: Collection<IValue>` | `Boolean` | — |
-| `isEmpty()` / `isNotEmpty()` | Emptiness checks | — | `Boolean` | — |
-| `map(transform)` | Transforms each element | `transform: (IValue) -> R` | `List<R>` | — |
-| `forEach(action)` | Iterates each element | `action: (IValue) -> Unit` | — | — |
-| `asSequence()` | Returns lazy sequence | — | `Sequence<IValue>` | — |
-| `toList()` | Converts to list | — | `List<IValue>` | — |
-
-**Properties:**
-- `size: Int` — Number of elements.
-
----
-
-### MapVal
-
-**Responsibility:** Wraps a `HashMap<String, IValue>` as a mutable string-keyed map value.
-
-**State/Fields:**
-- `core: HashMap<String, IValue>` — The internal map storage (String keys only).
-
-**Methods:**
-
-| Method | Behavior | Input | Output | Errors |
-|--------|----------|-------|--------|--------|
-| `get(key: String)` | Returns value for key, or null | `key: String` | `IValue?` | — |
-| `set(key: String, value: IValue)` | Sets key-value pair | `key: String`, `value: IValue` | — | — |
-| `add(key: String, value: IValue)` | Adds key-value pair | `key: String`, `value: IValue` | `IValue?` | — |
-| `plus(pair: Pair<String, IValue>)` | Adds pair | `pair: Pair<String, IValue>` | `IValue?` | — |
-| `minus(key: String)` / `remove(key: String)` | Removes by key, returns previous value | `key: String` | `IValue?` | — |
-| `keys()` | Returns all keys | — | `Set<String>` | — |
-| `values()` | Returns all values | — | `Collection<IValue>` | — |
-| `contains(key: String)` | Checks key presence | `key: String` | `Boolean` | — |
-| `isEmpty()` | Emptiness check | — | `Boolean` | — |
-| `forEach(action)` | Iterates each entry | `action: (Map.Entry<String, IValue>) -> Unit` | — | — |
-| `map(behavior)` | Transforms each entry | `behavior: (Map.Entry<String, IValue>) -> R` | `List<R>` | — |
-| `mapValues(behavior)` | Transforms values | `behavior: (Map.Entry<String, IValue>) -> R` | `Map<String, R>` | — |
-| `flatMap(behavior)` | Flat-maps entries | `behavior: (Map.Entry<String, IValue>) -> Iterable<R>` | `List<R>` | — |
-| `toList()` | Converts to pair list | — | `List<Pair<String, IValue>>` | — |
-| `toTypeArray()` | Converts to pair array | — | `Array<Pair<String, IValue>>` | — |
-
-**Properties:**
-- `size: Int` — Number of key-value pairs.
-
----
-
-### RangeVal
-
-**Responsibility:** Represents an inclusive numeric range as a collection value.
-
-**State/Fields:**
-- `start: NumVal` — Starting value of the range.
-- `endInclusive: NumVal` — Ending value of the range (inclusive).
-- `core: List<NumVal>` — Computed property returning `listOf(start, endInclusive)`.
-
-**Constructors:**
-- `RangeVal(start: NumVal, endInclusive: NumVal)` — Primary constructor from two NumVal values.
-- `RangeVal(start: Number, endInclude: Number)` — Secondary constructor converting Numbers to NumVal.
-
-**Methods:**
-
-| Method | Behavior | Input | Output | Errors |
-|--------|----------|-------|--------|--------|
-| `contains(num: Number)` | Checks if number is within range | `num: Number` | `Boolean` | — |
-| `contains(num: NumVal)` | Checks if NumVal is within range | `num: NumVal` | `Boolean` | — |
-| `contains(range: RangeVal)` | Checks if sub-range is fully contained | `range: RangeVal` | `Boolean` | — |
-| `infix before(range: RangeVal)` | Checks if this range ends before other starts | `range: RangeVal` | `Boolean` | — |
-| `infix after(range: RangeVal)` | Checks if this range starts after other ends | `range: RangeVal` | `Boolean` | — |
-| `plus(range: RangeVal)` | Combines two ranges into their union bounds | `range: RangeVal` | `RangeVal` | — |
-| `map(transform)` | Transforms start and end values | `transform: (NumVal) -> R` | `List<R>` | — |
-
-**Properties:**
-- `first: Number` — Start of range (delegates to `start.core`).
-- `last: Number` — End of range inclusive (delegates to `endInclusive.core`).
-
----
-
-### IValSerializer\<Material\>
-
-**Responsibility:** Interface defining serialization and deserialization of IValue to/from a material format.
-
-**Methods:**
-
-| Method | Behavior | Input | Output | Errors |
-|--------|----------|-------|--------|--------|
-| `serialize(value: IValue)` | Encodes value into material format | `value: IValue` | `Material` | `IllegalArgumentException` on unknown type |
-| `deserialize(material: Material)` | Decodes material into IValue | `material: Material` | `IValue` | `IllegalArgumentException` on unknown type |
-
----
-
-### DftByteArraySerializerImpl
-
-**Responsibility:** Stateless singleton serializer converting IValue to/from `ByteArray` using binary format with type-byte prefix.
-
-**Serialization Format:** `[type_byte][payload_bytes]`. Collections use length-prefixed elements. Maps encode key bytes and value bytes with size prefixes.
-
----
-
-### DftByteBufferSerializerImpl
-
-**Responsibility:** Stateless singleton serializer converting IValue to/from `ByteBuffer` using binary format with type-byte prefix and element count for collections.
-
-**Serialization Format:** `[type_byte][count (for collections)][elements]`. Strings are length-prefixed. Booleans use distinct type bytes (BOOL_TRUE/BOOL_FALSE). Ranges store two ints directly.
-
----
-
-### DftCharBufferSerializerImpl
-
-**Responsibility:** Stateless singleton serializer converting IValue to/from `CharBuffer` using human-readable text format.
-
-**Serialization Format:** `TypeStr:payload:`. Strings use hex length prefix. Collections use hex element count. Maps encode keys as serialized StrVal with `=` delimiter.
-
----
-
-### Type
-
-**Responsibility:** Enum mapping each value type to a unique byte tag and string label for serialization.
-
-**State/Fields:**
-- `byte: Byte` — Binary type tag.
-- `str: String` — String type label.
-
-**Entries:** NULL(10), STR(20), BOOL(30), BOOL_TRUE(31), BOOL_FALSE(32), UNSURE_ANY(40), UNSURE_STR(41), UNSURE_NUM(42), UNSURE_BOOL(43), NUM_BYTE(50), NUM_SHORT(51), NUM_INT(52), NUM_LONG(53), NUM_FLOAT(54), NUM_DOUBLE(55), NUM_OTHERS(56), RANGE(60), LIST(70), SET(71), MAP(80).
-
----
-
-## Function Specifications
-
-### PrimitiveUtils (extension functions)
-
-**`Number.numVal: NumVal`** — Wraps Number as NumVal.
-
-**`String.numVal: NumVal`** — Parses string to number, returns NumVal. Uses `toDoubleOrNull()` for strings containing `.`, otherwise `toLongOrNull()`. Returns Int for integer values within Int range, Long for larger integers, preserves Double for decimals. Stateless, thread-safe. Throws `ParseException` on invalid input.
-
-**`String.strVal: StrVal`** — Wraps String as StrVal.
-
-**`Char.strVal: StrVal`** — Wraps Char (as String) as StrVal.
-
-**`Path.strVal: StrVal`** — Wraps Path string representation as StrVal.
-
-**`File.strVal: StrVal`** — Wraps File path as StrVal.
-
-**`Boolean.boolVal: BoolVal`** — Returns `BoolVal.T` for true, `BoolVal.F` for false.
-
-**`Any?.primitiveVal: IPrimitiveVal`** — Converts null/Number/String/Boolean/IPrimitiveVal to corresponding IPrimitiveVal. Throws `IllegalArgumentException` for unsupported types.
-
-**`IPrimitiveVal.compareTo(other: IPrimitiveVal): Int`** — Compares two primitives of same type. NumVal by Double, StrVal by String, BoolVal by Boolean, NullVal always equal. Throws `IllegalArgumentException` for cross-type comparison.
-
-**`StrVal.toRegex(doCaseIgnore: Boolean = false): Regex`** — Escapes special regex chars, replaces Unsure placeholders with regex patterns (ANY/STR -> `.*`, NUM -> `\d+`, BOOL -> `(true|false)`).
-
-**`Unsure.toRegex(doCaseIgnore: Boolean = false): Regex`** — Returns regex pattern corresponding to Unsure type.
-
-**`String.startsWith(other: StrVal): Boolean`** — Checks if string starts with StrVal's content.
-
-### CollectionUtils (extension properties)
-
-**`Collection<*>.listVal: ListVal`** — Converts collection to ListVal via `toVal` on each element.
-
-**`Collection<*>.setVal: SetVal`** — Converts collection to SetVal via `toVal` on each element.
-
-**`Set<*>.setVal: SetVal`** — Converts set to SetVal via `toVal` on each element.
-
-**`Map<*, *>.mapVal: MapVal`** — Converts map to MapVal; keys toString'd, values via `toVal`.
-
-**`IntRange.rangeVal: RangeVal`** — Converts IntRange to RangeVal.
-
-**`ListVal?.orEmpty(): ListVal`** — Returns self or empty ListVal if null.
-
-**`SetVal?.orEmpty(): SetVal`** — Returns self or empty SetVal if null.
-
-**`MapVal?.orEmpty(): MapVal`** — Returns self or empty MapVal if null.
-
-### Utils (top-level extension)
-
-**`Any?.toVal: IValue`** — Universal converter: null -> NullVal, Number -> NumVal, String -> StrVal, Boolean -> BoolVal, List -> ListVal, Map -> MapVal, IntRange -> RangeVal, Set -> SetVal, IValue -> identity. Throws `IllegalArgumentException` for unsupported types.
-
-### SerializerUtils (extension functions)
-
-**`String.asNumber(): Number`** — Parses string to Number via Apache Commons NumberUtils. Throws `NumberFormatException`.
-
-**`String.asHexInt(): Int`** — Parses hex string to Int. Throws `NumberFormatException`.
-
-**`Int.asHexString(): String`** — Converts Int to hex string.
-
-**`DataInput.asByteArray(size: Int): ByteArray`** — Reads bytes from DataInput; size=0 returns empty, size>0 reads exactly that many, size<0 reads until EOF.
-
-**`DataInput.asByteSequence(available: Int): Sequence<Byte>`** — Lazy byte sequence from DataInput; available=0 returns empty, available>0 yields that many, available<0 reads until EOF.
-
----
-
-## Exception / Error Types
-
-| Exception | When Raised |
-|-----------|------------|
-| `IllegalArgumentException` | `Any?.toVal` / `Any?.primitiveVal` called on unsupported type; `IPrimitiveVal.compareTo` with incompatible types; serializer encounters unknown IValue subtype; deserializer encounters unknown type tag; empty ByteBuffer deserialization |
-| `IndexOutOfBoundsException` | `ListVal.get`/`set`/`subList` with out-of-range index; `StrVal.get` with out-of-range index |
-| `ParseException` | `String.numVal` when string is not a valid number |
-| `NumberFormatException` | `String.asNumber()` / `String.asHexInt()` on invalid input |
-| `BufferUnderflowException` | ByteBuffer/CharBuffer read operations when insufficient data remains |
 
 ---
 
