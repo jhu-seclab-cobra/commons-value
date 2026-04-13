@@ -21,6 +21,13 @@ Part of [commons-value design](design.md). Specifies the `ICollectionVal` sealed
 **State/Fields:**
 - `core: ArrayList<IValue>` — The internal list storage.
 
+**Constructors:**
+- `ListVal(core: ArrayList<IValue>)` — Primary constructor.
+- `ListVal()` — Empty list.
+- `ListVal(size: Int)` — Pre-sized empty list.
+- `ListVal(value: List<IValue>)` — Copy from list.
+- `ListVal(vararg value: IValue)` — From varargs.
+
 **Methods:**
 
 | Method | Behavior | Input | Output | Errors |
@@ -55,6 +62,14 @@ Part of [commons-value design](design.md). Specifies the `ICollectionVal` sealed
 **State/Fields:**
 - `core: LinkedHashSet<IValue>` — The internal set storage (preserves insertion order).
 
+**Constructors:**
+- `SetVal(core: LinkedHashSet<IValue>)` — Primary constructor.
+- `SetVal()` — Empty set.
+- `SetVal(size: Int)` — Pre-sized empty set.
+- `SetVal(value: Collection<IValue>)` — Copy from collection.
+- `SetVal(vararg value: IValue)` — From varargs.
+- `SetVal(values: Sequence<IValue>)` — From sequence.
+
 **Methods:**
 
 | Method | Behavior | Input | Output | Errors |
@@ -84,6 +99,15 @@ Part of [commons-value design](design.md). Specifies the `ICollectionVal` sealed
 
 **State/Fields:**
 - `core: HashMap<String, IValue>` — The internal map storage (String keys only).
+
+**Constructors:**
+- `MapVal(core: HashMap<String, IValue>)` — Primary constructor.
+- `MapVal()` — Empty map.
+- `MapVal(size: Int)` — Pre-sized empty map.
+- `MapVal(value: Map<String, IValue>)` — Copy from map.
+- `MapVal(vararg value: Pair<String, IValue>)` — From vararg pairs.
+- `MapVal(values: Sequence<Pair<String, IValue>>)` — From sequence.
+- `MapVal(values: List<Pair<String, IValue>>)` — From list of pairs.
 
 **Methods:**
 

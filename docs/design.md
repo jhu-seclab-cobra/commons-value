@@ -43,6 +43,10 @@ Related design documents:
 **State/Fields:**
 - `core: String` — The actual string content.
 
+**Constructors:**
+- `StrVal(core: String)` — Primary constructor.
+- `StrVal()` — Default constructor creating empty string.
+
 **Methods:**
 
 | Method | Behavior | Input | Output | Errors |
@@ -70,6 +74,10 @@ Related design documents:
 
 **State/Fields:**
 - `core: Number` — The actual numeric content (Byte, Short, Int, Long, Float, Double, or other Number).
+
+**Constructors:**
+- `NumVal(core: Number)` — Primary constructor.
+- `NumVal()` — Default constructor creating `0`.
 
 **Methods:**
 

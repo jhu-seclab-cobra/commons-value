@@ -6,9 +6,9 @@ Part of [commons-value design](design.md). Specifies the `IValSerializer` interf
 
 ## Class / Type Specifications
 
-### IValSerializer\<Material\>
+### IValSerializer\<Material : Any\>
 
-**Responsibility:** Interface defining serialization and deserialization of IValue to/from a material format.
+**Responsibility:** Interface defining serialization and deserialization of IValue to/from a material format. `Material` is upper-bounded by `Any` (non-nullable).
 
 **Methods:**
 

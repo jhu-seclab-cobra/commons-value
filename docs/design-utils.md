@@ -8,6 +8,14 @@ Part of [commons-value design](design.md). Specifies extension functions and exc
 
 ### PrimitiveUtils (extension functions)
 
+**`Number.isInLongRange: Boolean`** — True if number fits in Long range. Byte/Short/Int/Long return true immediately.
+
+**`Number.isInIntRange: Boolean`** — True if number fits in Int range.
+
+**`Number.isInShortRange: Boolean`** — True if number fits in Short range.
+
+**`Number.isInByteRange: Boolean`** — True if number fits in Byte range.
+
 **`Number.numVal: NumVal`** — Wraps Number as NumVal.
 
 **`String.numVal: NumVal`** — Parses string to number, returns NumVal. Uses `toDoubleOrNull()` for strings containing `.`, otherwise `toLongOrNull()`. Returns Int for integer values within Int range, Long for larger integers, preserves Double for decimals. Stateless, thread-safe. Throws `ParseException` on invalid input.
