@@ -1,6 +1,5 @@
 package edu.jhu.cobra.commons.value.serializer
 
-import org.junit.jupiter.api.Disabled
 import java.nio.ByteBuffer
 import kotlin.test.Test
 import kotlin.test.assertFailsWith
@@ -11,7 +10,7 @@ import kotlin.test.assertFailsWith
  *
  * - `should throw IllegalArgumentException when deserializing unknown type tag` — Unknown byte tag rejected.
  * - `should throw IllegalArgumentException when deserializing empty ByteBuffer` — Empty buffer rejected.
- * - `should round-trip NumVal BigInteger` — DISABLED: known bug, ByteBuffer NUM_OTHERS missing length prefix.
+ * - `should round-trip NumVal BigInteger` — Inherited round-trip; verifies NUM_OTHERS length-prefix fix.
  */
 internal class DftByteBufferSerializerImplTest : AbcSerializerImplUnitTest<ByteBuffer>() {
 
@@ -23,11 +22,6 @@ internal class DftByteBufferSerializerImplTest : AbcSerializerImplUnitTest<ByteB
         assertFailsWith<IllegalArgumentException> {
             DftByteBufferSerializerImpl.deserialize(invalidBuffer)
         }
-    }
-
-    @Disabled("Known bug: ByteBuffer NUM_OTHERS serialize writes without length prefix but deserialize reads with one")
-    override fun `should round-trip NumVal BigInteger`() {
-        super.`should round-trip NumVal BigInteger`()
     }
 
     @Test

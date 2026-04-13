@@ -74,7 +74,7 @@ object DftByteBufferSerializerImpl : IValSerializer<ByteBuffer> {
             is Double -> ByteBuffer.allocate(9).put(Type.NUM_DOUBLE.byte).putDouble(num).typedFlip()
             else -> {
                 val bytes = num.toString().toByteArray()
-                ByteBuffer.allocate(1 + bytes.size).put(Type.NUM_OTHERS.byte).put(bytes).typedFlip()
+                ByteBuffer.allocate(1 + 4 + bytes.size).put(Type.NUM_OTHERS.byte).putInt(bytes.size).put(bytes).typedFlip()
             }
         }
 
