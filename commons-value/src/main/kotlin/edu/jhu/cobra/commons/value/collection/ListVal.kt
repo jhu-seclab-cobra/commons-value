@@ -17,7 +17,12 @@ package edu.jhu.cobra.commons.value
  *
  * @property core The internal list of [IValue] elements.
  */
-data class ListVal(override val core: ArrayList<IValue> = ArrayList(5)) : ICollectionVal {
+class ListVal(override val core: ArrayList<IValue> = ArrayList(5)) : ICollectionVal {
+
+    override fun equals(other: Any?): Boolean =
+        this === other || (other is ListVal && core == other.core)
+
+    override fun hashCode(): Int = core.hashCode()
 
     /**
      * Constructs an empty [ListVal] with the specified initial capacity.

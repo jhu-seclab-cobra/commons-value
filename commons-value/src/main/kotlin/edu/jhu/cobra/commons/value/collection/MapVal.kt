@@ -17,7 +17,12 @@ import kotlin.math.ceil
  * println(mapVal.size) // Outputs: 3
  * ```
  */
-data class MapVal(override val core: HashMap<String, IValue> = HashMap()) : ICollectionVal {
+class MapVal(override val core: HashMap<String, IValue> = HashMap()) : ICollectionVal {
+
+    override fun equals(other: Any?): Boolean =
+        this === other || (other is MapVal && core == other.core)
+
+    override fun hashCode(): Int = core.hashCode()
 
     /**
      * Returns the size of the map.
