@@ -1,7 +1,9 @@
 package edu.jhu.cobra.commons.value.serializer
 
 import edu.jhu.cobra.commons.value.BoolVal
+import edu.jhu.cobra.commons.value.FloatVal
 import edu.jhu.cobra.commons.value.IValue
+import edu.jhu.cobra.commons.value.IntVal
 import edu.jhu.cobra.commons.value.ListVal
 import edu.jhu.cobra.commons.value.MapVal
 import edu.jhu.cobra.commons.value.NullVal
@@ -69,6 +71,8 @@ object DftCharBufferSerializerImpl : IValSerializer<CharBuffer> {
         is BoolVal ->
             if (value.isTrue()) "${Type.BOOL_TRUE.str}:".asCharBuffer()
             else "${Type.BOOL_FALSE.str}:".asCharBuffer()
+        is IntVal -> "${Type.INT.str}:${value.core}:".asCharBuffer()
+        is FloatVal -> "${Type.FLOAT.str}:${value.core}:".asCharBuffer()
         // numType:num}
         is NumVal -> when (val num = value.core) {
             is Byte -> "${Type.NUM_BYTE.str}:${num}:"
@@ -80,7 +84,7 @@ object DftCharBufferSerializerImpl : IValSerializer<CharBuffer> {
             else -> "${Type.NUM_OTHERS.str}:$num:"
         }.asCharBuffer()
 
-        is RangeVal -> "${Type.RANGE.str}:${value.first.toInt()},${value.last.toInt()}:".asCharBuffer()
+        is RangeVal -> "${Type.RANGE.str}:${value.first.toLong()},${value.last.toLong()}:".asCharBuffer()
         is ListVal -> { // listType:cnt{element,element,...}
             val elements = value.map { element -> serialize(element) }
             val eleCount = value.size.asHexString() // the counter for ele
@@ -144,6 +148,8 @@ object DftCharBufferSerializerImpl : IValSerializer<CharBuffer> {
 
             Type.BOOL_TRUE.str -> BoolVal.T
             Type.BOOL_FALSE.str -> BoolVal.F
+            Type.INT.str -> IntVal(material.getString(':').toLong())
+            Type.FLOAT.str -> FloatVal(material.getString(':').toDouble())
             Type.NUM_BYTE.str -> NumVal(material.getString(':').toByte())
             Type.NUM_SHORT.str -> NumVal(material.getString(':').toShort())
             Type.NUM_INT.str -> NumVal(material.getString(':').toInt())
@@ -156,8 +162,8 @@ object DftCharBufferSerializerImpl : IValSerializer<CharBuffer> {
             Type.UNSURE_BOOL.str -> Unsure.BOOL
             Type.UNSURE_ANY.str -> Unsure.ANY
             Type.RANGE.str -> { // range_type:num,num
-                val start = material.getString(',').toInt()
-                val endInclude = material.getString(':').toInt()
+                val start = material.getString(',').toLong()
+                val endInclude = material.getString(':').toLong()
                 RangeVal(start, endInclude) // handle the start and endInclude
             }
 

@@ -29,6 +29,8 @@ enum class Type(val byte: Byte, val str: String) {
     NUM_FLOAT(54, "Float"),
     NUM_DOUBLE(55, "Double"),
     NUM_OTHERS(56, "Num?"),
+    INT(57, "IntV"),
+    FLOAT(58, "FloatV"),
     RANGE(60, "Range"),
     LIST(70, "List"),
     SET(71, "Set"),

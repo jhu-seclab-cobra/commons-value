@@ -29,6 +29,24 @@ data class RangeVal(val start: NumVal, val endInclusive: NumVal) : ICollectionVa
     constructor(start: Number, endInclude: Number) : this(start.numVal, endInclude.numVal)
 
     /**
+     * Constructs a [RangeVal] from two [IntVal] instances representing the start and end.
+     *
+     * @param start The starting value of the range.
+     * @param endInclusive The ending value of the range, inclusive.
+     */
+    @Suppress("DEPRECATION")
+    constructor(start: IntVal, endInclusive: IntVal) : this(NumVal(start.core), NumVal(endInclusive.core))
+
+    /**
+     * Constructs a [RangeVal] from two [Long] values representing the start and end.
+     *
+     * @param start The starting value of the range.
+     * @param endInclusive The ending value of the range, inclusive.
+     */
+    @Suppress("DEPRECATION")
+    constructor(start: Long, endInclusive: Long) : this(NumVal(start), NumVal(endInclusive))
+
+    /**
      * Checks if the specified number is within the range.
      *
      * @param num The number to check.

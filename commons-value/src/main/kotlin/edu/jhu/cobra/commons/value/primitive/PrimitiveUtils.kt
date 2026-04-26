@@ -109,6 +109,7 @@ val Number.isInByteRange: Boolean
  *
  * @return A [NumVal] containing this number
  */
+@Suppress("DEPRECATION")
 val Number.numVal: NumVal get() = NumVal(this)
 
 /**
@@ -130,6 +131,7 @@ val Number.numVal: NumVal get() = NumVal(this)
  * @throws ParseException if the string cannot be parsed as a number
  * @see Number.numVal
  */
+@Suppress("DEPRECATION")
 val String.numVal: NumVal
     get() {
         if ("." in this) {
@@ -139,6 +141,72 @@ val String.numVal: NumVal
         val longNum = toLongOrNull() ?: throw ParseException("Cannot parse '$this' as number", 0)
         return if (longNum < Int.MIN_VALUE || longNum > Int.MAX_VALUE) longNum.numVal
         else NumVal(longNum.toInt())
+    }
+
+/**
+ * Converts this [Long] to an [IntVal] representation.
+ *
+ * @return An [IntVal] containing this value
+ */
+val Long.intVal: IntVal get() = IntVal(this)
+
+/**
+ * Converts this [Int] to an [IntVal] representation.
+ *
+ * @return An [IntVal] containing this value widened to [Long]
+ */
+val Int.intVal: IntVal get() = IntVal(this.toLong())
+
+/**
+ * Converts this [Short] to an [IntVal] representation.
+ *
+ * @return An [IntVal] containing this value widened to [Long]
+ */
+val Short.intVal: IntVal get() = IntVal(this.toLong())
+
+/**
+ * Converts this [Byte] to an [IntVal] representation.
+ *
+ * @return An [IntVal] containing this value widened to [Long]
+ */
+val Byte.intVal: IntVal get() = IntVal(this.toLong())
+
+/**
+ * Converts this [Double] to a [FloatVal] representation.
+ *
+ * @return A [FloatVal] containing this value
+ */
+val Double.floatVal: FloatVal get() = FloatVal(this)
+
+/**
+ * Converts this [Float] to a [FloatVal] representation.
+ *
+ * @return A [FloatVal] containing this value widened to [Double]
+ */
+val Float.floatVal: FloatVal get() = FloatVal(this.toDouble())
+
+/**
+ * Parses this string as an integer and converts it to an [IntVal].
+ *
+ * @return An [IntVal] containing the parsed value
+ * @throws ParseException if the string cannot be parsed as an integer
+ */
+val String.intVal: IntVal
+    get() {
+        val longNum = toLongOrNull() ?: throw ParseException("Cannot parse '$this' as integer", 0)
+        return IntVal(longNum)
+    }
+
+/**
+ * Parses this string as a floating-point number and converts it to a [FloatVal].
+ *
+ * @return A [FloatVal] containing the parsed value
+ * @throws ParseException if the string cannot be parsed as a float
+ */
+val String.floatVal: FloatVal
+    get() {
+        val doubleNum = toDoubleOrNull() ?: throw ParseException("Cannot parse '$this' as float", 0)
+        return FloatVal(doubleNum)
     }
 
 /**
@@ -313,9 +381,16 @@ val Boolean.boolVal: BoolVal get() = if (this) BoolVal.T else BoolVal.F
  * @return An [IPrimitiveVal] representing this value
  * @throws IllegalArgumentException if the value cannot be converted to an [IPrimitiveVal]
  */
+@Suppress("DEPRECATION")
 val Any?.primitiveVal: IPrimitiveVal
     get() = when (this) {
         null -> NullVal
+        is Long -> intVal
+        is Int -> intVal
+        is Short -> intVal
+        is Byte -> intVal
+        is Double -> floatVal
+        is Float -> floatVal
         is Number -> numVal
         is String -> strVal
         is Boolean -> boolVal
@@ -346,7 +421,12 @@ val Any?.primitiveVal: IPrimitiveVal
  *         a positive number if this value is greater than [other]
  * @throws IllegalArgumentException if comparing incompatible types
  */
+@Suppress("DEPRECATION")
 operator fun IPrimitiveVal.compareTo(other: IPrimitiveVal): Int = when {
+    this is IntVal && other is IntVal -> core.compareTo(other.core)
+    this is FloatVal && other is FloatVal -> core.compareTo(other.core)
+    this is IntVal && other is FloatVal -> core.toDouble().compareTo(other.core)
+    this is FloatVal && other is IntVal -> core.compareTo(other.core.toDouble())
     this is NumVal && other is NumVal -> core.toDouble().compareTo(other.core.toDouble())
     this is StrVal && other is StrVal -> core.compareTo(other.core)
     this is BoolVal && other is BoolVal -> core.compareTo(other.core)

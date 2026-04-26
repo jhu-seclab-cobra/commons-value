@@ -1,7 +1,9 @@
 package edu.jhu.cobra.commons.value.serializer
 
 import edu.jhu.cobra.commons.value.BoolVal
+import edu.jhu.cobra.commons.value.FloatVal
 import edu.jhu.cobra.commons.value.IValue
+import edu.jhu.cobra.commons.value.IntVal
 import edu.jhu.cobra.commons.value.ListVal
 import edu.jhu.cobra.commons.value.MapVal
 import edu.jhu.cobra.commons.value.NullVal
@@ -60,6 +62,8 @@ object DftByteArraySerializerImpl : IValSerializer<ByteArray> {
             else -> byteArrayOf(Type.UNSURE_ANY.byte)
         }
 
+        is IntVal -> longToBytes(Type.INT.byte, value.core)
+        is FloatVal -> longToBytes(Type.FLOAT.byte, java.lang.Double.doubleToRawLongBits(value.core))
         is NumVal -> when (val num = value.core) {
             is Byte -> byteArrayOf(Type.NUM_BYTE.byte, num)
             is Short -> shortToBytes(Type.NUM_SHORT.byte, num)
@@ -204,6 +208,8 @@ object DftByteArraySerializerImpl : IValSerializer<ByteArray> {
         Type.UNSURE_NUM.byte -> Unsure.NUM
         Type.UNSURE_STR.byte -> Unsure.STR
         Type.UNSURE_BOOL.byte -> Unsure.BOOL
+        Type.INT.byte -> IntVal(buffer.long)
+        Type.FLOAT.byte -> FloatVal(buffer.double)
         Type.NUM_BYTE.byte -> NumVal(buffer.get())
         Type.NUM_SHORT.byte -> NumVal(buffer.short)
         Type.NUM_INT.byte -> NumVal(buffer.int)

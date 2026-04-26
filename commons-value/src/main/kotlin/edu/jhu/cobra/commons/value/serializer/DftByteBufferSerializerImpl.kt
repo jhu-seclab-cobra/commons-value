@@ -1,7 +1,9 @@
 package edu.jhu.cobra.commons.value.serializer
 
 import edu.jhu.cobra.commons.value.BoolVal
+import edu.jhu.cobra.commons.value.FloatVal
 import edu.jhu.cobra.commons.value.IValue
+import edu.jhu.cobra.commons.value.IntVal
 import edu.jhu.cobra.commons.value.ListVal
 import edu.jhu.cobra.commons.value.MapVal
 import edu.jhu.cobra.commons.value.NullVal
@@ -65,6 +67,8 @@ object DftByteBufferSerializerImpl : IValSerializer<ByteBuffer> {
             }
         )
 
+        is IntVal -> ByteBuffer.allocate(9).put(Type.INT.byte).putLong(value.core).typedFlip()
+        is FloatVal -> ByteBuffer.allocate(9).put(Type.FLOAT.byte).putDouble(value.core).typedFlip()
         is NumVal -> when (val num = value.core) {
             is Byte -> ByteBuffer.allocate(2).put(Type.NUM_BYTE.byte).put(num).typedFlip()
             is Short -> ByteBuffer.allocate(3).put(Type.NUM_SHORT.byte).putShort(num).typedFlip()
@@ -136,6 +140,8 @@ object DftByteBufferSerializerImpl : IValSerializer<ByteBuffer> {
             Type.STR.byte -> StrVal(material.getString())
             Type.BOOL_TRUE.byte -> BoolVal.T
             Type.BOOL_FALSE.byte -> BoolVal.F
+            Type.INT.byte -> IntVal(material.getLong())
+            Type.FLOAT.byte -> FloatVal(material.getDouble())
             Type.NUM_BYTE.byte -> NumVal(material.get())
             Type.NUM_SHORT.byte -> NumVal(material.getShort())
             Type.NUM_INT.byte -> NumVal(material.getInt())

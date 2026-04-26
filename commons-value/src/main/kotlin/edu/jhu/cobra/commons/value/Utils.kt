@@ -7,9 +7,16 @@ package edu.jhu.cobra.commons.value
  * @return The [IValue] representing the current value.
  * @throws IllegalArgumentException If the value cannot be converted to an [IValue].
  */
+@Suppress("DEPRECATION")
 val Any?.toVal: IValue
     get() = when (this) {
         null -> NullVal
+        is Long -> intVal
+        is Int -> intVal
+        is Short -> intVal
+        is Byte -> intVal
+        is Double -> floatVal
+        is Float -> floatVal
         is Number -> numVal
         is String -> strVal
         is Boolean -> boolVal
