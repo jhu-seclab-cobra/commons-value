@@ -7,7 +7,9 @@ package edu.jhu.cobra.commons.value
  *
  * Implementing classes:
  * - [StrVal]: String values.
- * - [NumVal]: Numeric values.
+ * - [IntVal]: Integer values (Long-backed).
+ * - [FloatVal]: Floating-point values (Double-backed).
+ * - [NumVal]: Numeric values (deprecated, use IntVal/FloatVal).
  * - [BoolVal]: Boolean values.
  * - [NullVal]: Null values.
  * - [Unsure]: Uncertain or undefined values.

@@ -15,6 +15,7 @@ package edu.jhu.cobra.commons.value
  * println(numVal.toInt()) // Outputs: 42
  * ```
  */
+@Deprecated("Use IntVal or FloatVal. Migration tracked in performance.md P6-1.", ReplaceWith("IntVal or FloatVal"))
 data class NumVal(override val core: Number) : IPrimitiveVal {
 
     companion object {
@@ -242,4 +243,10 @@ data class NumVal(override val core: Number) : IPrimitiveVal {
      * @return A comparison result.
      */
     operator fun compareTo(other: Int): Int = core.toDouble().compareTo(other.toDouble())
+
+    /** Converts this [NumVal] to an [IntVal], truncating fractional values. */
+    fun toIntVal(): IntVal = IntVal(core.toLong())
+
+    /** Converts this [NumVal] to a [FloatVal]. */
+    fun toFloatVal(): FloatVal = FloatVal(core.toDouble())
 }
