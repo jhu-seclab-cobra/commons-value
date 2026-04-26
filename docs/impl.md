@@ -10,5 +10,6 @@
 
 ## Developer Instructions
 
-- `String.numVal` uses `toLongOrNull()`/`toDoubleOrNull()` for parsing, not `NumberUtils`. Only `String.asNumber()` and `DftByteArraySerializerImpl` use `NumberUtils.createNumber()`.
-- IR types do not model any specific language's type system. Language-specific semantics (type juggling, casting, overflow behavior) belong in the consuming analysis module's adapter layer.
+- **Target: IntVal/FloatVal.** Current `NumVal` is replaced by `IntVal` (Long-backed) and `FloatVal` (Double-backed). Migration tracked in `performance.md` P6-1.
+- `String.intVal` uses `toLongOrNull()` for parsing. `String.floatVal` uses `toDoubleOrNull()`. Only `String.asNumber()` and `DftByteArraySerializerImpl` use `NumberUtils.createNumber()`.
+- IR types do not model any specific language's type system. `IntVal` is Long-width, `FloatVal` is Double-width. Language-specific semantics (type juggling, casting, overflow behavior, narrower integer types) belong in the consuming analysis module's adapter layer.

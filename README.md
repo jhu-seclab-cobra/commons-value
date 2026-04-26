@@ -27,12 +27,11 @@ dependencies {
 ## Usage
 
 ```kotlin
-import edu.jhu.cobra.commons.value.primitive.*
-import edu.jhu.cobra.commons.value.collection.*
+import edu.jhu.cobra.commons.value.*
 import edu.jhu.cobra.commons.value.serializer.*
 
-val map = MapVal("name" to StrVal("Alice"), "age" to NumVal(30))
-val list = ListVal(StrVal("a"), NumVal(1), BoolVal.T)
+val map = MapVal("name" to StrVal("Alice"), "age" to IntVal(30L))
+val list = ListVal(StrVal("a"), IntVal(1L), BoolVal.T)
 val range = RangeVal(1, 100)
 
 val serializer = DftByteArraySerializerImpl
@@ -42,19 +41,24 @@ val restored = serializer.deserialize(bytes) // MapVal
 
 ## API
 
-**Primitives** (`IPrimitiveVal`): `StrVal`, `NumVal`, `BoolVal`, `NullVal`, `Unsure`
+**Primitives** (`IPrimitiveVal`): `StrVal`, `IntVal`, `FloatVal`, `BoolVal`, `NullVal`, `Unsure` (`NumVal` is deprecated)
 
 **Collections** (`ICollectionVal`): `ListVal`, `SetVal`, `MapVal` (String keys), `RangeVal`
 
 **Serializers** (`IValSerializer<Material : Any>`): `DftByteArraySerializerImpl` (ByteArray), `DftByteBufferSerializerImpl` (ByteBuffer), `DftCharBufferSerializerImpl` (CharBuffer)
 
-Full type specifications and method details in [docs/design.md](./docs/design.md).
+Full type specifications and method details in [docs/design-primitive.md](./docs/design-primitive.md).
 
 ## Documentation
 
 - [docs/idea.md](./docs/idea.md) -- concepts, terminology, and system role
-- [docs/design.md](./docs/design.md) -- overview, primitive types, and validation rules
-- [docs/llms.txt](./docs/llms.txt) -- documents for llm agents to understand the system and APIs usage. 
+- [docs/design-primitive.md](./docs/design-primitive.md) -- primitive type specifications (IntVal, FloatVal, StrVal, BoolVal, NullVal, Unsure)
+- [docs/design-collection.md](./docs/design-collection.md) -- collection type specifications (ListVal, SetVal, MapVal, RangeVal)
+- [docs/design-serializer.md](./docs/design-serializer.md) -- serializer interface and implementations
+
+## For Agents
+
+Agent-consumable documentation index at [docs/llms.txt](./docs/llms.txt) (llmstxt.org format).
 
 ## Citation
 

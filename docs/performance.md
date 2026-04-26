@@ -181,7 +181,48 @@ Each row shows the delta from applying that single optimization.
 
 ## Candidates
 
-_Empty — round 5 complete. To start a new round, add candidates here following the pipeline in `.claude/rules/performance.md`._
+### P6-1: Split NumVal into IntVal(Long) + FloatVal(Double)
+
+**File(s):** `NumVal.kt`, `PrimitiveUtils.kt`, all serializers
+
+**Hypothesis:** `NumVal.core: Number` accepts 6 JVM numeric types (Byte, Short, Int, Long, Float, Double). This causes:
+1. **Equality bug:** `NumVal(3) != NumVal(3L)` — same logical value, different IR representations, `data class equals` returns false.
+2. **Hash inconsistency:** `NumVal(3).hashCode() != NumVal(3L).hashCode()` — deduplication via hash (e.g., `addScalarValue`) may create duplicate nodes for the same logical integer.
+3. **Runtime type checks:** 47+ occurrences of `is NumVal` + `core is Long` / `core is Double` across CobraPHP because `NumVal` alone doesn't distinguish int vs float.
+4. **Serialization ambiguity:** Serializers must inspect `core` runtime type to choose encoding (NUM_INT vs NUM_LONG vs NUM_FLOAT vs NUM_DOUBLE).
+
+**Proposed change:**
+```
+NumVal(core: Number)  →  IntVal(core: Long)     all integers unified to 64-bit
+                         FloatVal(core: Double)  all floats unified to IEEE 754 double
+```
+
+- `IntVal(Long)`: PHP IS_LONG is always 64-bit. JVM Int/Short/Byte widen to Long at construction.
+- `FloatVal(Double)`: PHP IS_DOUBLE is always IEEE 754 double. JVM Float widens to Double.
+- Eliminates all 6 `isInt`/`isLong`/`isFloat`/`isDouble`/`isPrimitiveIntegerType`/`isPrimitiveFloatingType` runtime checks.
+- Serializer reduces from 4 numeric type tags to 2 (INT, FLOAT).
+- `sealed interface IPrimitiveVal` exhaustive `when` adds one branch (5 → 6 subtypes).
+
+**Migration in commons-value:**
+| Old | New | Rule |
+|---|---|---|
+| `NumVal(Int/Short/Byte/Long)` | `IntVal(Long)` | `.toLong()` at construction |
+| `NumVal(Float/Double)` | `FloatVal(Double)` | `.toDouble()` at construction |
+| `42.numVal` | `42.intVal` | Extension property |
+| `3.14.numVal` | `3.14.floatVal` | Extension property |
+| `NumVal.truncate()` | `FloatVal.toIntVal()` | Truncation method |
+| `NumVal.isInt` / `NumVal.isLong` | not needed | Type is `IntVal` |
+| `NumVal.isFloat` / `NumVal.isDouble` | not needed | Type is `FloatVal` |
+
+**Impact on consumers (CobraPHP):**
+- ADG NType refactor (VALUE_INT, VALUE_FLOAT) aligns 1:1 with IntVal, FloatVal.
+- `addScalarValue` NType inference becomes: `is IntVal → VALUE_INT`, `is FloatVal → VALUE_FLOAT`.
+- ~47 runtime type checks on `node.value` Kotlin type become redundant (NType sufficient).
+- `TypeCasting.kt` `asPhpNumVal` simplifies: `is IntVal` / `is FloatVal` instead of 6-way `when(core)`.
+
+**Risk:** Medium. Breaks API — all `NumVal` references in consumers must migrate. Serializer wire format changes (backward-incompatible unless versioned). `numVal` extension must be deprecated or split.
+
+**Dependency:** None (commons-value is standalone). Consumer migration (CobraPHP, any other Cobra analyzers) is a separate task.
 
 ---
 

@@ -1,6 +1,8 @@
-# commons-value Design — Collection Types
+# commons-value Design -- Collection Types
 
-Part of [commons-value design](design.md). Specifies the `ICollectionVal` sealed hierarchy.
+> **Target design.** Current implementation uses `NumVal`; migration to `IntVal`/`FloatVal` is tracked in `performance.md` P6-1.
+
+Part of [commons-value design](design-primitive.md). Specifies the `ICollectionVal` sealed hierarchy.
 
 ---
 
@@ -136,29 +138,32 @@ Part of [commons-value design](design.md). Specifies the `ICollectionVal` sealed
 
 ### RangeVal
 
-**Responsibility:** Represents an inclusive numeric range as a collection value.
+**Responsibility:** Represents an inclusive integer range as a collection value.
 
 **State/Fields:**
-- `start: NumVal` — Starting value of the range.
-- `endInclusive: NumVal` — Ending value of the range (inclusive).
-- `core: List<NumVal>` — Computed property returning `listOf(start, endInclusive)`.
+- `start: NumVal` -- Starting value of the range.
+- `endInclusive: NumVal` -- Ending value of the range (inclusive).
+- `core: List<NumVal>` -- Computed property returning `listOf(start, endInclusive)`.
+
+Primary storage uses NumVal. IntVal and Long constructors convert to NumVal internally.
 
 **Constructors:**
-- `RangeVal(start: NumVal, endInclusive: NumVal)` — Primary constructor from two NumVal values.
-- `RangeVal(start: Number, endInclude: Number)` — Secondary constructor converting Numbers to NumVal.
+- `RangeVal(start: NumVal, endInclusive: NumVal)` -- Primary constructor from two NumVal values.
+- `RangeVal(start: IntVal, endInclusive: IntVal)` -- Secondary constructor converting IntVal to NumVal.
+- `RangeVal(start: Long, endInclude: Long)` -- Secondary constructor converting Longs to NumVal.
 
 **Methods:**
 
 | Method | Behavior | Input | Output | Errors |
 |--------|----------|-------|--------|--------|
-| `contains(num: Number)` | Checks if number is within range | `num: Number` | `Boolean` | — |
-| `contains(num: NumVal)` | Checks if NumVal is within range | `num: NumVal` | `Boolean` | — |
-| `contains(range: RangeVal)` | Checks if sub-range is fully contained | `range: RangeVal` | `Boolean` | — |
-| `infix before(range: RangeVal)` | Checks if this range ends before other starts | `range: RangeVal` | `Boolean` | — |
-| `infix after(range: RangeVal)` | Checks if this range starts after other ends | `range: RangeVal` | `Boolean` | — |
-| `plus(range: RangeVal)` | Combines two ranges into their union bounds | `range: RangeVal` | `RangeVal` | — |
-| `map(transform)` | Transforms start and end values | `transform: (NumVal) -> R` | `List<R>` | — |
+| `contains(num: Long)` | Checks if number is within range | `num: Long` | `Boolean` | -- |
+| `contains(num: NumVal)` | Checks if NumVal is within range | `num: NumVal` | `Boolean` | -- |
+| `contains(range: RangeVal)` | Checks if sub-range is fully contained | `range: RangeVal` | `Boolean` | -- |
+| `infix before(range: RangeVal)` | Checks if this range ends before other starts | `range: RangeVal` | `Boolean` | -- |
+| `infix after(range: RangeVal)` | Checks if this range starts after other ends | `range: RangeVal` | `Boolean` | -- |
+| `plus(range: RangeVal)` | Combines two ranges into their union bounds | `range: RangeVal` | `RangeVal` | -- |
+| `map(transform)` | Transforms start and end values | `transform: (NumVal) -> R` | `List<R>` | -- |
 
 **Properties:**
-- `first: Number` — Start of range (delegates to `start.core`).
-- `last: Number` — End of range inclusive (delegates to `endInclusive.core`).
+- `first: Number` -- Start of range (delegates to `start.core`).
+- `last: Number` -- End of range inclusive (delegates to `endInclusive.core`).

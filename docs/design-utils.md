@@ -1,6 +1,8 @@
-# commons-value Design — Extension Functions
+# commons-value Design -- Extension Functions
 
-Part of [commons-value design](design.md). Specifies extension functions and exception types.
+> **Target design.** Current implementation uses `NumVal`; migration to `IntVal`/`FloatVal` is tracked in `performance.md` P6-1.
+
+Part of [commons-value design](design-primitive.md). Specifies extension functions and exception types.
 
 ---
 
@@ -8,37 +10,33 @@ Part of [commons-value design](design.md). Specifies extension functions and exc
 
 ### PrimitiveUtils (extension functions)
 
-**`Number.isInLongRange: Boolean`** — True if number fits in Long range. Byte/Short/Int/Long return true immediately.
+**`Long.intVal: IntVal`** -- Wraps Long as IntVal.
 
-**`Number.isInIntRange: Boolean`** — True if number fits in Int range.
+**`Double.floatVal: FloatVal`** -- Wraps Double as FloatVal.
 
-**`Number.isInShortRange: Boolean`** — True if number fits in Short range.
+**`String.intVal: IntVal`** -- Parses string to integer, returns IntVal. Uses `toLongOrNull()`. Throws `ParseException` on invalid input.
 
-**`Number.isInByteRange: Boolean`** — True if number fits in Byte range.
+**`String.floatVal: FloatVal`** -- Parses string to decimal, returns FloatVal. Uses `toDoubleOrNull()`. Throws `ParseException` on invalid input.
 
-**`Number.numVal: NumVal`** — Wraps Number as NumVal.
+**`String.strVal: StrVal`** -- Wraps String as StrVal.
 
-**`String.numVal: NumVal`** — Parses string to number, returns NumVal. Uses `toDoubleOrNull()` for strings containing `.`, otherwise `toLongOrNull()`. Returns Int for integer values within Int range, Long for larger integers, preserves Double for decimals. Stateless, thread-safe. Throws `ParseException` on invalid input.
+**`Char.strVal: StrVal`** -- Wraps Char (as String) as StrVal.
 
-**`String.strVal: StrVal`** — Wraps String as StrVal.
+**`Path.strVal: StrVal`** -- Wraps Path string representation as StrVal.
 
-**`Char.strVal: StrVal`** — Wraps Char (as String) as StrVal.
+**`File.strVal: StrVal`** -- Wraps File path as StrVal.
 
-**`Path.strVal: StrVal`** — Wraps Path string representation as StrVal.
+**`Boolean.boolVal: BoolVal`** -- Returns `BoolVal.T` for true, `BoolVal.F` for false.
 
-**`File.strVal: StrVal`** — Wraps File path as StrVal.
+**`Any?.primitiveVal: IPrimitiveVal`** -- Converts null/Long/Double/String/Boolean/IPrimitiveVal to corresponding IPrimitiveVal. Long and Int map to IntVal. Float and Double map to FloatVal. Throws `IllegalArgumentException` for unsupported types.
 
-**`Boolean.boolVal: BoolVal`** — Returns `BoolVal.T` for true, `BoolVal.F` for false.
+**`IPrimitiveVal.compareTo(other: IPrimitiveVal): Int`** -- Compares two primitives of same type. IntVal by Long, FloatVal by Double, StrVal by String, BoolVal by Boolean, NullVal always equal. Throws `IllegalArgumentException` for cross-type comparison.
 
-**`Any?.primitiveVal: IPrimitiveVal`** — Converts null/Number/String/Boolean/IPrimitiveVal to corresponding IPrimitiveVal. Throws `IllegalArgumentException` for unsupported types.
+**`StrVal.toRegex(doCaseIgnore: Boolean = false): Regex`** -- Escapes special regex chars, replaces Unsure placeholders with regex patterns (ANY/STR -> `.*`, NUM -> `\d+`, BOOL -> `(true|false)`).
 
-**`IPrimitiveVal.compareTo(other: IPrimitiveVal): Int`** — Compares two primitives of same type. NumVal by Double, StrVal by String, BoolVal by Boolean, NullVal always equal. Throws `IllegalArgumentException` for cross-type comparison.
+**`Unsure.toRegex(doCaseIgnore: Boolean = false): Regex`** -- Returns regex pattern corresponding to Unsure type.
 
-**`StrVal.toRegex(doCaseIgnore: Boolean = false): Regex`** — Escapes special regex chars, replaces Unsure placeholders with regex patterns (ANY/STR -> `.*`, NUM -> `\d+`, BOOL -> `(true|false)`).
-
-**`Unsure.toRegex(doCaseIgnore: Boolean = false): Regex`** — Returns regex pattern corresponding to Unsure type.
-
-**`String.startsWith(other: StrVal): Boolean`** — Checks if string starts with StrVal's content.
+**`String.startsWith(other: StrVal): Boolean`** -- Checks if string starts with StrVal's content.
 
 ### CollectionUtils (extension properties)
 
@@ -60,7 +58,7 @@ Part of [commons-value design](design.md). Specifies extension functions and exc
 
 ### Utils (top-level extension)
 
-**`Any?.toVal: IValue`** — Universal converter: null -> NullVal, Number -> NumVal, String -> StrVal, Boolean -> BoolVal, List -> ListVal, Map -> MapVal, IntRange -> RangeVal, Set -> SetVal, IValue -> identity. Throws `IllegalArgumentException` for unsupported types.
+**`Any?.toVal: IValue`** -- Universal converter: null -> NullVal, Long/Int -> IntVal, Double/Float -> FloatVal, String -> StrVal, Boolean -> BoolVal, List -> ListVal, Map -> MapVal, IntRange -> RangeVal, Set -> SetVal, IValue -> identity. Throws `IllegalArgumentException` for unsupported types.
 
 ### SerializerUtils (extension functions)
 
@@ -82,6 +80,6 @@ Part of [commons-value design](design.md). Specifies extension functions and exc
 |-----------|------------|
 | `IllegalArgumentException` | `Any?.toVal` / `Any?.primitiveVal` called on unsupported type; `IPrimitiveVal.compareTo` with incompatible types; serializer encounters unknown IValue subtype; deserializer encounters unknown type tag; empty ByteBuffer deserialization |
 | `IndexOutOfBoundsException` | `ListVal.get`/`set`/`subList` with out-of-range index; `StrVal.get` with out-of-range index |
-| `ParseException` | `String.numVal` when string is not a valid number |
+| `ParseException` | `String.intVal` / `String.floatVal` when string is not a valid number |
 | `NumberFormatException` | `String.asNumber()` / `String.asHexInt()` on invalid input |
 | `BufferUnderflowException` | ByteBuffer/CharBuffer read operations when insufficient data remains |
