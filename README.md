@@ -1,4 +1,4 @@
-# commons-value
+# COBRA.COMMONS.VALUE
 
 > Common value -- the intermediate representation that gives analysis modules a shared language.
 
