@@ -1,7 +1,9 @@
 package edu.jhu.cobra.commons.value.serializer
 
 import edu.jhu.cobra.commons.value.BoolVal
+import edu.jhu.cobra.commons.value.FloatVal
 import edu.jhu.cobra.commons.value.IValue
+import edu.jhu.cobra.commons.value.IntVal
 import edu.jhu.cobra.commons.value.ListVal
 import edu.jhu.cobra.commons.value.MapVal
 import edu.jhu.cobra.commons.value.NullVal
@@ -26,6 +28,8 @@ inline fun <reified T : IValue> random(): T = when (T::class) {
     SetVal::class -> randomIValue(6) as T
     MapVal::class -> randomIValue(7) as T
     RangeVal::class -> randomIValue(8) as T
+    IntVal::class -> randomIValue(9) as T
+    FloatVal::class -> randomIValue(10) as T
     else -> randomIValue() as T
 }
 
@@ -38,8 +42,10 @@ fun randomIValue(typeNum: Int = -1): IValue = when (typeNum) {
     5 -> randomList(Random.nextInt(1, 10)).listVal
     6 -> randomList(Random.nextInt(1, 10)).setVal
     7 -> randomMap(Random.nextInt(1, 10)).mapVal
-    8 -> RangeVal(randomNumber().toInt(), randomNumber().toInt())
-    else -> randomIValue(Random.nextInt(0, 9))
+    8 -> RangeVal(randomNumber().toLong(), randomNumber().toLong())
+    9 -> IntVal(Random.nextLong())
+    10 -> FloatVal(Random.nextDouble())
+    else -> randomIValue(Random.nextInt(0, 11))
 }
 
 private fun randomNumber(): Number = when (Random.nextInt(6)) {

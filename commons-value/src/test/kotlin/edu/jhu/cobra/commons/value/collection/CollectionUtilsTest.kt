@@ -1,6 +1,7 @@
 package edu.jhu.cobra.commons.value.collection
 
 import edu.jhu.cobra.commons.value.BoolVal
+import edu.jhu.cobra.commons.value.IntVal
 import edu.jhu.cobra.commons.value.ListVal
 import edu.jhu.cobra.commons.value.MapVal
 import edu.jhu.cobra.commons.value.NumVal
@@ -65,7 +66,7 @@ internal class CollectionUtilsTest {
         val collection = listOf(1, "text", true)
         val result = collection.listVal
         assertEquals(3, result.size)
-        assertEquals(NumVal(1), result[0])
+        assertEquals(IntVal(1L), result[0])
         assertEquals(StrVal("text"), result[1])
         assertEquals(BoolVal.T, result[2])
     }
@@ -92,8 +93,8 @@ internal class CollectionUtilsTest {
         val collection = listOf(1, 1, 2, "text")
         val result = collection.setVal
         assertEquals(3, result.size)
-        assertTrue(result.contains(NumVal(1)))
-        assertTrue(result.contains(NumVal(2)))
+        assertTrue(result.contains(IntVal(1L)))
+        assertTrue(result.contains(IntVal(2L)))
         assertTrue(result.contains(StrVal("text")))
     }
 
@@ -119,7 +120,7 @@ internal class CollectionUtilsTest {
         val set = setOf(1, true, "text")
         val result = set.setVal
         assertEquals(3, result.size)
-        assertTrue(result.contains(NumVal(1)))
+        assertTrue(result.contains(IntVal(1L)))
         assertTrue(result.contains(BoolVal.T))
         assertTrue(result.contains(StrVal("text")))
     }
@@ -131,7 +132,7 @@ internal class CollectionUtilsTest {
         val map = mapOf("k1" to 42, "k2" to true)
         val result = map.mapVal
         assertEquals(2, result.size)
-        assertEquals(NumVal(42), result["k1"])
+        assertEquals(IntVal(42L), result["k1"])
         assertEquals(BoolVal.T, result["k2"])
     }
 
@@ -225,8 +226,8 @@ internal class CollectionUtilsTest {
         assertTrue(result[1] is ListVal)
         val inner0 = result[0] as ListVal
         val inner1 = result[1] as ListVal
-        assertEquals(NumVal(1), inner0[0])
-        assertEquals(NumVal(2), inner0[1])
+        assertEquals(IntVal(1L), inner0[0])
+        assertEquals(IntVal(2L), inner0[1])
         assertEquals(StrVal("a"), inner1[0])
         assertEquals(StrVal("b"), inner1[1])
     }

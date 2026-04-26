@@ -1,7 +1,9 @@
 package edu.jhu.cobra.commons.value.primitive
 
 import edu.jhu.cobra.commons.value.BoolVal
+import edu.jhu.cobra.commons.value.FloatVal
 import edu.jhu.cobra.commons.value.IPrimitiveVal
+import edu.jhu.cobra.commons.value.IntVal
 import edu.jhu.cobra.commons.value.NullVal
 import edu.jhu.cobra.commons.value.NumVal
 import edu.jhu.cobra.commons.value.StrVal
@@ -39,6 +41,10 @@ import kotlin.test.assertTrue
  * - `should return false from contains for invalid string` — contains invalid
  * - `should return false from contains for empty string` — contains boundary
  * - `should implement IPrimitiveVal` — type hierarchy
+ * - `should infer NUM from IntVal example` — new(IPrimitiveVal) with IntVal
+ * - `should infer NUM from FloatVal example` — new(IPrimitiveVal) with FloatVal
+ * - `should return NUM from reified new IntVal` — new<IntVal>()
+ * - `should return NUM from reified new FloatVal` — new<FloatVal>()
  */
 internal class UnsureTest {
 
@@ -108,6 +114,7 @@ internal class UnsureTest {
         assertEquals(Unsure.STR, Unsure.new(StrVal("test")))
     }
 
+    @Suppress("DEPRECATION")
     @Test
     fun `should infer NUM from NumVal example`() {
         assertEquals(Unsure.NUM, Unsure.new(NumVal(42)))
@@ -138,6 +145,7 @@ internal class UnsureTest {
         assertEquals(Unsure.STR, Unsure.new<StrVal>())
     }
 
+    @Suppress("DEPRECATION")
     @Test
     fun `should return NUM from reified new NumVal`() {
         assertEquals(Unsure.NUM, Unsure.new<NumVal>())
@@ -191,5 +199,29 @@ internal class UnsureTest {
     fun `should implement IPrimitiveVal`() {
         val value: IPrimitiveVal = Unsure.STR
         assertTrue(value is Unsure)
+    }
+
+    // --- new(IPrimitiveVal) with IntVal/FloatVal ---
+
+    @Test
+    fun `should infer NUM from IntVal example`() {
+        assertEquals(Unsure.NUM, Unsure.new(IntVal(42L)))
+    }
+
+    @Test
+    fun `should infer NUM from FloatVal example`() {
+        assertEquals(Unsure.NUM, Unsure.new(FloatVal(3.14)))
+    }
+
+    // --- new<T>() reified with IntVal/FloatVal ---
+
+    @Test
+    fun `should return NUM from reified new IntVal`() {
+        assertEquals(Unsure.NUM, Unsure.new<IntVal>())
+    }
+
+    @Test
+    fun `should return NUM from reified new FloatVal`() {
+        assertEquals(Unsure.NUM, Unsure.new<FloatVal>())
     }
 }

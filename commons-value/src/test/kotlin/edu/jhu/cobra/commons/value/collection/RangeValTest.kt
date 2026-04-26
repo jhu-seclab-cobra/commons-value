@@ -69,8 +69,8 @@ internal class RangeValTest {
     @Test
     fun `should create range from Number pair`() {
         val range = RangeVal(1, 10)
-        assertEquals(1, range.first)
-        assertEquals(10, range.last)
+        assertEquals(1L, range.first)
+        assertEquals(10L, range.last)
     }
 
     // -- Properties --
@@ -212,8 +212,8 @@ internal class RangeValTest {
         val r1 = RangeVal(1, 3)
         val r2 = RangeVal(7, 10)
         val combined = r1 + r2
-        assertEquals(1, combined.first)
-        assertEquals(10, combined.last)
+        assertEquals(1L, combined.first)
+        assertEquals(10L, combined.last)
     }
 
     @Test
@@ -221,8 +221,8 @@ internal class RangeValTest {
         val r1 = RangeVal(1, 5)
         val r2 = RangeVal(3, 8)
         val combined = r1 + r2
-        assertEquals(1, combined.first)
-        assertEquals(8, combined.last)
+        assertEquals(1L, combined.first)
+        assertEquals(8L, combined.last)
     }
 
     @Test

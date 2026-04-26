@@ -10,8 +10,8 @@ import kotlin.test.assertSame
  * Tests for the top-level `Any?.toVal` extension property specified in design-utils.md.
  *
  * - `should convert null to NullVal` — null input produces NullVal.
- * - `should convert Int to NumVal` — Int input produces NumVal wrapping that Int.
- * - `should convert Double to NumVal` — Double input produces NumVal wrapping that Double.
+ * - `should convert Int to IntVal` — Int input produces IntVal wrapping that Int as Long.
+ * - `should convert Double to FloatVal` — Double input produces FloatVal wrapping that Double.
  * - `should convert String to StrVal` — String input produces StrVal wrapping that String.
  * - `should convert true to BoolVal` — true produces BoolVal with core true.
  * - `should convert false to BoolVal` — false produces BoolVal with core false.
@@ -21,6 +21,10 @@ import kotlin.test.assertSame
  * - `should convert Set to SetVal` — Set input produces SetVal with converted elements.
  * - `should return IValue identity` — IValue input returned as same instance.
  * - `should throw IllegalArgumentException for unsupported type` — Unsupported type rejected.
+ * - `should convert Int to IntVal via toVal` — Int dispatches to intVal.
+ * - `should convert Long to IntVal via toVal` — Long dispatches to intVal.
+ * - `should convert Double to FloatVal via toVal` — Double dispatches to floatVal.
+ * - `should convert Float to FloatVal via toVal` — Float dispatches to floatVal.
  */
 internal class UtilsTest {
 
@@ -31,16 +35,16 @@ internal class UtilsTest {
     }
 
     @Test
-    fun `should convert Int to NumVal`() {
+    fun `should convert Int to IntVal`() {
         val result = 42.toVal
-        assertIs<NumVal>(result)
-        assertEquals(42, result.core)
+        assertIs<IntVal>(result)
+        assertEquals(42L, result.core)
     }
 
     @Test
-    fun `should convert Double to NumVal`() {
+    fun `should convert Double to FloatVal`() {
         val result = 3.14.toVal
-        assertIs<NumVal>(result)
+        assertIs<FloatVal>(result)
         assertEquals(3.14, result.core)
     }
 
@@ -69,7 +73,7 @@ internal class UtilsTest {
     fun `should convert List to ListVal`() {
         val result = listOf(1, "two", true).toVal
         assertIs<ListVal>(result)
-        assertEquals(NumVal(1), result[0])
+        assertEquals(IntVal(1L), result[0])
         assertEquals(StrVal("two"), result[1])
         assertEquals(BoolVal.T, result[2])
     }
@@ -96,6 +100,7 @@ internal class UtilsTest {
         assertEquals(3, result.size)
     }
 
+    @Suppress("DEPRECATION")
     @Test
     fun `should return IValue identity`() {
         val numVal = NumVal(42)
@@ -108,5 +113,35 @@ internal class UtilsTest {
         assertFailsWith<IllegalArgumentException> {
             Object().toVal
         }
+    }
+
+    // --- toVal with IntVal/FloatVal ---
+
+    @Test
+    fun `should convert Int to IntVal via toVal`() {
+        val result = 42.toVal
+        assertIs<IntVal>(result)
+        assertEquals(42L, result.core)
+    }
+
+    @Test
+    fun `should convert Long to IntVal via toVal`() {
+        val result = 42L.toVal
+        assertIs<IntVal>(result)
+        assertEquals(42L, result.core)
+    }
+
+    @Test
+    fun `should convert Double to FloatVal via toVal`() {
+        val result = 3.14.toVal
+        assertIs<FloatVal>(result)
+        assertEquals(3.14, result.core)
+    }
+
+    @Test
+    fun `should convert Float to FloatVal via toVal`() {
+        val result = 3.14f.toVal
+        assertIs<FloatVal>(result)
+        assertEquals(3.14f.toDouble(), result.core)
     }
 }

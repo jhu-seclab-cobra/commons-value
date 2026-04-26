@@ -1,7 +1,9 @@
 package edu.jhu.cobra.commons.value.serializer
 
 import edu.jhu.cobra.commons.value.BoolVal
+import edu.jhu.cobra.commons.value.FloatVal
 import edu.jhu.cobra.commons.value.IValue
+import edu.jhu.cobra.commons.value.IntVal
 import edu.jhu.cobra.commons.value.ListVal
 import edu.jhu.cobra.commons.value.MapVal
 import edu.jhu.cobra.commons.value.NullVal
@@ -13,6 +15,7 @@ import edu.jhu.cobra.commons.value.Unsure
 import java.math.BigInteger
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 /**
  * Abstract base test for [IValSerializer] round-trip contract: deserialize(serialize(value)) == value.
@@ -53,6 +56,21 @@ import kotlin.test.assertEquals
  * - `should round-trip RangeVal with negative bounds` — RangeVal(-100, 100) round-trips.
  * - `should round-trip mixed nested collection` — ListVal containing SetVal, MapVal, RangeVal round-trips.
  * - `should round-trip large random data set` — 10000 random IValues all round-trip.
+ * - `should round-trip IntVal zero` — IntVal(0L) round-trips.
+ * - `should round-trip IntVal positive` — IntVal(42L) round-trips.
+ * - `should round-trip IntVal negative` — IntVal(-1L) round-trips.
+ * - `should round-trip IntVal max` — IntVal(Long.MAX_VALUE) round-trips.
+ * - `should round-trip IntVal min` — IntVal(Long.MIN_VALUE) round-trips.
+ * - `should round-trip FloatVal zero` — FloatVal(0.0) round-trips.
+ * - `should round-trip FloatVal fractional` — FloatVal(3.14) round-trips.
+ * - `should round-trip FloatVal negative` — FloatVal(-1.5) round-trips.
+ * - `should round-trip FloatVal max` — FloatVal(Double.MAX_VALUE) round-trips.
+ * - `should round-trip FloatVal min` — FloatVal(Double.MIN_VALUE) round-trips.
+ * - `should round-trip FloatVal NaN` — FloatVal(Double.NaN) round-trips preserving NaN.
+ * - `should round-trip FloatVal positive infinity` — FloatVal(Double.POSITIVE_INFINITY) round-trips.
+ * - `should round-trip FloatVal negative infinity` — FloatVal(Double.NEGATIVE_INFINITY) round-trips.
+ * - `should round-trip ListVal with IntVal and FloatVal` — ListVal containing IntVal and FloatVal round-trips.
+ * - `should round-trip MapVal with IntVal and FloatVal values` — MapVal with IntVal and FloatVal values round-trips.
  */
 internal abstract class AbcSerializerImplUnitTest<M : Any> {
 
@@ -107,36 +125,43 @@ internal abstract class AbcSerializerImplUnitTest<M : Any> {
 
     // --- NumVal ---
 
+    @Suppress("DEPRECATION")
     @Test
     fun `should round-trip NumVal Byte`() {
         assertRoundTrip(NumVal(Byte.MAX_VALUE))
     }
 
+    @Suppress("DEPRECATION")
     @Test
     fun `should round-trip NumVal Short`() {
         assertRoundTrip(NumVal(Short.MAX_VALUE))
     }
 
+    @Suppress("DEPRECATION")
     @Test
     fun `should round-trip NumVal Int`() {
         assertRoundTrip(NumVal(42))
     }
 
+    @Suppress("DEPRECATION")
     @Test
     fun `should round-trip NumVal Long`() {
         assertRoundTrip(NumVal(1234567890123456789L))
     }
 
+    @Suppress("DEPRECATION")
     @Test
     fun `should round-trip NumVal Float`() {
         assertRoundTrip(NumVal(3.14f))
     }
 
+    @Suppress("DEPRECATION")
     @Test
     fun `should round-trip NumVal Double`() {
         assertRoundTrip(NumVal(Double.MIN_VALUE))
     }
 
+    @Suppress("DEPRECATION")
     @Test
     fun `should round-trip NumVal Float NaN`() {
         val original = NumVal(Float.NaN)
@@ -145,19 +170,113 @@ internal abstract class AbcSerializerImplUnitTest<M : Any> {
         assertEquals(true, (deserialized.core as Float).isNaN())
     }
 
+    @Suppress("DEPRECATION")
     @Test
     fun `should round-trip NumVal Float positive infinity`() {
         assertRoundTrip(NumVal(Float.POSITIVE_INFINITY))
     }
 
+    @Suppress("DEPRECATION")
     @Test
     fun `should round-trip NumVal Float negative infinity`() {
         assertRoundTrip(NumVal(Float.NEGATIVE_INFINITY))
     }
 
+    @Suppress("DEPRECATION")
     @Test
     open fun `should round-trip NumVal BigInteger`() {
         assertRoundTrip(NumVal(BigInteger("123456789012345678901234567890")))
+    }
+
+    // --- IntVal ---
+
+    @Test
+    fun `should round-trip IntVal zero`() {
+        assertRoundTrip(IntVal(0L))
+    }
+
+    @Test
+    fun `should round-trip IntVal positive`() {
+        assertRoundTrip(IntVal(42L))
+    }
+
+    @Test
+    fun `should round-trip IntVal negative`() {
+        assertRoundTrip(IntVal(-1L))
+    }
+
+    @Test
+    fun `should round-trip IntVal max`() {
+        assertRoundTrip(IntVal(Long.MAX_VALUE))
+    }
+
+    @Test
+    fun `should round-trip IntVal min`() {
+        assertRoundTrip(IntVal(Long.MIN_VALUE))
+    }
+
+    // --- FloatVal ---
+
+    @Test
+    fun `should round-trip FloatVal zero`() {
+        assertRoundTrip(FloatVal(0.0))
+    }
+
+    @Test
+    fun `should round-trip FloatVal fractional`() {
+        assertRoundTrip(FloatVal(3.14))
+    }
+
+    @Test
+    fun `should round-trip FloatVal negative`() {
+        assertRoundTrip(FloatVal(-1.5))
+    }
+
+    @Test
+    fun `should round-trip FloatVal max`() {
+        assertRoundTrip(FloatVal(Double.MAX_VALUE))
+    }
+
+    @Test
+    fun `should round-trip FloatVal min`() {
+        assertRoundTrip(FloatVal(Double.MIN_VALUE))
+    }
+
+    @Test
+    fun `should round-trip FloatVal NaN`() {
+        val original = FloatVal(Double.NaN)
+        val serialized = testTarget.serialize(original)
+        val deserialized = testTarget.deserialize(serialized) as FloatVal
+        assertTrue(deserialized.core.isNaN())
+    }
+
+    @Test
+    fun `should round-trip FloatVal positive infinity`() {
+        assertRoundTrip(FloatVal(Double.POSITIVE_INFINITY))
+    }
+
+    @Test
+    fun `should round-trip FloatVal negative infinity`() {
+        assertRoundTrip(FloatVal(Double.NEGATIVE_INFINITY))
+    }
+
+    // --- Nested collections with IntVal/FloatVal ---
+
+    @Test
+    fun `should round-trip ListVal with IntVal and FloatVal`() {
+        assertRoundTrip(ListVal(IntVal(42L), FloatVal(3.14), IntVal(-1L), FloatVal(0.0)))
+    }
+
+    @Test
+    fun `should round-trip MapVal with IntVal and FloatVal values`() {
+        assertRoundTrip(
+            MapVal(
+                "int" to IntVal(42L),
+                "float" to FloatVal(3.14),
+                "intMax" to IntVal(Long.MAX_VALUE),
+                "floatNeg" to FloatVal(-1.5),
+            ),
+        )
     }
 
     // --- Unsure ---
@@ -189,11 +308,13 @@ internal abstract class AbcSerializerImplUnitTest<M : Any> {
         assertRoundTrip(ListVal(emptyList()))
     }
 
+    @Suppress("DEPRECATION")
     @Test
     fun `should round-trip ListVal with mixed types`() {
         assertRoundTrip(ListVal(StrVal("test"), BoolVal.T, NumVal(1), NullVal))
     }
 
+    @Suppress("DEPRECATION")
     @Test
     fun `should round-trip nested ListVal`() {
         val nested = ListVal(
@@ -210,11 +331,13 @@ internal abstract class AbcSerializerImplUnitTest<M : Any> {
         assertRoundTrip(SetVal(emptySet()))
     }
 
+    @Suppress("DEPRECATION")
     @Test
     fun `should round-trip SetVal with mixed types`() {
         assertRoundTrip(SetVal(StrVal("test"), BoolVal.T, NumVal(1)))
     }
 
+    @Suppress("DEPRECATION")
     @Test
     fun `should round-trip nested SetVal`() {
         val nested = SetVal(
@@ -231,6 +354,7 @@ internal abstract class AbcSerializerImplUnitTest<M : Any> {
         assertRoundTrip(MapVal(emptyMap()))
     }
 
+    @Suppress("DEPRECATION")
     @Test
     fun `should round-trip MapVal with mixed value types`() {
         assertRoundTrip(
@@ -242,6 +366,7 @@ internal abstract class AbcSerializerImplUnitTest<M : Any> {
         )
     }
 
+    @Suppress("DEPRECATION")
     @Test
     fun `should round-trip nested MapVal`() {
         val nested = MapVal(
@@ -265,6 +390,7 @@ internal abstract class AbcSerializerImplUnitTest<M : Any> {
 
     // --- Mixed nested ---
 
+    @Suppress("DEPRECATION")
     @Test
     fun `should round-trip mixed nested collection`() {
         val mixed = ListVal(

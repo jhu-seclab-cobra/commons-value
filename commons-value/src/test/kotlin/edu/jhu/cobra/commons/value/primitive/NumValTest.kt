@@ -8,49 +8,59 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 /**
- * Black-box tests for [NumVal] derived from the design doc.
+ * Black-box tests for deprecated [NumVal] -- backward compatibility verification.
  *
- * - `should store Byte core` — primary constructor with Byte
- * - `should store Short core` — primary constructor with Short
- * - `should store Int core` — primary constructor with Int
- * - `should store Long core` — primary constructor with Long
- * - `should store Float core` — primary constructor with Float
- * - `should store Double core` — primary constructor with Double
- * - `should default to zero when no argument` — default constructor
- * - `should store Byte MIN and MAX` — boundary values
- * - `should store Short MIN and MAX` — boundary values
- * - `should store Int MIN and MAX` — boundary values
- * - `should store Long MIN and MAX` — boundary values
- * - `should store Float MIN and MAX` — boundary values
- * - `should store Double MIN and MAX` — boundary values
- * - `should convert toInt from Int` — toInt identity
- * - `should convert toInt from Double truncating` — toInt truncation
- * - `should convert toDouble from Int` — toDouble widening
- * - `should convert toDouble from Double` — toDouble identity
- * - `should convert toFloat from Int` — toFloat widening
- * - `should convert toFloat from Float` — toFloat identity
- * - `should convert toLong from Int` — toLong widening
- * - `should convert toLong from Long` — toLong identity
- * - `should convert toShort from Int` — toShort narrowing
- * - `should return positive when greater than int` — compareTo(Int) >
- * - `should return negative when less than int` — compareTo(Int) <
- * - `should return zero when equal to int` — compareTo(Int) ==
- * - `should compare Double core against int` — compareTo uses Double comparison
- * - `should truncate value fitting in Byte to Byte` — truncate Byte
- * - `should truncate value fitting in Short to Short` — truncate Short
- * - `should truncate value fitting in Int to Int` — truncate Int
- * - `should truncate Long MAX_VALUE to Long` — truncate Long
- * - `should truncate floating point to smallest integer type` — truncate converts float to integer
- * - `should report isInt true for Int core` — type introspection
- * - `should report isLong true for Long core` — type introspection
- * - `should report isShort true for Short core` — type introspection
- * - `should report isByte true for Byte core` — type introspection
- * - `should report isFloat true for Float core` — type introspection
- * - `should report isDouble true for Double core` — type introspection
- * - `should report isPrimitiveIntegerType for integer subtypes` — Byte, Short, Int, Long
- * - `should report isPrimitiveFloatingType for floating subtypes` — Float, Double
- * - `should implement IPrimitiveVal` — type hierarchy
+ * NumVal is deprecated in favor of IntVal/FloatVal. These tests verify that the
+ * deprecated API continues to function for existing callers during migration.
+ *
+ * - `should store Byte core` -- primary constructor with Byte
+ * - `should store Short core` -- primary constructor with Short
+ * - `should store Int core` -- primary constructor with Int
+ * - `should store Long core` -- primary constructor with Long
+ * - `should store Float core` -- primary constructor with Float
+ * - `should store Double core` -- primary constructor with Double
+ * - `should default to zero when no argument` -- default constructor
+ * - `should store Byte MIN and MAX` -- boundary values
+ * - `should store Short MIN and MAX` -- boundary values
+ * - `should store Int MIN and MAX` -- boundary values
+ * - `should store Long MIN and MAX` -- boundary values
+ * - `should store Float MIN and MAX` -- boundary values
+ * - `should store Double MIN and MAX` -- boundary values
+ * - `should convert toInt from Int` -- toInt identity
+ * - `should convert toInt from Double truncating` -- toInt truncation
+ * - `should convert toDouble from Int` -- toDouble widening
+ * - `should convert toDouble from Double` -- toDouble identity
+ * - `should convert toFloat from Int` -- toFloat widening
+ * - `should convert toFloat from Float` -- toFloat identity
+ * - `should convert toLong from Int` -- toLong widening
+ * - `should convert toLong from Long` -- toLong identity
+ * - `should convert toShort from Int` -- toShort narrowing
+ * - `should return positive when greater than int` -- compareTo(Int) >
+ * - `should return negative when less than int` -- compareTo(Int) <
+ * - `should return zero when equal to int` -- compareTo(Int) ==
+ * - `should compare Double core against int` -- compareTo uses Double comparison
+ * - `should truncate value fitting in Byte to Byte` -- truncate Byte
+ * - `should truncate value fitting in Short to Short` -- truncate Short
+ * - `should truncate value fitting in Int to Int` -- truncate Int
+ * - `should truncate Long MAX_VALUE to Long` -- truncate Long
+ * - `should truncate floating point to smallest integer type` -- truncate converts float to integer
+ * - `should report isInt true for Int core` -- type introspection
+ * - `should report isLong true for Long core` -- type introspection
+ * - `should report isShort true for Short core` -- type introspection
+ * - `should report isByte true for Byte core` -- type introspection
+ * - `should report isFloat true for Float core` -- type introspection
+ * - `should report isDouble true for Double core` -- type introspection
+ * - `should report isPrimitiveIntegerType for Byte` -- Byte is integer type
+ * - `should report isPrimitiveIntegerType for Short` -- Short is integer type
+ * - `should report isPrimitiveIntegerType for Int` -- Int is integer type
+ * - `should report isPrimitiveIntegerType for Long` -- Long is integer type
+ * - `should not report isPrimitiveIntegerType for Double` -- Double is not integer type
+ * - `should report isPrimitiveFloatingType for Float` -- Float is floating type
+ * - `should report isPrimitiveFloatingType for Double` -- Double is floating type
+ * - `should not report isPrimitiveFloatingType for Int` -- Int is not floating type
+ * - `should implement IPrimitiveVal` -- type hierarchy
  */
+@Suppress("DEPRECATION")
 internal class NumValTest {
 
     // --- Core storage per Number subtype ---

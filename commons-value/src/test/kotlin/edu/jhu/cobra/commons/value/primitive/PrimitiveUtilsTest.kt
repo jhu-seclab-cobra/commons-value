@@ -1,12 +1,16 @@
 package edu.jhu.cobra.commons.value.primitive
 
 import edu.jhu.cobra.commons.value.BoolVal
+import edu.jhu.cobra.commons.value.FloatVal
+import edu.jhu.cobra.commons.value.IntVal
 import edu.jhu.cobra.commons.value.NullVal
 import edu.jhu.cobra.commons.value.NumVal
 import edu.jhu.cobra.commons.value.StrVal
 import edu.jhu.cobra.commons.value.Unsure
 import edu.jhu.cobra.commons.value.boolVal
 import edu.jhu.cobra.commons.value.compareTo
+import edu.jhu.cobra.commons.value.floatVal
+import edu.jhu.cobra.commons.value.intVal
 import edu.jhu.cobra.commons.value.isInByteRange
 import edu.jhu.cobra.commons.value.isInIntRange
 import edu.jhu.cobra.commons.value.isInLongRange
@@ -24,6 +28,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
+import kotlin.test.assertIs
 import kotlin.test.assertTrue
 
 /**
@@ -49,7 +54,7 @@ import kotlin.test.assertTrue
  * - `should wrap true as BoolVal T` — Boolean.boolVal true
  * - `should wrap false as BoolVal F` — Boolean.boolVal false
  * - `should convert null to NullVal via primitiveVal` — Any?.primitiveVal null
- * - `should convert Number to NumVal via primitiveVal` — Any?.primitiveVal Number
+ * - `should convert Number to IntVal via primitiveVal` — Any?.primitiveVal Number (Int dispatches to IntVal)
  * - `should convert String to StrVal via primitiveVal` — Any?.primitiveVal String
  * - `should convert Boolean to BoolVal via primitiveVal` — Any?.primitiveVal Boolean
  * - `should return IPrimitiveVal unchanged via primitiveVal` — Any?.primitiveVal identity
@@ -96,36 +101,79 @@ import kotlin.test.assertTrue
  * - `should return true from isInByteRange for Byte MIN_VALUE` — isInByteRange boundary
  * - `should return true from isInByteRange for zero` — isInByteRange representative
  * - `should return false from isInByteRange for Short MAX_VALUE` — isInByteRange out
+ * - `should wrap Long 0 as IntVal` — Long.intVal zero
+ * - `should wrap Long 42 as IntVal` — Long.intVal typical
+ * - `should wrap Long MAX_VALUE as IntVal` — Long.intVal boundary max
+ * - `should wrap Long MIN_VALUE as IntVal` — Long.intVal boundary min
+ * - `should wrap Int as IntVal with Long core` — Int.intVal widens to Long
+ * - `should wrap Int MAX_VALUE as IntVal` — Int.intVal boundary max
+ * - `should wrap Int MIN_VALUE as IntVal` — Int.intVal boundary min
+ * - `should wrap Short as IntVal with Long core` — Short.intVal widens to Long
+ * - `should wrap Byte as IntVal with Long core` — Byte.intVal widens to Long
+ * - `should parse integer string to IntVal` — String.intVal typical
+ * - `should parse negative string to IntVal` — String.intVal negative
+ * - `should parse zero string to IntVal` — String.intVal zero
+ * - `should parse Long MAX_VALUE string to IntVal` — String.intVal boundary
+ * - `should throw ParseException for non-integer string intVal` — String.intVal error
+ * - `should throw ParseException for decimal string intVal` — String.intVal error decimal
+ * - `should throw ParseException for empty string intVal` — String.intVal error empty
+ * - `should throw ParseException for blank string intVal` — String.intVal error blank
+ * - `should wrap Double 0 as FloatVal` — Double.floatVal zero
+ * - `should wrap Double 3_14 as FloatVal` — Double.floatVal typical
+ * - `should wrap Double MAX_VALUE as FloatVal` — Double.floatVal boundary max
+ * - `should wrap Float as FloatVal with Double core` — Float.floatVal widens to Double
+ * - `should parse decimal string to FloatVal` — String.floatVal typical
+ * - `should parse negative string to FloatVal` — String.floatVal negative
+ * - `should parse zero string to FloatVal` — String.floatVal zero
+ * - `should throw ParseException for non-numeric string floatVal` — String.floatVal error
+ * - `should throw ParseException for empty string floatVal` — String.floatVal error empty
+ * - `should throw ParseException for blank string floatVal` — String.floatVal error blank
+ * - `should convert Int to IntVal via primitiveVal` — primitiveVal Int dispatches to intVal
+ * - `should convert Long to IntVal via primitiveVal` — primitiveVal Long dispatches to intVal
+ * - `should convert Double to FloatVal via primitiveVal` — primitiveVal Double dispatches to floatVal
+ * - `should convert Float to FloatVal via primitiveVal` — primitiveVal Float dispatches to floatVal
+ * - `should compare IntVal less than IntVal` — compareTo IntVal <
+ * - `should compare IntVal greater than IntVal` — compareTo IntVal >
+ * - `should compare IntVal equal to IntVal` — compareTo IntVal ==
+ * - `should compare FloatVal less than FloatVal` — compareTo FloatVal <
+ * - `should compare IntVal less than FloatVal cross-type` — compareTo IntVal vs FloatVal
+ * - `should compare FloatVal greater than IntVal cross-type` — compareTo FloatVal vs IntVal
  */
 internal class PrimitiveUtilsTest {
 
     // --- Number.numVal ---
 
+    @Suppress("DEPRECATION")
     @Test
     fun `should wrap Byte as NumVal`() {
         assertEquals(42.toByte(), 42.toByte().numVal.core)
     }
 
+    @Suppress("DEPRECATION")
     @Test
     fun `should wrap Short as NumVal`() {
         assertEquals(42.toShort(), 42.toShort().numVal.core)
     }
 
+    @Suppress("DEPRECATION")
     @Test
     fun `should wrap Int as NumVal`() {
         assertEquals(42, 42.numVal.core)
     }
 
+    @Suppress("DEPRECATION")
     @Test
     fun `should wrap Long as NumVal`() {
         assertEquals(42L, 42L.numVal.core)
     }
 
+    @Suppress("DEPRECATION")
     @Test
     fun `should wrap Float as NumVal`() {
         assertEquals(3.14f, 3.14f.numVal.core)
     }
 
+    @Suppress("DEPRECATION")
     @Test
     fun `should wrap Double as NumVal`() {
         assertEquals(3.14, 3.14.numVal.core)
@@ -133,31 +181,37 @@ internal class PrimitiveUtilsTest {
 
     // --- String.numVal ---
 
+    @Suppress("DEPRECATION")
     @Test
     fun `should parse integer string to NumVal`() {
         assertEquals(42, "42".numVal.core)
     }
 
+    @Suppress("DEPRECATION")
     @Test
     fun `should parse negative integer string to NumVal`() {
         assertEquals(-42, "-42".numVal.core)
     }
 
+    @Suppress("DEPRECATION")
     @Test
     fun `should parse decimal string to NumVal`() {
         assertEquals(3.14, "3.14".numVal.core)
     }
 
+    @Suppress("DEPRECATION")
     @Test
     fun `should parse negative decimal string to NumVal`() {
         assertEquals(-3.14, "-3.14".numVal.core)
     }
 
+    @Suppress("DEPRECATION")
     @Test
     fun `should parse large integer string to Long NumVal`() {
         assertEquals(9999999999L, "9999999999".numVal.core)
     }
 
+    @Suppress("DEPRECATION")
     @Test
     fun `should throw ParseException for invalid string numVal`() {
         assertFailsWith<ParseException> {
@@ -214,8 +268,8 @@ internal class PrimitiveUtilsTest {
     }
 
     @Test
-    fun `should convert Number to NumVal via primitiveVal`() {
-        assertEquals(NumVal(42), 42.primitiveVal)
+    fun `should convert Number to IntVal via primitiveVal`() {
+        assertEquals(IntVal(42L), 42.primitiveVal)
     }
 
     @Test
@@ -228,6 +282,7 @@ internal class PrimitiveUtilsTest {
         assertEquals(BoolVal.T, true.primitiveVal)
     }
 
+    @Suppress("DEPRECATION")
     @Test
     fun `should return IPrimitiveVal unchanged via primitiveVal`() {
         val original = NumVal(42)
@@ -243,21 +298,25 @@ internal class PrimitiveUtilsTest {
 
     // --- compareTo ---
 
+    @Suppress("DEPRECATION")
     @Test
     fun `should compare NumVal less than NumVal`() {
         assertTrue(NumVal(1).compareTo(NumVal(2)) < 0)
     }
 
+    @Suppress("DEPRECATION")
     @Test
     fun `should compare NumVal greater than NumVal`() {
         assertTrue(NumVal(2).compareTo(NumVal(1)) > 0)
     }
 
+    @Suppress("DEPRECATION")
     @Test
     fun `should compare NumVal equal to NumVal`() {
         assertEquals(0, NumVal(1).compareTo(NumVal(1)))
     }
 
+    @Suppress("DEPRECATION")
     @Test
     fun `should compare NumVal with different Number subtypes`() {
         assertTrue(NumVal(1.5).compareTo(NumVal(1)) > 0)
@@ -293,6 +352,7 @@ internal class PrimitiveUtilsTest {
         assertEquals(0, NullVal.compareTo(NullVal))
     }
 
+    @Suppress("DEPRECATION")
     @Test
     fun `should throw IllegalArgumentException for cross-type compareTo`() {
         assertFailsWith<IllegalArgumentException> {
@@ -486,5 +546,228 @@ internal class PrimitiveUtilsTest {
     @Test
     fun `should return false from isInByteRange for Short MAX_VALUE`() {
         assertFalse(Short.MAX_VALUE.isInByteRange)
+    }
+
+    // --- Long.intVal ---
+
+    @Test
+    fun `should wrap Long 0 as IntVal`() {
+        assertEquals(IntVal(0L), 0L.intVal)
+    }
+
+    @Test
+    fun `should wrap Long 42 as IntVal`() {
+        assertEquals(IntVal(42L), 42L.intVal)
+    }
+
+    @Test
+    fun `should wrap Long MAX_VALUE as IntVal`() {
+        assertEquals(IntVal(Long.MAX_VALUE), Long.MAX_VALUE.intVal)
+    }
+
+    @Test
+    fun `should wrap Long MIN_VALUE as IntVal`() {
+        assertEquals(IntVal(Long.MIN_VALUE), Long.MIN_VALUE.intVal)
+    }
+
+    // --- Int.intVal ---
+
+    @Test
+    fun `should wrap Int as IntVal with Long core`() {
+        val result = 42.intVal
+        assertIs<IntVal>(result)
+        assertEquals(42L, result.core)
+    }
+
+    @Test
+    fun `should wrap Int MAX_VALUE as IntVal`() {
+        val result = Int.MAX_VALUE.intVal
+        assertEquals(Int.MAX_VALUE.toLong(), result.core)
+    }
+
+    @Test
+    fun `should wrap Int MIN_VALUE as IntVal`() {
+        val result = Int.MIN_VALUE.intVal
+        assertEquals(Int.MIN_VALUE.toLong(), result.core)
+    }
+
+    // --- Short.intVal ---
+
+    @Test
+    fun `should wrap Short as IntVal with Long core`() {
+        val result = 42.toShort().intVal
+        assertIs<IntVal>(result)
+        assertEquals(42L, result.core)
+    }
+
+    // --- Byte.intVal ---
+
+    @Test
+    fun `should wrap Byte as IntVal with Long core`() {
+        val result = 42.toByte().intVal
+        assertIs<IntVal>(result)
+        assertEquals(42L, result.core)
+    }
+
+    // --- String.intVal ---
+
+    @Test
+    fun `should parse integer string to IntVal`() {
+        assertEquals(IntVal(42L), "42".intVal)
+    }
+
+    @Test
+    fun `should parse negative string to IntVal`() {
+        assertEquals(IntVal(-1L), "-1".intVal)
+    }
+
+    @Test
+    fun `should parse zero string to IntVal`() {
+        assertEquals(IntVal(0L), "0".intVal)
+    }
+
+    @Test
+    fun `should parse Long MAX_VALUE string to IntVal`() {
+        assertEquals(IntVal(Long.MAX_VALUE), Long.MAX_VALUE.toString().intVal)
+    }
+
+    @Test
+    fun `should throw ParseException for non-integer string intVal`() {
+        assertFailsWith<ParseException> { "abc".intVal }
+    }
+
+    @Test
+    fun `should throw ParseException for decimal string intVal`() {
+        assertFailsWith<ParseException> { "3.14".intVal }
+    }
+
+    @Test
+    fun `should throw ParseException for empty string intVal`() {
+        assertFailsWith<ParseException> { "".intVal }
+    }
+
+    @Test
+    fun `should throw ParseException for blank string intVal`() {
+        assertFailsWith<ParseException> { " ".intVal }
+    }
+
+    // --- Double.floatVal ---
+
+    @Test
+    fun `should wrap Double 0 as FloatVal`() {
+        assertEquals(FloatVal(0.0), 0.0.floatVal)
+    }
+
+    @Test
+    fun `should wrap Double 3_14 as FloatVal`() {
+        assertEquals(FloatVal(3.14), 3.14.floatVal)
+    }
+
+    @Test
+    fun `should wrap Double MAX_VALUE as FloatVal`() {
+        assertEquals(FloatVal(Double.MAX_VALUE), Double.MAX_VALUE.floatVal)
+    }
+
+    // --- Float.floatVal ---
+
+    @Test
+    fun `should wrap Float as FloatVal with Double core`() {
+        val result = 3.14f.floatVal
+        assertIs<FloatVal>(result)
+        assertEquals(3.14f.toDouble(), result.core)
+    }
+
+    // --- String.floatVal ---
+
+    @Test
+    fun `should parse decimal string to FloatVal`() {
+        assertEquals(FloatVal(3.14), "3.14".floatVal)
+    }
+
+    @Test
+    fun `should parse negative string to FloatVal`() {
+        assertEquals(FloatVal(-0.5), "-0.5".floatVal)
+    }
+
+    @Test
+    fun `should parse zero string to FloatVal`() {
+        assertEquals(FloatVal(0.0), "0.0".floatVal)
+    }
+
+    @Test
+    fun `should throw ParseException for non-numeric string floatVal`() {
+        assertFailsWith<ParseException> { "abc".floatVal }
+    }
+
+    @Test
+    fun `should throw ParseException for empty string floatVal`() {
+        assertFailsWith<ParseException> { "".floatVal }
+    }
+
+    @Test
+    fun `should throw ParseException for blank string floatVal`() {
+        assertFailsWith<ParseException> { " ".floatVal }
+    }
+
+    // --- primitiveVal with IntVal/FloatVal ---
+
+    @Test
+    fun `should convert Int to IntVal via primitiveVal`() {
+        val result = 42.primitiveVal
+        assertIs<IntVal>(result)
+        assertEquals(42L, result.core)
+    }
+
+    @Test
+    fun `should convert Long to IntVal via primitiveVal`() {
+        val result = 42L.primitiveVal
+        assertIs<IntVal>(result)
+        assertEquals(42L, result.core)
+    }
+
+    @Test
+    fun `should convert Double to FloatVal via primitiveVal`() {
+        val result = 3.14.primitiveVal
+        assertIs<FloatVal>(result)
+        assertEquals(3.14, result.core)
+    }
+
+    @Test
+    fun `should convert Float to FloatVal via primitiveVal`() {
+        val result = 3.14f.primitiveVal
+        assertIs<FloatVal>(result)
+        assertEquals(3.14f.toDouble(), result.core)
+    }
+
+    // --- compareTo with IntVal/FloatVal ---
+
+    @Test
+    fun `should compare IntVal less than IntVal`() {
+        assertTrue(IntVal(1L).compareTo(IntVal(2L)) < 0)
+    }
+
+    @Test
+    fun `should compare IntVal greater than IntVal`() {
+        assertTrue(IntVal(2L).compareTo(IntVal(1L)) > 0)
+    }
+
+    @Test
+    fun `should compare IntVal equal to IntVal`() {
+        assertEquals(0, IntVal(1L).compareTo(IntVal(1L)))
+    }
+
+    @Test
+    fun `should compare FloatVal less than FloatVal`() {
+        assertTrue(FloatVal(1.0).compareTo(FloatVal(2.0)) < 0)
+    }
+
+    @Test
+    fun `should compare IntVal less than FloatVal cross-type`() {
+        assertTrue(IntVal(1L).compareTo(FloatVal(1.5)) < 0)
+    }
+
+    @Test
+    fun `should compare FloatVal greater than IntVal cross-type`() {
+        assertTrue(FloatVal(1.5).compareTo(IntVal(1L)) > 0)
     }
 }
