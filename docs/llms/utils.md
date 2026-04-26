@@ -7,19 +7,26 @@
 ```kotlin
 import edu.jhu.cobra.commons.value.*
 
-val n = 42.numVal           // NumVal(42)
-val s = "hello".strVal      // StrVal("hello")
-val b = true.boolVal        // BoolVal.T
+val n = 42.intVal            // IntVal(42L)
+val f = 3.14.floatVal        // FloatVal(3.14)
+val s = "hello".strVal       // StrVal("hello")
+val b = true.boolVal         // BoolVal.T
 val v = null.toVal           // NullVal
-val list = listOf(1, 2).listVal  // ListVal(NumVal(1), NumVal(2))
+val list = listOf(1, 2).listVal  // ListVal(IntVal(1L), IntVal(2L))
 ```
 
 ## API
 
 ### Primitive Conversion Extensions
 
-- **`Number.numVal: NumVal`** -- Wraps any `Number` in `NumVal`.
-- **`String.numVal: NumVal`** -- Parses string to `NumVal`. Integers parse as `Int` or `Long`; decimals parse as `Double`. Raises `ParseException` on invalid input.
+- **`Int.intVal: IntVal`** -- Converts `Int` to `IntVal` (widens to `Long`).
+- **`Long.intVal: IntVal`** -- Wraps `Long` in `IntVal`.
+- **`String.intVal: IntVal`** -- Parses string to `IntVal`. Raises `ParseException` on invalid input.
+- **`Double.floatVal: FloatVal`** -- Wraps `Double` in `FloatVal`.
+- **`Float.floatVal: FloatVal`** -- Converts `Float` to `FloatVal` (widens to `Double`).
+- **`String.floatVal: FloatVal`** -- Parses string to `FloatVal`. Raises `ParseException` on invalid input.
+- **`Number.numVal: NumVal`** -- **Deprecated.** Wraps any `Number` in `NumVal`. Use `intVal` or `floatVal` instead.
+- **`String.numVal: NumVal`** -- **Deprecated.** Parses string to `NumVal`. Use `String.intVal` or `String.floatVal` instead.
 - **`String.strVal: StrVal`** -- Wraps string in `StrVal`.
 - **`Char.strVal: StrVal`** -- Wraps character as single-char `StrVal`.
 - **`Path.strVal: StrVal`** -- Wraps `java.nio.file.Path` as `StrVal`.
@@ -44,7 +51,7 @@ val list = listOf(1, 2).listVal  // ListVal(NumVal(1), NumVal(2))
 
 ### Comparison
 
-- **`IPrimitiveVal.compareTo(other: IPrimitiveVal): Int`** -- Compares same-type primitives. `NumVal` compares as `Double`; `StrVal` compares lexicographically; `BoolVal` compares `false < true`; `NullVal` equals `NullVal`. Raises `IllegalArgumentException` on cross-type comparison.
+- **`IPrimitiveVal.compareTo(other: IPrimitiveVal): Int`** -- Compares same-type primitives. `IntVal` compares as `Long`; `FloatVal` compares as `Double`; `NumVal` compares as `Double` (deprecated); `StrVal` compares lexicographically; `BoolVal` compares `false < true`; `NullVal` equals `NullVal`. Raises `IllegalArgumentException` on cross-type comparison.
 
 ### Regex
 
@@ -64,7 +71,9 @@ val list = listOf(1, 2).listVal  // ListVal(NumVal(1), NumVal(2))
 
 ## Gotchas
 
-- `String.numVal` throws `ParseException`, not `NumberFormatException`.
+- `String.intVal` and `String.floatVal` throw `ParseException`, not `NumberFormatException`.
+- `String.numVal` is deprecated; throws `ParseException`.
+- `numVal` extensions are deprecated. Use `intVal` for integers and `floatVal` for floating-point.
 - `Any?.toVal` delegates to type-specific extensions. Unsupported types raise `IllegalArgumentException`.
 - `Map<*, *>.mapVal` calls `toString()` on keys -- non-string keys lose type information.
-- `IPrimitiveVal.compareTo` does not support cross-type comparison (e.g., `NumVal` vs `StrVal`).
+- `IPrimitiveVal.compareTo` does not support cross-type comparison (e.g., `IntVal` vs `StrVal`).

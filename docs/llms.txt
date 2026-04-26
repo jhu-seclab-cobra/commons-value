@@ -8,8 +8,8 @@ Package root: `edu.jhu.cobra.commons.value`. Serializers: `edu.jhu.cobra.commons
 
 ## Instructions for Agents
 
-- Use IR types (`StrVal`, `NumVal`, `BoolVal`, `NullVal`, `Unsure`, `ListVal`, `SetVal`, `MapVal`, `RangeVal`) for all graph property values.
-- Convert Kotlin natives to IR via extension properties: `42.numVal`, `"hello".strVal`, `true.boolVal`, `null.toVal`.
+- Use IR types (`StrVal`, `IntVal`, `FloatVal`, `BoolVal`, `NullVal`, `Unsure`, `ListVal`, `SetVal`, `MapVal`, `RangeVal`) for all graph property values. `NumVal` is deprecated; use `IntVal` for integers and `FloatVal` for floating-point.
+- Convert Kotlin natives to IR via extension properties: `42.intVal`, `3.14.floatVal`, `"hello".strVal`, `true.boolVal`, `null.toVal`.
 - Convert collections via extension properties: `list.listVal`, `set.setVal`, `map.mapVal`, `(1..10).rangeVal`.
 - Use `Any?.toVal` for generic conversion when the source type is unknown at compile time.
 - Dispatch on IR type with exhaustive `when` -- `IValue` is sealed, so the compiler enforces completeness.

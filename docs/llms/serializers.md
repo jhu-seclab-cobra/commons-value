@@ -9,8 +9,8 @@ import edu.jhu.cobra.commons.value.*
 import edu.jhu.cobra.commons.value.serializer.*
 
 val serializer = DftByteArraySerializerImpl
-val bytes = serializer.serialize(NumVal(42))
-val restored = serializer.deserialize(bytes) // NumVal(42)
+val bytes = serializer.serialize(IntVal(42L))
+val restored = serializer.deserialize(bytes) // IntVal(42L)
 ```
 
 ## API
