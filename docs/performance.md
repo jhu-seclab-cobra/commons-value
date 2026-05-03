@@ -62,10 +62,13 @@ Each row shows the delta from applying that single optimization.
 | P5-1~4 (combined) | ByteArray mixed deserialize | 7.3M | 7.8M | **+6.9%** |
 | P5-1~4 (combined) | ByteArray coll deserialize | 3.3M | 3.7M | **+10.5%** |
 | P5-1~4 (combined) | CharBuffer coll deserialize | 1.9M | 2.0M | **+5.1%** |
+| P7-1 Inline RangeVal | ByteArray coll serialize | 3.6M | 4.1M | **+12.8%** |
+| P7-1 Inline RangeVal | ByteBuffer coll serialize | 3.2M | 3.5M | **+9.7%** |
+| P7-1 Inline RangeVal | CharBuffer coll serialize | 2.4M | 2.9M | **+20.0%** |
 
 ---
 
-## Completed Optimizations (15 items)
+## Completed Optimizations (16 items)
 
 ### P0-1. Dead code in ByteBuffer List deserialization
 
@@ -162,6 +165,12 @@ Each row shows the delta from applying that single optimization.
 **File(s):** `NumVal.kt` (deleted), `PrimitiveUtils.kt`, all serializers, `RangeVal.kt`
 **Change:** Replaced `NumVal(core: Number)` with `IntVal(core: Long)` and `FloatVal(core: Double)`. Deleted NumVal class, `Number.numVal`/`String.numVal` extensions, and all 6 type introspection properties. Serializers retain NUM_* type tags for backward-compatible deserialization but serialize new data using INT/FLOAT tags.
 **Impact:** Eliminates equality bug (`NumVal(3) != NumVal(3L)`), hash inconsistency, and ~47 runtime type checks in consumers. Serializer reduces from variable-width numeric encoding to fixed 8-byte Long/Double.
+
+### P7-1. Inline RangeVal serialization
+
+**File(s):** `DftByteArraySerializerImpl.kt`, `DftByteBufferSerializerImpl.kt`, `DftCharBufferSerializerImpl.kt`
+**Change:** RangeVal now stores `IntVal(Long)` with a statically known layout. Replaced recursive `serialize(value.start)` / `serialize(value.endInclusive)` calls with direct inline encoding of the RANGE tag + two Long values. Eliminates 2 recursive calls and 2 intermediate buffer allocations per RangeVal.
+**Impact:** ByteArray collection serialize **+12.8%**, ByteBuffer collection serialize **+9.7%**, CharBuffer collection serialize **+20.0%**. Mixed paths also improved (+6-13%). No regressions on any metric.
 
 ---
 

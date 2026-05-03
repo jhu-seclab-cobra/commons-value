@@ -61,7 +61,7 @@ object DftCharBufferSerializerImpl : IValSerializer<CharBuffer> {
         is IntVal -> "${Type.INT.str}:${value.core}:".asCharBuffer()
         is FloatVal -> "${Type.FLOAT.str}:${value.core}:".asCharBuffer()
 
-        is RangeVal -> "${Type.RANGE.str}:${value.first.toLong()},${value.last.toLong()}:".asCharBuffer()
+        is RangeVal -> "${Type.RANGE.str}:${value.first},${value.last}:".asCharBuffer()
         is ListVal -> { // listType:cnt{element,element,...}
             val elements = value.map { element -> serialize(element) }
             val eleCount = value.size.asHexString() // the counter for ele

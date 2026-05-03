@@ -58,10 +58,11 @@ object DftByteBufferSerializerImpl : IValSerializer<ByteBuffer> {
         is FloatVal -> ByteBuffer.allocate(9).put(Type.FLOAT.byte).putDouble(value.core).typedFlip()
 
         is RangeVal -> {
-            val startBuf = serialize(value.start)
-            val endBuf = serialize(value.endInclusive)
-            val buf = ByteBuffer.allocate(1 + startBuf.limit() + endBuf.limit()).put(Type.RANGE.byte)
-            buf.put(startBuf).put(endBuf).typedFlip()
+            ByteBuffer.allocate(1 + 9 + 9)
+                .put(Type.RANGE.byte)
+                .put(Type.INT.byte).putLong(value.start.core)
+                .put(Type.INT.byte).putLong(value.endInclusive.core)
+                .typedFlip()
         }
 
         is ListVal -> { // 1 byte type | count | element1 | element2 | ...

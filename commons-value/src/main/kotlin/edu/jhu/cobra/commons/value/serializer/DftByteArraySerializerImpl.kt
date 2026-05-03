@@ -57,13 +57,13 @@ object DftByteArraySerializerImpl : IValSerializer<ByteArray> {
         is FloatVal -> longToBytes(Type.FLOAT.byte, java.lang.Double.doubleToRawLongBits(value.core))
 
         is RangeVal -> {
-            val firstBytes = serialize(value.start)
-            val secondBytes = serialize(value.endInclusive)
-            val result = ByteArray(1 + 4 + firstBytes.size + secondBytes.size)
+            val result = ByteArray(1 + 4 + 9 + 9)
             result[0] = Type.RANGE.byte
-            intInto(result, 1, firstBytes.size)
-            firstBytes.copyInto(result, 5)
-            secondBytes.copyInto(result, 5 + firstBytes.size)
+            intInto(result, 1, 9)
+            result[5] = Type.INT.byte
+            longInto(result, 6, value.start.core)
+            result[14] = Type.INT.byte
+            longInto(result, 15, value.endInclusive.core)
             result
         }
 
@@ -140,12 +140,22 @@ object DftByteArraySerializerImpl : IValSerializer<ByteArray> {
         return arr
     }
 
-    // Writes an Int (big-endian) into the array at the given offset.
     private fun intInto(arr: ByteArray, offset: Int, v: Int) {
         arr[offset] = (v shr 24).toByte()
         arr[offset + 1] = (v shr 16).toByte()
         arr[offset + 2] = (v shr 8).toByte()
         arr[offset + 3] = v.toByte()
+    }
+
+    private fun longInto(arr: ByteArray, offset: Int, v: Long) {
+        arr[offset] = (v shr 56).toByte()
+        arr[offset + 1] = (v shr 48).toByte()
+        arr[offset + 2] = (v shr 40).toByte()
+        arr[offset + 3] = (v shr 32).toByte()
+        arr[offset + 4] = (v shr 24).toByte()
+        arr[offset + 5] = (v shr 16).toByte()
+        arr[offset + 6] = (v shr 8).toByte()
+        arr[offset + 7] = v.toByte()
     }
 
     /**
