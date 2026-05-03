@@ -7,12 +7,10 @@ import edu.jhu.cobra.commons.value.IntVal
 import edu.jhu.cobra.commons.value.ListVal
 import edu.jhu.cobra.commons.value.MapVal
 import edu.jhu.cobra.commons.value.NullVal
-import edu.jhu.cobra.commons.value.NumVal
 import edu.jhu.cobra.commons.value.RangeVal
 import edu.jhu.cobra.commons.value.SetVal
 import edu.jhu.cobra.commons.value.StrVal
 import edu.jhu.cobra.commons.value.Unsure
-import edu.jhu.cobra.commons.value.numVal
 import java.nio.ByteBuffer
 
 /**
@@ -35,29 +33,18 @@ object DftByteBufferSerializerImpl : IValSerializer<ByteBuffer> {
      * This method encodes the given [IValue] into a binary format suitable for storage or transmission.
      * Supported value types include null, strings, booleans, numeric values, ranges, lists, sets, and maps.
      *
-     * Example usage:
-     * ```kotlin
-     * val numVal = NumVal(42)
-     * val buffer = DftByteBufferSerializerImpl.serialize(numVal)
-     * println(buffer) // Outputs the serialized ByteBuffer
-     * ```
-     *
      * @param value The [IValue] instance to serialize.
      * @return A [ByteBuffer] containing the serialized representation of the value.
      * @throws IllegalArgumentException If the value type is unknown or unsupported.
      */
     override fun serialize(value: IValue): ByteBuffer = when (value) {
-        // 1 byte type 
         is NullVal -> byteBufferOf(Type.NULL.byte)
-        // 1 byte type | 1 byte for the string length | bytes for the string
         is StrVal -> {
             val strCore = value.core.toByteArray()
             val bufferLen = 1 + 4 + strCore.size
             ByteBuffer.allocate(bufferLen).put(Type.STR.byte).putInt(strCore.size).put(strCore).typedFlip()
         }
-        // 1 byte type | 1 byte for the boolean value
         is BoolVal -> byteBufferOf(if (value.core) Type.BOOL_TRUE.byte else Type.BOOL_FALSE.byte)
-        // 1 byte type
         is Unsure -> byteBufferOf(
             when (value) {
                 Unsure.NUM -> Type.UNSURE_NUM.byte
@@ -69,20 +56,8 @@ object DftByteBufferSerializerImpl : IValSerializer<ByteBuffer> {
 
         is IntVal -> ByteBuffer.allocate(9).put(Type.INT.byte).putLong(value.core).typedFlip()
         is FloatVal -> ByteBuffer.allocate(9).put(Type.FLOAT.byte).putDouble(value.core).typedFlip()
-        is NumVal -> when (val num = value.core) {
-            is Byte -> ByteBuffer.allocate(2).put(Type.NUM_BYTE.byte).put(num).typedFlip()
-            is Short -> ByteBuffer.allocate(3).put(Type.NUM_SHORT.byte).putShort(num).typedFlip()
-            is Int -> ByteBuffer.allocate(5).put(Type.NUM_INT.byte).putInt(num).typedFlip()
-            is Long -> ByteBuffer.allocate(9).put(Type.NUM_LONG.byte).putLong(num).typedFlip()
-            is Float -> ByteBuffer.allocate(5).put(Type.NUM_FLOAT.byte).putFloat(num).typedFlip()
-            is Double -> ByteBuffer.allocate(9).put(Type.NUM_DOUBLE.byte).putDouble(num).typedFlip()
-            else -> {
-                val bytes = num.toString().toByteArray()
-                ByteBuffer.allocate(1 + 4 + bytes.size).put(Type.NUM_OTHERS.byte).putInt(bytes.size).put(bytes).typedFlip()
-            }
-        }
 
-        is RangeVal -> { // 1 byte type | startNumVal | endNumVal
+        is RangeVal -> {
             val startBuf = serialize(value.start)
             val endBuf = serialize(value.endInclusive)
             val buf = ByteBuffer.allocate(1 + startBuf.limit() + endBuf.limit()).put(Type.RANGE.byte)
@@ -122,13 +97,6 @@ object DftByteBufferSerializerImpl : IValSerializer<ByteBuffer> {
      * This method reconstructs an [IValue] from a binary format previously produced by [serialize].
      * Supported types include null, strings, booleans, numeric values, ranges, lists, sets, and maps.
      *
-     * Example usage:
-     * ```kotlin
-     * val buffer = ByteBuffer.wrap(byteArrayOf(Type.NUM_INT.byte, 0, 0, 0, 42))
-     * val value = DftByteBufferSerializerImpl.deserialize(buffer)
-     * println(value) // Outputs: NumVal{42}
-     * ```
-     *
      * @param material The [ByteBuffer] containing the serialized representation of a value.
      * @return The deserialized [IValue] instance.
      * @throws IllegalArgumentException If the material contains an unknown or unsupported type identifier.
@@ -142,19 +110,18 @@ object DftByteBufferSerializerImpl : IValSerializer<ByteBuffer> {
             Type.BOOL_FALSE.byte -> BoolVal.F
             Type.INT.byte -> IntVal(material.getLong())
             Type.FLOAT.byte -> FloatVal(material.getDouble())
-            Type.NUM_BYTE.byte -> NumVal(material.get())
-            Type.NUM_SHORT.byte -> NumVal(material.getShort())
-            Type.NUM_INT.byte -> NumVal(material.getInt())
-            Type.NUM_LONG.byte -> NumVal(material.getLong())
-            Type.NUM_FLOAT.byte -> NumVal(material.getFloat())
-            Type.NUM_DOUBLE.byte -> NumVal(material.getDouble())
-            Type.NUM_OTHERS.byte -> NumVal(material.getString().asNumber())
+            Type.NUM_BYTE.byte -> IntVal(material.get().toLong())
+            Type.NUM_SHORT.byte -> IntVal(material.getShort().toLong())
+            Type.NUM_INT.byte -> IntVal(material.getInt().toLong())
+            Type.NUM_LONG.byte -> IntVal(material.getLong())
+            Type.NUM_FLOAT.byte -> FloatVal(material.getFloat().toDouble())
+            Type.NUM_DOUBLE.byte -> FloatVal(material.getDouble())
+            Type.NUM_OTHERS.byte -> material.getString().asNumber().toIntOrFloatVal()
             Type.UNSURE_ANY.byte -> Unsure.ANY
             Type.UNSURE_NUM.byte -> Unsure.NUM
             Type.UNSURE_STR.byte -> Unsure.STR
             Type.UNSURE_BOOL.byte -> Unsure.BOOL
-            // element1 | element2
-            Type.RANGE.byte -> RangeVal(start = deserialize(material) as NumVal, endInclusive = deserialize(material) as NumVal)
+            Type.RANGE.byte -> RangeVal(start = deserialize(material) as IntVal, endInclusive = deserialize(material) as IntVal)
             Type.LIST.byte -> { // count | element1 | element2 | ...
                 val listDataCount = material.getInt()
                 val container = ListVal(size = listDataCount)

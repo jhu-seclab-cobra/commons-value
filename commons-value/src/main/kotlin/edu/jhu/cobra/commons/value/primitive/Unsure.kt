@@ -72,12 +72,10 @@ enum class Unsure(override val core: String) : IPrimitiveVal {
          * @param example The [IPrimitiveVal] example used to determine the uncertain type.
          * @return The corresponding [Unsure] instance: [STR], [NUM], [BOOL], or [ANY].
          */
-        @Suppress("DEPRECATION")
         fun new(example: IPrimitiveVal): Unsure = when (example) {
             is StrVal -> STR
             is IntVal -> NUM
             is FloatVal -> NUM
-            is NumVal -> NUM
             is BoolVal -> BOOL
             is NullVal -> ANY
             is Unsure -> example
@@ -87,20 +85,12 @@ enum class Unsure(override val core: String) : IPrimitiveVal {
          * Creates an [Unsure] object based on the generic type [T].
          * This method determines the appropriate uncertain type using reified generics.
          *
-         * Example usage:
-         * ```kotlin
-         * val uncertain = Unsure.new<NumVal>()
-         * println(uncertain) // Outputs: Unsure{__NumVal__}
-         * ```
-         *
          * @return The corresponding [Unsure] instance: [STR], [NUM], [BOOL], or [ANY].
          */
-        @Suppress("DEPRECATION")
         inline fun <reified T : IPrimitiveVal> new(): Unsure = when (T::class) {
             StrVal::class -> STR
             IntVal::class -> NUM
             FloatVal::class -> NUM
-            NumVal::class -> NUM
             BoolVal::class -> BOOL
             else -> ANY
         }

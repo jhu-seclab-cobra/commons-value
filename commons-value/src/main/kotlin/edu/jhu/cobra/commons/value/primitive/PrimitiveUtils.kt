@@ -93,57 +93,6 @@ val Number.isInByteRange: Boolean
     get() = toLong().let { it >= Byte.MIN_VALUE && it <= Byte.MAX_VALUE }
 
 /**
- * Converts this number to a [NumVal] representation.
- *
- * This property creates a new [NumVal] instance that wraps the current number,
- * preserving its value while providing COBRA's value type functionality.
- *
- * Example:
- * ```kotlin
- * val intNum = 42
- * val numVal = intNum.numVal // Creates NumVal(42)
- * 
- * val doubleNum = 3.14
- * val doubleVal = doubleNum.numVal // Creates NumVal(3.14)
- * ```
- *
- * @return A [NumVal] containing this number
- */
-@Suppress("DEPRECATION")
-val Number.numVal: NumVal get() = NumVal(this)
-
-/**
- * Parses this string as a number and converts it to a [NumVal].
- *
- * This property attempts to parse the string into the most appropriate numeric type:
- * - If the string contains a decimal point, it's parsed as a floating-point number
- * - If the value exceeds [Int] range, it's parsed as a [Long]
- * - Otherwise, it's parsed as an [Int]
- *
- * Example:
- * ```kotlin
- * "42".numVal // Creates NumVal(42) as Int
- * "3.14".numVal // Creates NumVal(3.14) as Double
- * "9999999999".numVal // Creates NumVal(9999999999) as Long
- * ```
- *
- * @return A [NumVal] containing the parsed number
- * @throws ParseException if the string cannot be parsed as a number
- * @see Number.numVal
- */
-@Suppress("DEPRECATION")
-val String.numVal: NumVal
-    get() {
-        if ("." in this) {
-            val d = toDoubleOrNull() ?: throw ParseException("Cannot parse '$this' as number", 0)
-            return d.numVal
-        }
-        val longNum = toLongOrNull() ?: throw ParseException("Cannot parse '$this' as number", 0)
-        return if (longNum < Int.MIN_VALUE || longNum > Int.MAX_VALUE) longNum.numVal
-        else NumVal(longNum.toInt())
-    }
-
-/**
  * Converts this [Long] to an [IntVal] representation.
  *
  * @return An [IntVal] containing this value
@@ -365,23 +314,15 @@ val Boolean.boolVal: BoolVal get() = if (this) BoolVal.T else BoolVal.F
  *
  * This property handles the conversion of various types to their COBRA primitive value equivalents:
  * - `null` → [NullVal]
- * - [Number] → [NumVal]
+ * - [Long], [Int], [Short], [Byte] → [IntVal]
+ * - [Double], [Float] → [FloatVal]
  * - [String] → [StrVal]
  * - [Boolean] → [BoolVal]
  * - [IPrimitiveVal] → returns as is
  *
- * Example:
- * ```kotlin
- * null.primitiveVal // Returns NullVal
- * 42.primitiveVal // Returns NumVal(42)
- * "Hello".primitiveVal // Returns StrVal("Hello")
- * true.primitiveVal // Returns BoolVal.T
- * ```
- *
  * @return An [IPrimitiveVal] representing this value
  * @throws IllegalArgumentException if the value cannot be converted to an [IPrimitiveVal]
  */
-@Suppress("DEPRECATION")
 val Any?.primitiveVal: IPrimitiveVal
     get() = when (this) {
         null -> NullVal
@@ -391,7 +332,6 @@ val Any?.primitiveVal: IPrimitiveVal
         is Byte -> intVal
         is Double -> floatVal
         is Float -> floatVal
-        is Number -> numVal
         is String -> strVal
         is Boolean -> boolVal
         is IPrimitiveVal -> this
@@ -402,18 +342,11 @@ val Any?.primitiveVal: IPrimitiveVal
  * Compares two [IPrimitiveVal] instances for ordering.
  *
  * This operator function implements natural ordering for COBRA primitive values:
- * - [NumVal]: Compares numeric values after converting to [Double]
+ * - [IntVal]: Compares long values directly
+ * - [FloatVal]: Compares double values directly
  * - [StrVal]: Uses standard string comparison
  * - [BoolVal]: `false` < `true`
  * - [NullVal]: All [NullVal] instances are equal
- *
- * Example:
- * ```kotlin
- * NumVal(1) < NumVal(2) // true
- * StrVal("a") < StrVal("b") // true
- * BoolVal.F < BoolVal.T // true
- * NullVal == NullVal // true
- * ```
  *
  * @param other The [IPrimitiveVal] to compare with
  * @return A negative number if this value is less than [other],
@@ -421,13 +354,11 @@ val Any?.primitiveVal: IPrimitiveVal
  *         a positive number if this value is greater than [other]
  * @throws IllegalArgumentException if comparing incompatible types
  */
-@Suppress("DEPRECATION")
 operator fun IPrimitiveVal.compareTo(other: IPrimitiveVal): Int = when {
     this is IntVal && other is IntVal -> core.compareTo(other.core)
     this is FloatVal && other is FloatVal -> core.compareTo(other.core)
     this is IntVal && other is FloatVal -> core.toDouble().compareTo(other.core)
     this is FloatVal && other is IntVal -> core.compareTo(other.core.toDouble())
-    this is NumVal && other is NumVal -> core.toDouble().compareTo(other.core.toDouble())
     this is StrVal && other is StrVal -> core.compareTo(other.core)
     this is BoolVal && other is BoolVal -> core.compareTo(other.core)
     this is NullVal && other is NullVal -> 0

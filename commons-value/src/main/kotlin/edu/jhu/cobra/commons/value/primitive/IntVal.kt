@@ -3,10 +3,6 @@ package edu.jhu.cobra.commons.value
 /**
  * Represents an integer value backed by [Long].
  *
- * Replaces [NumVal] for integer-typed numeric values in the analysis IR,
- * providing a narrower type that eliminates runtime type-checks on the
- * wrapped [Number].
- *
  * @property core The underlying [Long] value.
  */
 data class IntVal(override val core: Long) : IPrimitiveVal {

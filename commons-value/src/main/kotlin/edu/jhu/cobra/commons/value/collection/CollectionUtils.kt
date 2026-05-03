@@ -9,7 +9,7 @@ package edu.jhu.cobra.commons.value
  * Example:
  * ```kotlin
  * val list = listOf(1, "text", true)
- * val listVal = list.listVal // Creates ListVal containing NumVal(1), StrVal("text"), BoolVal(true)
+ * val listVal = list.listVal // Creates ListVal containing IntVal(1), StrVal("text"), BoolVal(true)
  * ```
  *
  * @return A [ListVal] containing the converted elements
@@ -26,7 +26,7 @@ val Collection<*>.listVal: ListVal get() = ListVal(map { it.toVal })
  * Example:
  * ```kotlin
  * val collection = listOf(1, 1, 2, "text")
- * val setVal = collection.setVal // Creates SetVal containing NumVal(1), NumVal(2), StrVal("text")
+ * val setVal = collection.setVal // Creates SetVal containing IntVal(1), IntVal(2), StrVal("text")
  * ```
  *
  * @return A [SetVal] containing the unique converted elements
@@ -60,7 +60,7 @@ fun ListVal?.orEmpty(): ListVal = this ?: ListVal()
  * Example:
  * ```kotlin
  * val map = mapOf("key" to 1, "value" to true)
- * val mapVal = map.mapVal // Creates MapVal with "key" -> NumVal(1), "value" -> BoolVal(true)
+ * val mapVal = map.mapVal // Creates MapVal with "key" -> IntVal(1), "value" -> BoolVal(true)
  * ```
  *
  * @return A [MapVal] containing the converted key-value pairs
@@ -94,7 +94,7 @@ fun MapVal?.orEmpty(): MapVal = this ?: MapVal()
  * Example:
  * ```kotlin
  * val set = setOf(1, true, "text")
- * val setVal = set.setVal // Creates SetVal containing NumVal(1), BoolVal(true), StrVal("text")
+ * val setVal = set.setVal // Creates SetVal containing IntVal(1), BoolVal(true), StrVal("text")
  * ```
  *
  * @return A [SetVal] containing the converted elements

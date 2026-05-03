@@ -16,9 +16,9 @@ package edu.jhu.cobra.commons.value
  * Example usage:
  * ```
  * val listVal: ICollectionVal = ListVal(listOf(StrVal("Item1"), StrVal("Item2")))
- * val setVal: ICollectionVal = SetVal(setOf(NumVal(1), NumVal(2)))
- * val mapVal: ICollectionVal = MapVal(mapOf("key1" to StrVal("value1"), "key2" to NumVal(42)))
- * val rangeVal: ICollectionVal = RangeVal(NumVal(1), NumVal(10)) // Range from 1 to 10
+ * val setVal: ICollectionVal = SetVal(setOf(IntVal(1), IntVal(2)))
+ * val mapVal: ICollectionVal = MapVal(mapOf("key1" to StrVal("value1"), "key2" to IntVal(42)))
+ * val rangeVal: ICollectionVal = RangeVal(IntVal(1), IntVal(10))
  * ```
  */
 sealed interface ICollectionVal : IValue

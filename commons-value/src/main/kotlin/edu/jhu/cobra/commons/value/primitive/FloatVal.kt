@@ -3,10 +3,6 @@ package edu.jhu.cobra.commons.value
 /**
  * Represents a floating-point value backed by [Double].
  *
- * Replaces [NumVal] for floating-point-typed numeric values in the analysis IR,
- * providing a narrower type that eliminates runtime type-checks on the
- * wrapped [Number].
- *
  * @property core The underlying [Double] value.
  */
 data class FloatVal(override val core: Double) : IPrimitiveVal {

@@ -110,12 +110,12 @@ data class StrVal(override val core: String) : IPrimitiveVal {
     operator fun get(index: Int) = if (index < 0) core[core.length + index] else core[index]
 
     /**
-     * Retrieves the character at the specified [index], represented as a [NumVal].
+     * Retrieves the character at the specified [index], represented as an [IntVal].
      *
-     * @param index The [NumVal] representing the position of the character to retrieve.
+     * @param index The [IntVal] representing the position of the character to retrieve.
      * @return The character at the specified position.
      */
-    operator fun get(index: NumVal) = get(index.core.toInt())
+    operator fun get(index: IntVal) = get(index.core.toInt())
 
     override fun toString(): String = "StrVal{$core}"
 }

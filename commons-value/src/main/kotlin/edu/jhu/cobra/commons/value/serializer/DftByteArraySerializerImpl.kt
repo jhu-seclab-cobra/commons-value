@@ -7,12 +7,10 @@ import edu.jhu.cobra.commons.value.IntVal
 import edu.jhu.cobra.commons.value.ListVal
 import edu.jhu.cobra.commons.value.MapVal
 import edu.jhu.cobra.commons.value.NullVal
-import edu.jhu.cobra.commons.value.NumVal
 import edu.jhu.cobra.commons.value.RangeVal
 import edu.jhu.cobra.commons.value.SetVal
 import edu.jhu.cobra.commons.value.StrVal
 import edu.jhu.cobra.commons.value.Unsure
-import edu.jhu.cobra.commons.value.numVal
 import org.apache.commons.lang3.math.NumberUtils
 import java.nio.ByteBuffer
 
@@ -33,13 +31,6 @@ object DftByteArraySerializerImpl : IValSerializer<ByteArray> {
      * This method encodes the given value into a format that can be transmitted or stored,
      * preserving its type and content. Supported types include null, strings, booleans, numeric values,
      * lists, sets, maps, ranges, and uncertain values.
-     *
-     * Example usage:
-     * ```kotlin
-     * val numVal = NumVal(42)
-     * val serialized = DftByteArraySerializerImpl.serialize(numVal)
-     * println(serialized.joinToString(", ") { it.toString() }) // Outputs the byte array
-     * ```
      *
      * @param value The [IValue] instance to serialize.
      * @return A byte array representing the serialized value.
@@ -64,21 +55,6 @@ object DftByteArraySerializerImpl : IValSerializer<ByteArray> {
 
         is IntVal -> longToBytes(Type.INT.byte, value.core)
         is FloatVal -> longToBytes(Type.FLOAT.byte, java.lang.Double.doubleToRawLongBits(value.core))
-        is NumVal -> when (val num = value.core) {
-            is Byte -> byteArrayOf(Type.NUM_BYTE.byte, num)
-            is Short -> shortToBytes(Type.NUM_SHORT.byte, num)
-            is Int -> intToBytes(Type.NUM_INT.byte, num)
-            is Long -> longToBytes(Type.NUM_LONG.byte, num)
-            is Float -> intToBytes(Type.NUM_FLOAT.byte, java.lang.Float.floatToRawIntBits(num))
-            is Double -> longToBytes(Type.NUM_DOUBLE.byte, java.lang.Double.doubleToRawLongBits(num))
-            else -> {
-                val bytes = num.toString().toByteArray()
-                ByteArray(1 + bytes.size).also {
-                    it[0] = Type.NUM_OTHERS.byte
-                    bytes.copyInto(it, 1)
-                }
-            }
-        }
 
         is RangeVal -> {
             val firstBytes = serialize(value.start)
@@ -179,13 +155,6 @@ object DftByteArraySerializerImpl : IValSerializer<ByteArray> {
      * [IValue] instance. The type and content of the value are reconstructed based on
      * the data contained in the byte array.
      *
-     * Example usage:
-     * ```kotlin
-     * val serialized = byteArrayOf(Type.NUM_INT.byte, 0, 0, 0, 42)
-     * val deserialized = DftByteArraySerializerImpl.deserialize(serialized)
-     * println(deserialized) // Outputs: NumVal{42}
-     * ```
-     *
      * @param material The byte array to deserialize.
      * @return The deserialized [IValue] instance.
      * @throws IllegalArgumentException If the material contains an unknown or unsupported type identifier.
@@ -210,23 +179,23 @@ object DftByteArraySerializerImpl : IValSerializer<ByteArray> {
         Type.UNSURE_BOOL.byte -> Unsure.BOOL
         Type.INT.byte -> IntVal(buffer.long)
         Type.FLOAT.byte -> FloatVal(buffer.double)
-        Type.NUM_BYTE.byte -> NumVal(buffer.get())
-        Type.NUM_SHORT.byte -> NumVal(buffer.short)
-        Type.NUM_INT.byte -> NumVal(buffer.int)
-        Type.NUM_LONG.byte -> NumVal(buffer.long)
-        Type.NUM_FLOAT.byte -> NumVal(buffer.float)
-        Type.NUM_DOUBLE.byte -> NumVal(buffer.double)
+        Type.NUM_BYTE.byte -> IntVal(buffer.get().toLong())
+        Type.NUM_SHORT.byte -> IntVal(buffer.short.toLong())
+        Type.NUM_INT.byte -> IntVal(buffer.int.toLong())
+        Type.NUM_LONG.byte -> IntVal(buffer.long)
+        Type.NUM_FLOAT.byte -> FloatVal(buffer.float.toDouble())
+        Type.NUM_DOUBLE.byte -> FloatVal(buffer.double)
         Type.NUM_OTHERS.byte -> {
             val bytes = ByteArray(buffer.remaining()).also { buffer.get(it) }
-            NumVal(NumberUtils.createNumber(bytes.decodeToString()))
+            NumberUtils.createNumber(bytes.decodeToString()).toIntOrFloatVal()
         }
         Type.RANGE.byte -> {
             val firstSize = buffer.getInt()
             val savedLimit = buffer.limit()
             buffer.limit(buffer.position() + firstSize)
-            val first = deserializeFrom(buffer) as NumVal
+            val first = deserializeFrom(buffer) as IntVal
             buffer.limit(savedLimit)
-            val second = deserializeFrom(buffer) as NumVal
+            val second = deserializeFrom(buffer) as IntVal
             RangeVal(first, second)
         }
         Type.LIST.byte -> {

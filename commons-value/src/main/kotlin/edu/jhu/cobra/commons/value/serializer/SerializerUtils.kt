@@ -1,5 +1,8 @@
 package edu.jhu.cobra.commons.value.serializer
 
+import edu.jhu.cobra.commons.value.FloatVal
+import edu.jhu.cobra.commons.value.IPrimitiveVal
+import edu.jhu.cobra.commons.value.IntVal
 import org.apache.commons.lang3.math.NumberUtils
 import java.io.DataInput
 import java.io.EOFException
@@ -35,6 +38,14 @@ enum class Type(val byte: Byte, val str: String) {
     LIST(70, "List"),
     SET(71, "Set"),
     MAP(80, "Map"),
+}
+
+/**
+ * Converts a [Number] to [IntVal] if it is an integer type, or [FloatVal] otherwise.
+ */
+fun Number.toIntOrFloatVal(): IPrimitiveVal = when (this) {
+    is Byte, is Short, is Int, is Long -> IntVal(toLong())
+    else -> FloatVal(toDouble())
 }
 
 /**

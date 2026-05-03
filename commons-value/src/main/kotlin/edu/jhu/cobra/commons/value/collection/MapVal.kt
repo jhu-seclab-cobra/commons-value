@@ -11,7 +11,7 @@ import kotlin.math.ceil
  *
  * Example usage:
  * ```
- * val mapVal = MapVal("key1" to StrVal("value1"), "key2" to NumVal(42))
+ * val mapVal = MapVal("key1" to StrVal("value1"), "key2" to IntVal(42))
  * println(mapVal["key1"]) // Outputs: StrVal{value1}
  * mapVal["key3"] = BoolVal(true)
  * println(mapVal.size) // Outputs: 3

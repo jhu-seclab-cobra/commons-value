@@ -10,7 +10,7 @@ import kotlin.math.ceil
  *
  * Example usage:
  * ```
- * val setVal = SetVal(StrVal("Item1"), NumVal(42))
+ * val setVal = SetVal(StrVal("Item1"), IntVal(42))
  * println(setVal.size) // Outputs: 2
  * setVal.add(BoolVal(true))
  * println(setVal.contains(StrVal("Item1"))) // Outputs: true

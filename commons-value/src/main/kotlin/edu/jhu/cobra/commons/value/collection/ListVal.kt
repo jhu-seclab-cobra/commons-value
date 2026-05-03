@@ -11,7 +11,7 @@ package edu.jhu.cobra.commons.value
  * ```
  * val listVal = ListVal(StrVal("Item1"), StrVal("Item2"))
  * println(listVal[0]) // Outputs: StrVal{Item1}
- * listVal += NumVal(42)
+ * listVal += IntVal(42)
  * println(listVal.size) // Outputs: 3
  * ```
  *
@@ -49,9 +49,9 @@ class ListVal(override val core: ArrayList<IValue> = ArrayList(5)) : ICollection
      *
      * Example usage:
      * ```
-     * val initialList = listOf(StrVal("Item1"), NumVal(42))
+     * val initialList = listOf(StrVal("Item1"), IntVal(42))
      * val listVal = ListVal(initialList)
-     * println(listVal) // Outputs: [StrVal{Item1}, NumVal{42}]
+     * println(listVal) // Outputs: [StrVal{Item1}, IntVal{42}]
      * ```
      *
      * @param value The list to initialize the [ListVal] with. The input list is copied.
@@ -65,8 +65,8 @@ class ListVal(override val core: ArrayList<IValue> = ArrayList(5)) : ICollection
      *
      * Example usage:
      * ```
-     * val listVal = ListVal(StrVal("Item1"), NumVal(42), BoolVal.T)
-     * println(listVal) // Outputs: [StrVal{Item1}, NumVal{42}, BoolVal{true}]
+     * val listVal = ListVal(StrVal("Item1"), IntVal(42), BoolVal.T)
+     * println(listVal) // Outputs: [StrVal{Item1}, IntVal{42}, BoolVal{true}]
      * ```
      *
      * @param value Vararg elements to initialize the [ListVal] with.
@@ -101,8 +101,8 @@ class ListVal(override val core: ArrayList<IValue> = ArrayList(5)) : ICollection
      * Example usage:
      * ```
      * val listVal = ListVal(StrVal("Item1"), StrVal("Item2"))
-     * listVal[1] = NumVal(42)
-     * println(listVal) // Outputs: [StrVal{Item1}, NumVal{42}]
+     * listVal[1] = IntVal(42)
+     * println(listVal) // Outputs: [StrVal{Item1}, IntVal{42}]
      * ```
      *
      * @param index The position of the element to update. Must be within the range `0..size-1`.
@@ -136,9 +136,9 @@ class ListVal(override val core: ArrayList<IValue> = ArrayList(5)) : ICollection
      *
      * Example usage:
      * ```
-     * val listVal = ListVal(StrVal("Item1"), NumVal(42))
+     * val listVal = ListVal(StrVal("Item1"), IntVal(42))
      * println(listVal.contains(StrVal("Item1"))) // Outputs: true
-     * println(listVal.contains(NumVal(100))) // Outputs: false
+     * println(listVal.contains(IntVal(100))) // Outputs: false
      * ```
      *
      * @param value The [IValue] element to check for.
@@ -153,8 +153,8 @@ class ListVal(override val core: ArrayList<IValue> = ArrayList(5)) : ICollection
      *
      * Example usage:
      * ```
-     * val listVal = ListVal(StrVal("Item1"), NumVal(42))
-     * val itemsToCheck = listOf(StrVal("Item1"), NumVal(42))
+     * val listVal = ListVal(StrVal("Item1"), IntVal(42))
+     * val itemsToCheck = listOf(StrVal("Item1"), IntVal(42))
      * println(listVal.containsAll(itemsToCheck)) // Outputs: true
      *
      * val missingItems = listOf(StrVal("Item2"))
@@ -174,9 +174,9 @@ class ListVal(override val core: ArrayList<IValue> = ArrayList(5)) : ICollection
      *
      * Example usage:
      * ```
-     * val listVal = ListVal(StrVal("Item1"), NumVal(42), StrVal("Item1"))
+     * val listVal = ListVal(StrVal("Item1"), IntVal(42), StrVal("Item1"))
      * println(listVal.indexOf(StrVal("Item1"))) // Outputs: 0
-     * println(listVal.indexOf(NumVal(100))) // Outputs: -1
+     * println(listVal.indexOf(IntVal(100))) // Outputs: -1
      * ```
      *
      * @param value The [IValue] element to search for.
@@ -192,9 +192,9 @@ class ListVal(override val core: ArrayList<IValue> = ArrayList(5)) : ICollection
      *
      * Example usage:
      * ```
-     * val listVal = ListVal(StrVal("Item1"), NumVal(42), StrVal("Item1"))
+     * val listVal = ListVal(StrVal("Item1"), IntVal(42), StrVal("Item1"))
      * println(listVal.lastIndexOf(StrVal("Item1"))) // Outputs: 2
-     * println(listVal.lastIndexOf(NumVal(100))) // Outputs: -1
+     * println(listVal.lastIndexOf(IntVal(100))) // Outputs: -1
      * ```
      *
      * @param value The [IValue] element to search for.

@@ -7,12 +7,10 @@ import edu.jhu.cobra.commons.value.IntVal
 import edu.jhu.cobra.commons.value.ListVal
 import edu.jhu.cobra.commons.value.MapVal
 import edu.jhu.cobra.commons.value.NullVal
-import edu.jhu.cobra.commons.value.NumVal
 import edu.jhu.cobra.commons.value.RangeVal
 import edu.jhu.cobra.commons.value.SetVal
 import edu.jhu.cobra.commons.value.StrVal
 import edu.jhu.cobra.commons.value.Unsure
-import edu.jhu.cobra.commons.value.numVal
 import java.nio.CharBuffer
 
 /**
@@ -40,49 +38,28 @@ object DftCharBufferSerializerImpl : IValSerializer<CharBuffer> {
      * - Maps: `MAP:<count>:<key1>=<value1>,<key2>=<value2>,...:`
      * - Unsure types: `UNSURE_<type>:`
      *
-     * Example usage:
-     * ```kotlin
-     * val numVal = NumVal(42)
-     * val serialized = DftCharBufferSerializerImpl.serialize(numVal)
-     * println(serialized) // Outputs: NUM_INT:42:
-     * ```
-     *
      * @param value The [IValue] instance to serialize.
      * @return A [CharBuffer] containing the serialized representation of the value.
      * @throws IllegalArgumentException If the value type is unknown or unsupported.
      */
     override fun serialize(value: IValue): CharBuffer = when (value) {
-        // nullType:
         is NullVal -> "${Type.NULL.str}:".asCharBuffer()
-        // unsureType:
         is Unsure -> when (value) {
             Unsure.NUM -> "${Type.UNSURE_NUM.str}:".asCharBuffer()
             Unsure.STR -> "${Type.UNSURE_STR.str}:".asCharBuffer()
             Unsure.BOOL -> "${Type.UNSURE_BOOL.str}:".asCharBuffer()
             else -> "${Type.UNSURE_ANY.str}:".asCharBuffer()
         }
-        // strType:hex_cnt{str}
-        is StrVal -> { // add the length counter for the char issues
+        is StrVal -> {
             val hexCnt = value.length.asHexString()
             val string = "${Type.STR.str}:$hexCnt:${value.core}"
             string.asCharBuffer()
         }
-        // boolType:
         is BoolVal ->
             if (value.isTrue()) "${Type.BOOL_TRUE.str}:".asCharBuffer()
             else "${Type.BOOL_FALSE.str}:".asCharBuffer()
         is IntVal -> "${Type.INT.str}:${value.core}:".asCharBuffer()
         is FloatVal -> "${Type.FLOAT.str}:${value.core}:".asCharBuffer()
-        // numType:num}
-        is NumVal -> when (val num = value.core) {
-            is Byte -> "${Type.NUM_BYTE.str}:${num}:"
-            is Short -> "${Type.NUM_SHORT.str}:${num}:"
-            is Int -> "${Type.NUM_INT.str}:${num}:"
-            is Long -> "${Type.NUM_LONG.str}:${num}:"
-            is Float -> "${Type.NUM_FLOAT.str}:${num}:"
-            is Double -> "${Type.NUM_DOUBLE.str}:${num}:"
-            else -> "${Type.NUM_OTHERS.str}:$num:"
-        }.asCharBuffer()
 
         is RangeVal -> "${Type.RANGE.str}:${value.first.toLong()},${value.last.toLong()}:".asCharBuffer()
         is ListVal -> { // listType:cnt{element,element,...}
@@ -124,13 +101,6 @@ object DftCharBufferSerializerImpl : IValSerializer<CharBuffer> {
      * This method parses the serialized format produced by [serialize] and reconstructs the original [IValue] instance.
      * The deserialization process is type-specific and supports all formats documented in [serialize].
      *
-     * Example usage:
-     * ```kotlin
-     * val buffer = "NUM_INT:42:".asCharBuffer()
-     * val value = DftCharBufferSerializerImpl.deserialize(buffer)
-     * println(value) // Outputs: NumVal{42}
-     * ```
-     *
      * @param material The [CharBuffer] containing the serialized representation of a value.
      * @return The deserialized [IValue] instance.
      * @throws IllegalArgumentException If the material contains an unknown or unsupported type identifier.
@@ -150,13 +120,13 @@ object DftCharBufferSerializerImpl : IValSerializer<CharBuffer> {
             Type.BOOL_FALSE.str -> BoolVal.F
             Type.INT.str -> IntVal(material.getString(':').toLong())
             Type.FLOAT.str -> FloatVal(material.getString(':').toDouble())
-            Type.NUM_BYTE.str -> NumVal(material.getString(':').toByte())
-            Type.NUM_SHORT.str -> NumVal(material.getString(':').toShort())
-            Type.NUM_INT.str -> NumVal(material.getString(':').toInt())
-            Type.NUM_LONG.str -> NumVal(material.getString(':').toLong())
-            Type.NUM_FLOAT.str -> NumVal(material.getString(':').toFloat())
-            Type.NUM_DOUBLE.str -> NumVal(material.getString(':').toDouble())
-            Type.NUM_OTHERS.str -> NumVal(material.getString(':').asNumber())
+            Type.NUM_BYTE.str -> IntVal(material.getString(':').toByte().toLong())
+            Type.NUM_SHORT.str -> IntVal(material.getString(':').toShort().toLong())
+            Type.NUM_INT.str -> IntVal(material.getString(':').toInt().toLong())
+            Type.NUM_LONG.str -> IntVal(material.getString(':').toLong())
+            Type.NUM_FLOAT.str -> FloatVal(material.getString(':').toFloat().toDouble())
+            Type.NUM_DOUBLE.str -> FloatVal(material.getString(':').toDouble())
+            Type.NUM_OTHERS.str -> material.getString(':').asNumber().toIntOrFloatVal()
             Type.UNSURE_NUM.str -> Unsure.NUM
             Type.UNSURE_STR.str -> Unsure.STR
             Type.UNSURE_BOOL.str -> Unsure.BOOL
