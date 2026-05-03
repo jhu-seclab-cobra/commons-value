@@ -10,6 +10,6 @@
 
 ## Developer Instructions
 
-- **Target: IntVal/FloatVal.** Current `NumVal` is replaced by `IntVal` (Long-backed) and `FloatVal` (Double-backed). Migration tracked in `performance.md` P6-1.
+- `IntVal` is Long-backed. `FloatVal` is Double-backed.
 - `String.intVal` uses `toLongOrNull()` for parsing. `String.floatVal` uses `toDoubleOrNull()`. Only `String.asNumber()` and `DftByteArraySerializerImpl` use `NumberUtils.createNumber()`.
 - IR types do not model any specific language's type system. `IntVal` is Long-width, `FloatVal` is Double-width. Language-specific semantics (type juggling, casting, overflow behavior, narrower integer types) belong in the consuming analysis module's adapter layer.

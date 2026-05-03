@@ -27,12 +27,12 @@ val restored = serializer.deserialize(bytes) // IntVal(42L)
 
 ### Type Enum
 
-- **`Type(byte: Byte, str: String)`** -- Internal type tag enum. Entries: `NULL`, `STR`, `BOOL`, `BOOL_TRUE`, `BOOL_FALSE`, `UNSURE_ANY`, `UNSURE_STR`, `UNSURE_NUM`, `UNSURE_BOOL`, `NUM_BYTE`, `NUM_SHORT`, `NUM_INT`, `NUM_LONG`, `NUM_FLOAT`, `NUM_DOUBLE`, `NUM_OTHERS`, `RANGE`, `LIST`, `SET`, `MAP`.
+- **`Type(byte: Byte, str: String)`** -- Internal type tag enum. Entries: `NULL`, `STR`, `BOOL`, `BOOL_TRUE`, `BOOL_FALSE`, `UNSURE_ANY`, `UNSURE_STR`, `UNSURE_NUM`, `UNSURE_BOOL`, `NUM_BYTE`, `NUM_SHORT`, `NUM_INT`, `NUM_LONG`, `NUM_FLOAT`, `NUM_DOUBLE`, `NUM_OTHERS`, `INT`, `FLOAT`, `RANGE`, `LIST`, `SET`, `MAP`.
 
 ## Gotchas
 
 - `DftByteArraySerializerImpl` and `DftByteBufferSerializerImpl` use different binary layouts. Bytes from one cannot be deserialized by the other.
-- `DftByteBufferSerializerImpl` serializes `RangeVal` bounds as `Int` only. Long/Double range bounds are truncated.
+- `DftByteBufferSerializerImpl` serializes `RangeVal` bounds as two `IntVal` values (`Long`-backed).
 - `DftCharBufferSerializerImpl` uses hex-encoded element counts for collections and string lengths.
 - All three serializers are `object` singletons. No instantiation needed.
 - Serializers handle nested collections (e.g., `ListVal` containing `MapVal`).

@@ -1,12 +1,10 @@
 # commons-value Domain Model
 
-> This document describes the target IR design. Current implementation uses NumVal; migration to IntVal/FloatVal is tracked in performance.md P6-1.
-
 ## Entities
 
 | Entity | Definition |
 |--------|-----------|
-| Primitive Value | Atomic, indivisible data item. Five concrete forms: string, integer, floating-point, boolean, null, plus uncertain placeholder. |
+| Primitive Value | Atomic, indivisible data item. Six concrete forms: string, integer, floating-point, boolean, null, plus uncertain placeholder. |
 | Collection Value | Aggregate structure containing multiple values. Four forms: ordered list, unique set, string-keyed map, numeric range. |
 | Uncertain Value | Typed placeholder for undetermined content. Four levels: any-primitive, any-string, any-number, any-boolean. |
 | Type Tag | Serialization discriminator identifying each value type for binary/text encoding. |
@@ -22,7 +20,7 @@
 ## Invariants
 
 - Value hierarchy is sealed: every IValue is either IPrimitiveVal or ICollectionVal.
-- IPrimitiveVal hierarchy is sealed: exactly seven subtypes (StrVal, IntVal, FloatVal, BoolVal, NullVal, Unsure, NumVal [deprecated]).
+- IPrimitiveVal hierarchy is sealed: exactly six subtypes (StrVal, IntVal, FloatVal, BoolVal, NullVal, Unsure).
 - ICollectionVal hierarchy is sealed: exactly four subtypes (ListVal, SetVal, MapVal, RangeVal).
 - BoolVal has exactly two instances (T, F). NullVal has exactly one instance.
 - IntVal stores Long (64-bit integer). FloatVal stores Double (IEEE 754 64-bit float). No other numeric representations.

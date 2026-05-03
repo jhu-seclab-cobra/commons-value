@@ -27,8 +27,9 @@ Source Language                  commons-value IR                    Cross-Modul
   Language       ┌────────────►│  (sealed hierarchy)├──────────►  Graph property storage
   Adapter        │             │                    │              Constraint solvers
   Layer    ──────┘             │  Primitives:       │              Pattern matching
-  (per module)                 │    Str, Num, Bool, │              Serialization layer
-                               │    Null, Unsure    │              Reporter modules
+  (per module)                 │    Str, Int, Float, │              Serialization layer
+                               │    Bool, Null,      │
+                               │    Unsure           │              Reporter modules
                                │  Collections:      │
                                │    List, Set, Map, │
                                │    Range           │
@@ -48,7 +49,7 @@ Source Language                  commons-value IR                    Cross-Modul
 - **Relationships:** Parent of Primitive Value and Collection Value. Input/output type for Serializer.
 
 - **Name:** Primitive Value
-- **Definition:** Atomic, indivisible data item. Five concrete forms: string, numeric, boolean, null, and uncertain.
+- **Definition:** Atomic, indivisible data item. Six concrete forms: string, integer, floating-point, boolean, null, and uncertain.
 - **Scope:** Leaf nodes only. Excludes composite or nested structures.
 - **Relationships:** Subtype of Value. Contains String, Numeric, Boolean, Null, and Uncertain values.
 

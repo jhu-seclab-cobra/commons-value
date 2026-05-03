@@ -1,7 +1,5 @@
 # commons-value Design -- Primitive Types
 
-> **Target design.** Current implementation uses `NumVal`; migration to `IntVal`/`FloatVal` is tracked in `performance.md` P6-1.
-
 IR value type system for the Cobra static analysis engine.
 
 Related design documents:
@@ -89,6 +87,7 @@ Related design documents:
 | `toDouble()` | Widens to Double | -- | `Double` |
 | `toFloat()` | Narrows to Float | -- | `Float` |
 | `compareTo(other: Int)` | Compares with integer | `other: Int` | `Int` |
+| `compareTo(other: Long)` | Compares with long | `other: Long` | `Int` |
 
 No type introspection properties -- the type IS IntVal.
 

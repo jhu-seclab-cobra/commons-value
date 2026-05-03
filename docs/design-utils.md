@@ -1,7 +1,5 @@
 # commons-value Design -- Extension Functions
 
-> **Target design.** Current implementation uses `NumVal`; migration to `IntVal`/`FloatVal` is tracked in `performance.md` P6-1.
-
 Part of [commons-value design](design-primitive.md). Specifies extension functions and exception types.
 
 ---
@@ -71,6 +69,8 @@ Part of [commons-value design](design-primitive.md). Specifies extension functio
 **`DataInput.asByteArray(size: Int): ByteArray`** — Reads bytes from DataInput; size=0 returns empty, size>0 reads exactly that many, size<0 reads until EOF.
 
 **`DataInput.asByteSequence(available: Int): Sequence<Byte>`** — Lazy byte sequence from DataInput; available=0 returns empty, available>0 yields that many, available<0 reads until EOF.
+
+**`Number.toIntOrFloatVal(): IPrimitiveVal`** — Converts a Number to IntVal if it is an integer type (Byte, Short, Int, Long), or FloatVal otherwise.
 
 ---
 

@@ -25,8 +25,6 @@ val list = listOf(1, 2).listVal  // ListVal(IntVal(1L), IntVal(2L))
 - **`Double.floatVal: FloatVal`** -- Wraps `Double` in `FloatVal`.
 - **`Float.floatVal: FloatVal`** -- Converts `Float` to `FloatVal` (widens to `Double`).
 - **`String.floatVal: FloatVal`** -- Parses string to `FloatVal`. Raises `ParseException` on invalid input.
-- **`Number.numVal: NumVal`** -- **Deprecated.** Wraps any `Number` in `NumVal`. Use `intVal` or `floatVal` instead.
-- **`String.numVal: NumVal`** -- **Deprecated.** Parses string to `NumVal`. Use `String.intVal` or `String.floatVal` instead.
 - **`String.strVal: StrVal`** -- Wraps string in `StrVal`.
 - **`Char.strVal: StrVal`** -- Wraps character as single-char `StrVal`.
 - **`Path.strVal: StrVal`** -- Wraps `java.nio.file.Path` as `StrVal`.
@@ -51,7 +49,7 @@ val list = listOf(1, 2).listVal  // ListVal(IntVal(1L), IntVal(2L))
 
 ### Comparison
 
-- **`IPrimitiveVal.compareTo(other: IPrimitiveVal): Int`** -- Compares same-type primitives. `IntVal` compares as `Long`; `FloatVal` compares as `Double`; `NumVal` compares as `Double` (deprecated); `StrVal` compares lexicographically; `BoolVal` compares `false < true`; `NullVal` equals `NullVal`. Raises `IllegalArgumentException` on cross-type comparison.
+- **`IPrimitiveVal.compareTo(other: IPrimitiveVal): Int`** -- Compares same-type primitives. `IntVal` compares as `Long`; `FloatVal` compares as `Double`; `StrVal` compares lexicographically; `BoolVal` compares `false < true`; `NullVal` equals `NullVal`. Raises `IllegalArgumentException` on cross-type comparison.
 
 ### Regex
 
@@ -72,8 +70,6 @@ val list = listOf(1, 2).listVal  // ListVal(IntVal(1L), IntVal(2L))
 ## Gotchas
 
 - `String.intVal` and `String.floatVal` throw `ParseException`, not `NumberFormatException`.
-- `String.numVal` is deprecated; throws `ParseException`.
-- `numVal` extensions are deprecated. Use `intVal` for integers and `floatVal` for floating-point.
 - `Any?.toVal` delegates to type-specific extensions. Unsupported types raise `IllegalArgumentException`.
 - `Map<*, *>.mapVal` calls `toString()` on keys -- non-string keys lose type information.
 - `IPrimitiveVal.compareTo` does not support cross-type comparison (e.g., `IntVal` vs `StrVal`).

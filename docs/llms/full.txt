@@ -8,7 +8,7 @@ Package root: `edu.jhu.cobra.commons.value`. Serializers: `edu.jhu.cobra.commons
 
 ## Instructions for Agents
 
-- Use IR types (`StrVal`, `IntVal`, `FloatVal`, `BoolVal`, `NullVal`, `Unsure`, `ListVal`, `SetVal`, `MapVal`, `RangeVal`) for all graph property values. `NumVal` is deprecated; use `IntVal` for integers and `FloatVal` for floating-point.
+- Use IR types (`StrVal`, `IntVal`, `FloatVal`, `BoolVal`, `NullVal`, `Unsure`, `ListVal`, `SetVal`, `MapVal`, `RangeVal`) for all graph property values.
 - Convert Kotlin natives to IR via extension properties: `42.intVal`, `3.14.floatVal`, `"hello".strVal`, `true.boolVal`, `null.toVal`.
 - Convert collections via extension properties: `list.listVal`, `set.setVal`, `map.mapVal`, `(1..10).rangeVal`.
 - Use `Any?.toVal` for generic conversion when the source type is unknown at compile time.
@@ -64,7 +64,6 @@ when (val v: IValue = list[0]) {
     is BoolVal -> v.isTrue()
     is NullVal -> null
     is Unsure -> v.core
-    is NumVal -> v.toInt()     // deprecated -- use IntVal/FloatVal
     is ListVal -> v.size
     is SetVal -> v.size
     is MapVal -> v.size
@@ -82,10 +81,9 @@ when (val v: IValue = list[0]) {
 
 ### Primitive Types
 
-- **`StrVal(core: String)`** -- String IR value. Default constructor creates empty string. Methods: `startsWith(String)`, `substringAfter(String)`, `substringBefore(String)`, `contains(String)`, `uppercase()`, `lowercase()`, `trim()`, `equals(String, ignoreCase)`, `length`, `get(Int)`, `get(NumVal)`.
+- **`StrVal(core: String)`** -- String IR value. Default constructor creates empty string. Methods: `startsWith(String)`, `substringAfter(String)`, `substringBefore(String)`, `contains(String)`, `uppercase()`, `lowercase()`, `trim()`, `equals(String, ignoreCase)`, `length`, `get(Int)`, `get(IntVal)`.
 - **`IntVal(core: Long)`** -- Integer IR value. Stores `Long` internally. Default constructor creates `0L`. Methods: `toInt()`, `toDouble()`, `compareTo(Int)`, `compareTo(Long)`. Extension constructors: `Int.intVal`, `Long.intVal`, `String.intVal`.
 - **`FloatVal(core: Double)`** -- Floating-point IR value. Stores `Double` internally. Default constructor creates `0.0`. Methods: `toIntVal()`, `toLong()`, `compareTo(Double)`. Extension constructors: `Double.floatVal`, `Float.floatVal`, `String.floatVal`.
-- **`NumVal(core: Number)`** -- **Deprecated.** Use `IntVal` for integers and `FloatVal` for floating-point. Numeric IR value. Default constructor creates `0`. Methods: `toInt()`, `toDouble()`, `toFloat()`, `toLong()`, `toShort()`, `compareTo(Int)`. Properties: `isInt`, `isLong`, `isShort`, `isByte`, `isFloat`, `isDouble`, `isPrimitiveIntegerType`, `isPrimitiveFloatingType`. Static: `NumVal.truncate(NumVal): NumVal`.
 - **`BoolVal`** -- Boolean IR value. Private constructor; obtain via `BoolVal(true)`, `BoolVal(false)`, `BoolVal.T`, `BoolVal.F`. Methods: `isTrue()`, `isFalse()`.
 - **`NullVal`** -- Singleton data object. `core` is always `null`. Infix: `NullVal isNull value`, `NullVal isNotNull value`.
 - **`Unsure`** -- Enum for unknown-but-typed values. Entries: `ANY`, `STR`, `NUM`, `BOOL`. Factory: `Unsure.new(String): Unsure?`, `Unsure.new(IPrimitiveVal): Unsure`, `Unsure.new<T>(): Unsure`. Operator: `String in Unsure`.
@@ -95,7 +93,7 @@ when (val v: IValue = list[0]) {
 - **`ListVal(core: ArrayList<IValue>)`** -- Mutable ordered list. Constructors: `ListVal()`, `ListVal(size: Int)`, `ListVal(List<IValue>)`, `ListVal(vararg IValue)`. Operators: `get(Int)`, `set(Int, IValue)`, `plus(IValue)`, `plusAssign(IValue)`, `minus(IValue)`, `minusAssign(IValue)`. Methods: `size`, `contains(IValue)`, `containsAll(Collection)`, `indexOf(IValue)`, `lastIndexOf(IValue)`, `subList(Int, Int)`, `isEmpty()`, `isNotEmpty()`, `map {}`, `flatMap {}`, `forEach {}`, `asSequence()`, `toMutableSet()`.
 - **`SetVal(core: LinkedHashSet<IValue>)`** -- Mutable insertion-ordered set. Constructors: `SetVal()`, `SetVal(size: Int)`, `SetVal(Collection<IValue>)`, `SetVal(vararg IValue)`, `SetVal(Sequence<IValue>)`. Methods: `add(IValue)`, `remove(IValue)`, `contains(IValue)`, `containsAll(Collection)`, `size`, `isEmpty()`, `isNotEmpty()`, `map {}`, `forEach {}`, `asSequence()`, `toList()`. Operators: `plus`, `plusAssign`, `minus`, `minusAssign`.
 - **`MapVal(core: HashMap<String, IValue>)`** -- Mutable string-keyed map. Constructors: `MapVal()`, `MapVal(size: Int)`, `MapVal(Map<String, IValue>)`, `MapVal(vararg Pair<String, IValue>)`, `MapVal(Sequence<Pair>)`, `MapVal(List<Pair>)`. Operators: `get(String): IValue?`, `set(String, IValue)`, `plus(Pair)`, `minus(String)`, `contains(String)`. Methods: `add(String, IValue)`, `remove(String)`, `keys()`, `values()`, `size`, `isEmpty()`, `map {}`, `mapValues {}`, `flatMap {}`, `forEach {}`, `toList()`, `toTypeArray()`.
-- **`RangeVal(start: NumVal, endInclusive: NumVal)`** -- Numeric range. Constructor: `RangeVal(Number, Number)`. Properties: `first: Number`, `last: Number`. Operators: `contains(Number)`, `contains(NumVal)`, `contains(IntVal)`, `contains(RangeVal)`, `plus(RangeVal)`. Infix: `before(RangeVal)`, `after(RangeVal)`. Methods: `map {}`.
+- **`RangeVal(start: IntVal, endInclusive: IntVal)`** -- Numeric range. Constructor: `RangeVal(Number, Number)`. Properties: `first: Long`, `last: Long`. Operators: `contains(Number)`, `contains(IntVal)`, `contains(RangeVal)`, `plus(RangeVal)`. Infix: `before(RangeVal)`, `after(RangeVal)`. Methods: `map((IntVal) -> R) {}`.
 
 ## Gotchas
 
@@ -105,7 +103,6 @@ when (val v: IValue = list[0]) {
 - `NullVal` is a `data object`. Identity comparison (`===`) and equality (`==`) both work.
 - `Unsure.new(String)` returns `null` when the string does not match a known `Unsure.core` value.
 - `IntVal` stores `Long`, `FloatVal` stores `Double` -- no type ambiguity.
-- `NumVal` is deprecated; use `IntVal` for integers and `FloatVal` for floating-point.
 
 
 ---
@@ -142,12 +139,12 @@ val restored = serializer.deserialize(bytes) // IntVal(42L)
 
 ### Type Enum
 
-- **`Type(byte: Byte, str: String)`** -- Internal type tag enum. Entries: `NULL`, `STR`, `BOOL`, `BOOL_TRUE`, `BOOL_FALSE`, `UNSURE_ANY`, `UNSURE_STR`, `UNSURE_NUM`, `UNSURE_BOOL`, `NUM_BYTE`, `NUM_SHORT`, `NUM_INT`, `NUM_LONG`, `NUM_FLOAT`, `NUM_DOUBLE`, `NUM_OTHERS`, `RANGE`, `LIST`, `SET`, `MAP`.
+- **`Type(byte: Byte, str: String)`** -- Internal type tag enum. Entries: `NULL`, `STR`, `BOOL`, `BOOL_TRUE`, `BOOL_FALSE`, `UNSURE_ANY`, `UNSURE_STR`, `UNSURE_NUM`, `UNSURE_BOOL`, `NUM_BYTE`, `NUM_SHORT`, `NUM_INT`, `NUM_LONG`, `NUM_FLOAT`, `NUM_DOUBLE`, `NUM_OTHERS`, `INT`, `FLOAT`, `RANGE`, `LIST`, `SET`, `MAP`.
 
 ## Gotchas
 
 - `DftByteArraySerializerImpl` and `DftByteBufferSerializerImpl` use different binary layouts. Bytes from one cannot be deserialized by the other.
-- `DftByteBufferSerializerImpl` serializes `RangeVal` bounds as `Int` only. Long/Double range bounds are truncated.
+- `DftByteBufferSerializerImpl` serializes `RangeVal` bounds as two `IntVal` values (`Long`-backed).
 - `DftCharBufferSerializerImpl` uses hex-encoded element counts for collections and string lengths.
 - All three serializers are `object` singletons. No instantiation needed.
 - Serializers handle nested collections (e.g., `ListVal` containing `MapVal`).
@@ -185,8 +182,6 @@ val list = listOf(1, 2).listVal  // ListVal(IntVal(1L), IntVal(2L))
 - **`Double.floatVal: FloatVal`** -- Wraps `Double` in `FloatVal`.
 - **`Float.floatVal: FloatVal`** -- Converts `Float` to `FloatVal` (widens to `Double`).
 - **`String.floatVal: FloatVal`** -- Parses string to `FloatVal`. Raises `ParseException` on invalid input.
-- **`Number.numVal: NumVal`** -- **Deprecated.** Wraps any `Number` in `NumVal`. Use `intVal` or `floatVal` instead.
-- **`String.numVal: NumVal`** -- **Deprecated.** Parses string to `NumVal`. Use `String.intVal` or `String.floatVal` instead.
 - **`String.strVal: StrVal`** -- Wraps string in `StrVal`.
 - **`Char.strVal: StrVal`** -- Wraps character as single-char `StrVal`.
 - **`Path.strVal: StrVal`** -- Wraps `java.nio.file.Path` as `StrVal`.
@@ -211,7 +206,7 @@ val list = listOf(1, 2).listVal  // ListVal(IntVal(1L), IntVal(2L))
 
 ### Comparison
 
-- **`IPrimitiveVal.compareTo(other: IPrimitiveVal): Int`** -- Compares same-type primitives. `IntVal` compares as `Long`; `FloatVal` compares as `Double`; `NumVal` compares as `Double` (deprecated); `StrVal` compares lexicographically; `BoolVal` compares `false < true`; `NullVal` equals `NullVal`. Raises `IllegalArgumentException` on cross-type comparison.
+- **`IPrimitiveVal.compareTo(other: IPrimitiveVal): Int`** -- Compares same-type primitives. `IntVal` compares as `Long`; `FloatVal` compares as `Double`; `StrVal` compares lexicographically; `BoolVal` compares `false < true`; `NullVal` equals `NullVal`. Raises `IllegalArgumentException` on cross-type comparison.
 
 ### Regex
 
@@ -232,8 +227,6 @@ val list = listOf(1, 2).listVal  // ListVal(IntVal(1L), IntVal(2L))
 ## Gotchas
 
 - `String.intVal` and `String.floatVal` throw `ParseException`, not `NumberFormatException`.
-- `String.numVal` is deprecated; throws `ParseException`.
-- `numVal` extensions are deprecated. Use `intVal` for integers and `floatVal` for floating-point.
 - `Any?.toVal` delegates to type-specific extensions. Unsupported types raise `IllegalArgumentException`.
 - `Map<*, *>.mapVal` calls `toString()` on keys -- non-string keys lose type information.
 - `IPrimitiveVal.compareTo` does not support cross-type comparison (e.g., `IntVal` vs `StrVal`).

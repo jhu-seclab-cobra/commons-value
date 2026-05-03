@@ -65,7 +65,7 @@ Each row shows the delta from applying that single optimization.
 
 ---
 
-## Completed Optimizations (14 items)
+## Completed Optimizations (15 items)
 
 ### P0-1. Dead code in ByteBuffer List deserialization
 
@@ -157,6 +157,12 @@ Each row shows the delta from applying that single optimization.
 **Change:** Fixed inverted EOF check: `.onFailure { if (it is EOFException) throw it }` was throwing on EOF and swallowing other exceptions. Corrected to `if (it !is EOFException) throw it`, consistent with `asByteArray()` behavior.
 **Impact:** Bug fix. `asByteSequence(-1)` now correctly reads until EOF and returns data instead of throwing.
 
+### P6-1. NumVal split into IntVal(Long) + FloatVal(Double)
+
+**File(s):** `NumVal.kt` (deleted), `PrimitiveUtils.kt`, all serializers, `RangeVal.kt`
+**Change:** Replaced `NumVal(core: Number)` with `IntVal(core: Long)` and `FloatVal(core: Double)`. Deleted NumVal class, `Number.numVal`/`String.numVal` extensions, and all 6 type introspection properties. Serializers retain NUM_* type tags for backward-compatible deserialization but serialize new data using INT/FLOAT tags.
+**Impact:** Eliminates equality bug (`NumVal(3) != NumVal(3L)`), hash inconsistency, and ~47 runtime type checks in consumers. Serializer reduces from variable-width numeric encoding to fixed 8-byte Long/Double.
+
 ---
 
 ## Evaluated & Rejected (13 items)
@@ -181,48 +187,7 @@ Each row shows the delta from applying that single optimization.
 
 ## Candidates
 
-### P6-1: Split NumVal into IntVal(Long) + FloatVal(Double)
-
-**File(s):** `NumVal.kt`, `PrimitiveUtils.kt`, all serializers
-
-**Hypothesis:** `NumVal.core: Number` accepts 6 JVM numeric types (Byte, Short, Int, Long, Float, Double). This causes:
-1. **Equality bug:** `NumVal(3) != NumVal(3L)` — same logical value, different IR representations, `data class equals` returns false.
-2. **Hash inconsistency:** `NumVal(3).hashCode() != NumVal(3L).hashCode()` — deduplication via hash (e.g., `addScalarValue`) may create duplicate nodes for the same logical integer.
-3. **Runtime type checks:** 47+ occurrences of `is NumVal` + `core is Long` / `core is Double` across CobraPHP because `NumVal` alone doesn't distinguish int vs float.
-4. **Serialization ambiguity:** Serializers must inspect `core` runtime type to choose encoding (NUM_INT vs NUM_LONG vs NUM_FLOAT vs NUM_DOUBLE).
-
-**Proposed change:**
-```
-NumVal(core: Number)  →  IntVal(core: Long)     all integers unified to 64-bit
-                         FloatVal(core: Double)  all floats unified to IEEE 754 double
-```
-
-- `IntVal(Long)`: PHP IS_LONG is always 64-bit. JVM Int/Short/Byte widen to Long at construction.
-- `FloatVal(Double)`: PHP IS_DOUBLE is always IEEE 754 double. JVM Float widens to Double.
-- Eliminates all 6 `isInt`/`isLong`/`isFloat`/`isDouble`/`isPrimitiveIntegerType`/`isPrimitiveFloatingType` runtime checks.
-- Serializer reduces from 4 numeric type tags to 2 (INT, FLOAT).
-- `sealed interface IPrimitiveVal` exhaustive `when` adds one branch (5 → 6 subtypes).
-
-**Migration in commons-value:**
-| Old | New | Rule |
-|---|---|---|
-| `NumVal(Int/Short/Byte/Long)` | `IntVal(Long)` | `.toLong()` at construction |
-| `NumVal(Float/Double)` | `FloatVal(Double)` | `.toDouble()` at construction |
-| `42.numVal` | `42.intVal` | Extension property |
-| `3.14.numVal` | `3.14.floatVal` | Extension property |
-| `NumVal.truncate()` | `FloatVal.toIntVal()` | Truncation method |
-| `NumVal.isInt` / `NumVal.isLong` | not needed | Type is `IntVal` |
-| `NumVal.isFloat` / `NumVal.isDouble` | not needed | Type is `FloatVal` |
-
-**Impact on consumers (CobraPHP):**
-- ADG NType refactor (VALUE_INT, VALUE_FLOAT) aligns 1:1 with IntVal, FloatVal.
-- `addScalarValue` NType inference becomes: `is IntVal → VALUE_INT`, `is FloatVal → VALUE_FLOAT`.
-- ~47 runtime type checks on `node.value` Kotlin type become redundant (NType sufficient).
-- `TypeCasting.kt` `asPhpNumVal` simplifies: `is IntVal` / `is FloatVal` instead of 6-way `when(core)`.
-
-**Risk:** Medium. Breaks API — all `NumVal` references in consumers must migrate. Serializer wire format changes (backward-incompatible unless versioned). `numVal` extension must be deprecated or split.
-
-**Dependency:** None (commons-value is standalone). Consumer migration (CobraPHP, any other Cobra analyzers) is a separate task.
+No current candidates.
 
 ---
 
@@ -230,7 +195,6 @@ NumVal(core: Number)  →  IntVal(core: Long)     all integers unified to 64-bit
 
 - **ByteArray `serialize()` method body size.** The `serialize()` when-expression is large (~80 lines), which may prevent JIT inlining for primitive paths. Extracting collection cases was attempted (P4-1) but caused cross-class JIT deoptimization. ByteArray primitive serialize (32M) still trails ByteBuffer (52M).
 - **ByteBuffer collection per-element allocation.** Each child `serialize()` call allocates its own ByteBuffer. Skipped (P4-2) due to JIT sensitivity risk.
-- **`data class` NumVal boxing equality.** Evaluated as P3-10 — too invasive for current API.
 - **Benchmark noise floor.** CharBuffer primitive serialize shows 3-4x variance between runs due to test execution order affecting JIT compilation. Current benchmark methodology cannot reliably detect < 5% changes.
 
 ---
