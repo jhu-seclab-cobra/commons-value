@@ -4,7 +4,6 @@ import edu.jhu.cobra.commons.value.BoolVal
 import edu.jhu.cobra.commons.value.IntVal
 import edu.jhu.cobra.commons.value.ListVal
 import edu.jhu.cobra.commons.value.MapVal
-import edu.jhu.cobra.commons.value.NumVal
 import edu.jhu.cobra.commons.value.SetVal
 import edu.jhu.cobra.commons.value.StrVal
 import edu.jhu.cobra.commons.value.listVal
@@ -191,10 +190,10 @@ internal class CollectionUtilsTest {
 
     @Test
     fun `should return same SetVal when non-null`() {
-        val set = SetVal(NumVal(1))
+        val set = SetVal(IntVal(1L))
         val result = set.orEmpty()
         assertEquals(1, result.size)
-        assertTrue(result.contains(NumVal(1)))
+        assertTrue(result.contains(IntVal(1L)))
     }
 
     // -- MapVal?.orEmpty --

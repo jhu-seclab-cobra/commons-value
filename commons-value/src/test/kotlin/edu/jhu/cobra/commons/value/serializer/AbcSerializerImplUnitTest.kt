@@ -7,12 +7,10 @@ import edu.jhu.cobra.commons.value.IntVal
 import edu.jhu.cobra.commons.value.ListVal
 import edu.jhu.cobra.commons.value.MapVal
 import edu.jhu.cobra.commons.value.NullVal
-import edu.jhu.cobra.commons.value.NumVal
 import edu.jhu.cobra.commons.value.RangeVal
 import edu.jhu.cobra.commons.value.SetVal
 import edu.jhu.cobra.commons.value.StrVal
 import edu.jhu.cobra.commons.value.Unsure
-import java.math.BigInteger
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -29,16 +27,12 @@ import kotlin.test.assertTrue
  * - `should round-trip StrVal with unicode` — Unicode StrVal round-trips.
  * - `should round-trip BoolVal true` — BoolVal.T round-trips.
  * - `should round-trip BoolVal false` — BoolVal.F round-trips.
- * - `should round-trip NumVal Byte` — NumVal wrapping Byte round-trips.
- * - `should round-trip NumVal Short` — NumVal wrapping Short round-trips.
- * - `should round-trip NumVal Int` — NumVal wrapping Int round-trips.
- * - `should round-trip NumVal Long` — NumVal wrapping Long round-trips.
- * - `should round-trip NumVal Float` — NumVal wrapping Float round-trips.
- * - `should round-trip NumVal Double` — NumVal wrapping Double round-trips.
- * - `should round-trip NumVal Float NaN` — NumVal wrapping Float.NaN round-trips preserving NaN.
- * - `should round-trip NumVal Float positive infinity` — NumVal wrapping Float.POSITIVE_INFINITY round-trips.
- * - `should round-trip NumVal Float negative infinity` — NumVal wrapping Float.NEGATIVE_INFINITY round-trips.
- * - `should round-trip NumVal BigInteger` — NumVal wrapping BigInteger round-trips via NUM_OTHERS tag.
+ * - `should round-trip IntVal from Byte range` — IntVal covering Byte.MAX_VALUE round-trips.
+ * - `should round-trip IntVal from Short range` — IntVal covering Short.MAX_VALUE round-trips.
+ * - `should round-trip IntVal from Int range` — IntVal(42L) round-trips.
+ * - `should round-trip IntVal from Long range` — IntVal wrapping large Long round-trips.
+ * - `should round-trip FloatVal from Float range` — FloatVal wrapping Float-precision value round-trips.
+ * - `should round-trip FloatVal from Double min` — FloatVal(Double.MIN_VALUE) round-trips.
  * - `should round-trip Unsure ANY` — Unsure.ANY round-trips.
  * - `should round-trip Unsure STR` — Unsure.STR round-trips.
  * - `should round-trip Unsure NUM` — Unsure.NUM round-trips.
@@ -123,69 +117,38 @@ internal abstract class AbcSerializerImplUnitTest<M : Any> {
         assertRoundTrip(BoolVal.F)
     }
 
-    // --- NumVal ---
+    // --- IntVal (formerly NumVal integer subtypes) ---
 
-    @Suppress("DEPRECATION")
     @Test
-    fun `should round-trip NumVal Byte`() {
-        assertRoundTrip(NumVal(Byte.MAX_VALUE))
+    fun `should round-trip IntVal from Byte range`() {
+        assertRoundTrip(IntVal(Byte.MAX_VALUE.toLong()))
     }
 
-    @Suppress("DEPRECATION")
     @Test
-    fun `should round-trip NumVal Short`() {
-        assertRoundTrip(NumVal(Short.MAX_VALUE))
+    fun `should round-trip IntVal from Short range`() {
+        assertRoundTrip(IntVal(Short.MAX_VALUE.toLong()))
     }
 
-    @Suppress("DEPRECATION")
     @Test
-    fun `should round-trip NumVal Int`() {
-        assertRoundTrip(NumVal(42))
+    fun `should round-trip IntVal from Int range`() {
+        assertRoundTrip(IntVal(42L))
     }
 
-    @Suppress("DEPRECATION")
     @Test
-    fun `should round-trip NumVal Long`() {
-        assertRoundTrip(NumVal(1234567890123456789L))
+    fun `should round-trip IntVal from Long range`() {
+        assertRoundTrip(IntVal(1234567890123456789L))
     }
 
-    @Suppress("DEPRECATION")
+    // --- FloatVal (formerly NumVal float subtypes) ---
+
     @Test
-    fun `should round-trip NumVal Float`() {
-        assertRoundTrip(NumVal(3.14f))
+    fun `should round-trip FloatVal from Float range`() {
+        assertRoundTrip(FloatVal(3.14f.toDouble()))
     }
 
-    @Suppress("DEPRECATION")
     @Test
-    fun `should round-trip NumVal Double`() {
-        assertRoundTrip(NumVal(Double.MIN_VALUE))
-    }
-
-    @Suppress("DEPRECATION")
-    @Test
-    fun `should round-trip NumVal Float NaN`() {
-        val original = NumVal(Float.NaN)
-        val serialized = testTarget.serialize(original)
-        val deserialized = testTarget.deserialize(serialized) as NumVal
-        assertEquals(true, (deserialized.core as Float).isNaN())
-    }
-
-    @Suppress("DEPRECATION")
-    @Test
-    fun `should round-trip NumVal Float positive infinity`() {
-        assertRoundTrip(NumVal(Float.POSITIVE_INFINITY))
-    }
-
-    @Suppress("DEPRECATION")
-    @Test
-    fun `should round-trip NumVal Float negative infinity`() {
-        assertRoundTrip(NumVal(Float.NEGATIVE_INFINITY))
-    }
-
-    @Suppress("DEPRECATION")
-    @Test
-    open fun `should round-trip NumVal BigInteger`() {
-        assertRoundTrip(NumVal(BigInteger("123456789012345678901234567890")))
+    fun `should round-trip FloatVal from Double min`() {
+        assertRoundTrip(FloatVal(Double.MIN_VALUE))
     }
 
     // --- IntVal ---
@@ -308,17 +271,15 @@ internal abstract class AbcSerializerImplUnitTest<M : Any> {
         assertRoundTrip(ListVal(emptyList()))
     }
 
-    @Suppress("DEPRECATION")
     @Test
     fun `should round-trip ListVal with mixed types`() {
-        assertRoundTrip(ListVal(StrVal("test"), BoolVal.T, NumVal(1), NullVal))
+        assertRoundTrip(ListVal(StrVal("test"), BoolVal.T, IntVal(1L), NullVal))
     }
 
-    @Suppress("DEPRECATION")
     @Test
     fun `should round-trip nested ListVal`() {
         val nested = ListVal(
-            ListVal(NumVal(1), NumVal(2)),
+            ListVal(IntVal(1L), IntVal(2L)),
             ListVal(StrVal("a"), StrVal("b")),
         )
         assertRoundTrip(nested)
@@ -331,17 +292,15 @@ internal abstract class AbcSerializerImplUnitTest<M : Any> {
         assertRoundTrip(SetVal(emptySet()))
     }
 
-    @Suppress("DEPRECATION")
     @Test
     fun `should round-trip SetVal with mixed types`() {
-        assertRoundTrip(SetVal(StrVal("test"), BoolVal.T, NumVal(1)))
+        assertRoundTrip(SetVal(StrVal("test"), BoolVal.T, IntVal(1L)))
     }
 
-    @Suppress("DEPRECATION")
     @Test
     fun `should round-trip nested SetVal`() {
         val nested = SetVal(
-            SetVal(NumVal(1), NumVal(2)),
+            SetVal(IntVal(1L), IntVal(2L)),
             SetVal(StrVal("a"), StrVal("b")),
         )
         assertRoundTrip(nested)
@@ -354,23 +313,21 @@ internal abstract class AbcSerializerImplUnitTest<M : Any> {
         assertRoundTrip(MapVal(emptyMap()))
     }
 
-    @Suppress("DEPRECATION")
     @Test
     fun `should round-trip MapVal with mixed value types`() {
         assertRoundTrip(
             MapVal(
                 "str" to StrVal("value"),
-                "num" to NumVal(42),
+                "num" to IntVal(42L),
                 "bool" to BoolVal.T,
             ),
         )
     }
 
-    @Suppress("DEPRECATION")
     @Test
     fun `should round-trip nested MapVal`() {
         val nested = MapVal(
-            "inner" to MapVal("key" to NumVal(1)),
+            "inner" to MapVal("key" to IntVal(1L)),
             "list" to ListVal(StrVal("a")),
         )
         assertRoundTrip(nested)
@@ -390,11 +347,10 @@ internal abstract class AbcSerializerImplUnitTest<M : Any> {
 
     // --- Mixed nested ---
 
-    @Suppress("DEPRECATION")
     @Test
     fun `should round-trip mixed nested collection`() {
         val mixed = ListVal(
-            SetVal(NumVal(1), NumVal(2)),
+            SetVal(IntVal(1L), IntVal(2L)),
             MapVal("k" to StrVal("v")),
             RangeVal(0, 99),
             BoolVal.F,

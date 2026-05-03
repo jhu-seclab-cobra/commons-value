@@ -1,10 +1,11 @@
 package edu.jhu.cobra.commons.value.serializer
 
 import edu.jhu.cobra.commons.value.BoolVal
+import edu.jhu.cobra.commons.value.FloatVal
 import edu.jhu.cobra.commons.value.IValue
+import edu.jhu.cobra.commons.value.IntVal
 import edu.jhu.cobra.commons.value.ListVal
 import edu.jhu.cobra.commons.value.MapVal
-import edu.jhu.cobra.commons.value.NumVal
 import edu.jhu.cobra.commons.value.SetVal
 import edu.jhu.cobra.commons.value.StrVal
 import org.junit.jupiter.api.Tag
@@ -33,8 +34,14 @@ import kotlin.test.assertEquals
 @Tag("performance")
 internal class SerializerPerformanceTest {
 
-    private val primitiveDataSet = List(100_000) { randomIValue(it % 5) }
-    private val collectionDataSet = List(10_000) { randomIValue(5 + it % 4) }
+    companion object {
+        // Indices into randomIValue: 0=Null, 1=Str, 2=Bool, 3=Unsure, 4=List, 5=Set, 6=Map, 7=Range, 8=Int, 9=Float
+        private val PRIMITIVE_TYPES = intArrayOf(0, 1, 2, 3, 8, 9)
+        private val COLLECTION_TYPES = intArrayOf(4, 5, 6, 7)
+    }
+
+    private val primitiveDataSet = List(100_000) { randomIValue(PRIMITIVE_TYPES[it % PRIMITIVE_TYPES.size]) }
+    private val collectionDataSet = List(10_000) { randomIValue(COLLECTION_TYPES[it % COLLECTION_TYPES.size]) }
     private val mixedDataSet = List(100_000) { randomIValue() }
     private val valueCreationCount = 600_000
 
@@ -126,23 +133,23 @@ internal class SerializerPerformanceTest {
     fun `value creation throughput`() {
         repeat(warmupRuns) {
             repeat(valueCreationCount) { i ->
-                NumVal(i)
+                IntVal(i.toLong())
                 StrVal("test$i")
                 BoolVal(i % 2 == 0)
-                ListVal(NumVal(1), NumVal(2), NumVal(3))
-                SetVal(NumVal(1), NumVal(2), NumVal(3))
-                MapVal("k" to NumVal(i))
+                ListVal(IntVal(1L), FloatVal(2.0), IntVal(3L))
+                SetVal(IntVal(1L), FloatVal(2.0), IntVal(3L))
+                MapVal("k" to IntVal(i.toLong()))
             }
         }
         val times = (1..measureRuns).map {
             val start = System.nanoTime()
             repeat(valueCreationCount) { i ->
-                NumVal(i)
+                IntVal(i.toLong())
                 StrVal("test$i")
                 BoolVal(i % 2 == 0)
-                ListVal(NumVal(1), NumVal(2), NumVal(3))
-                SetVal(NumVal(1), NumVal(2), NumVal(3))
-                MapVal("k" to NumVal(i))
+                ListVal(IntVal(1L), FloatVal(2.0), IntVal(3L))
+                SetVal(IntVal(1L), FloatVal(2.0), IntVal(3L))
+                MapVal("k" to IntVal(i.toLong()))
             }
             (System.nanoTime() - start) / 1_000_000.0
         }

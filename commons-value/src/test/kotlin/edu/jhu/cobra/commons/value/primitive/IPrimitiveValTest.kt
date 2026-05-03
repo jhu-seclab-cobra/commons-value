@@ -5,22 +5,19 @@ import edu.jhu.cobra.commons.value.FloatVal
 import edu.jhu.cobra.commons.value.IPrimitiveVal
 import edu.jhu.cobra.commons.value.IntVal
 import edu.jhu.cobra.commons.value.NullVal
-import edu.jhu.cobra.commons.value.NumVal
 import edu.jhu.cobra.commons.value.StrVal
 import edu.jhu.cobra.commons.value.Unsure
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 /**
- * Black-box specification tests for [IPrimitiveVal] sealed interface derived from design-primitive.md.
+ * Black-box specification tests for [IPrimitiveVal] sealed interface.
  *
  * Subtype membership:
  * - `should be implemented by StrVal` -- StrVal is IPrimitiveVal
  * - `should be implemented by IntVal` -- IntVal is IPrimitiveVal
  * - `should be implemented by FloatVal` -- FloatVal is IPrimitiveVal
- * - `should be implemented by NumVal` -- NumVal is IPrimitiveVal (deprecated)
  * - `should be implemented by BoolVal` -- BoolVal is IPrimitiveVal
  * - `should be implemented by NullVal` -- NullVal is IPrimitiveVal
  * - `should be implemented by Unsure` -- Unsure is IPrimitiveVal
@@ -29,12 +26,10 @@ import kotlin.test.assertTrue
  * - `should support exhaustive when over StrVal` -- sealed branch coverage
  * - `should support exhaustive when over IntVal` -- sealed branch coverage
  * - `should support exhaustive when over FloatVal` -- sealed branch coverage
- * - `should support exhaustive when over NumVal` -- sealed branch coverage (deprecated)
  * - `should support exhaustive when over BoolVal` -- sealed branch coverage
  * - `should support exhaustive when over NullVal` -- sealed branch coverage
  * - `should support exhaustive when over Unsure` -- sealed branch coverage
  */
-@Suppress("DEPRECATION")
 internal class IPrimitiveValTest {
 
     @Test
@@ -53,12 +48,6 @@ internal class IPrimitiveValTest {
     fun `should be implemented by FloatVal`() {
         val value: IPrimitiveVal = FloatVal(3.14)
         assertTrue(value is FloatVal)
-    }
-
-    @Test
-    fun `should be implemented by NumVal`() {
-        val value: IPrimitiveVal = NumVal(42)
-        assertTrue(value is NumVal)
     }
 
     @Test
@@ -98,12 +87,6 @@ internal class IPrimitiveValTest {
     }
 
     @Test
-    fun `should support exhaustive when over NumVal`() {
-        val result = exhaustiveWhen(NumVal(42))
-        assertEquals("num", result)
-    }
-
-    @Test
     fun `should support exhaustive when over BoolVal`() {
         val result = exhaustiveWhen(BoolVal.T)
         assertEquals("bool", result)
@@ -125,7 +108,6 @@ internal class IPrimitiveValTest {
         is StrVal -> "str"
         is IntVal -> "int"
         is FloatVal -> "float"
-        is NumVal -> "num"
         is BoolVal -> "bool"
         is NullVal -> "null"
         is Unsure -> "unsure"

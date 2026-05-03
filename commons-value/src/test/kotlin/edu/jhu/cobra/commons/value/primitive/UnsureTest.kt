@@ -5,7 +5,6 @@ import edu.jhu.cobra.commons.value.FloatVal
 import edu.jhu.cobra.commons.value.IPrimitiveVal
 import edu.jhu.cobra.commons.value.IntVal
 import edu.jhu.cobra.commons.value.NullVal
-import edu.jhu.cobra.commons.value.NumVal
 import edu.jhu.cobra.commons.value.StrVal
 import edu.jhu.cobra.commons.value.Unsure
 import kotlin.test.Test
@@ -29,12 +28,10 @@ import kotlin.test.assertTrue
  * - `should return null from new with invalid string` — new(String) invalid
  * - `should return null from new with empty string` — new(String) empty
  * - `should infer STR from StrVal example` — new(IPrimitiveVal) with StrVal
- * - `should infer NUM from NumVal example` — new(IPrimitiveVal) with NumVal
  * - `should infer BOOL from BoolVal example` — new(IPrimitiveVal) with BoolVal
  * - `should infer ANY from NullVal example` — new(IPrimitiveVal) with NullVal
  * - `should return self from new with Unsure example` — new(IPrimitiveVal) identity
  * - `should return STR from reified new StrVal` — new<StrVal>()
- * - `should return NUM from reified new NumVal` — new<NumVal>()
  * - `should return BOOL from reified new BoolVal` — new<BoolVal>()
  * - `should return ANY from reified new NullVal` — new<NullVal>()
  * - `should return true from contains for valid identifiers` — contains valid
@@ -114,12 +111,6 @@ internal class UnsureTest {
         assertEquals(Unsure.STR, Unsure.new(StrVal("test")))
     }
 
-    @Suppress("DEPRECATION")
-    @Test
-    fun `should infer NUM from NumVal example`() {
-        assertEquals(Unsure.NUM, Unsure.new(NumVal(42)))
-    }
-
     @Test
     fun `should infer BOOL from BoolVal example`() {
         assertEquals(Unsure.BOOL, Unsure.new(BoolVal.T))
@@ -143,12 +134,6 @@ internal class UnsureTest {
     @Test
     fun `should return STR from reified new StrVal`() {
         assertEquals(Unsure.STR, Unsure.new<StrVal>())
-    }
-
-    @Suppress("DEPRECATION")
-    @Test
-    fun `should return NUM from reified new NumVal`() {
-        assertEquals(Unsure.NUM, Unsure.new<NumVal>())
     }
 
     @Test

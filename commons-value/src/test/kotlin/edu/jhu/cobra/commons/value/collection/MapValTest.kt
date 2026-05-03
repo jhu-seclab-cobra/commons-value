@@ -1,9 +1,9 @@
 package edu.jhu.cobra.commons.value.collection
 
 import edu.jhu.cobra.commons.value.BoolVal
+import edu.jhu.cobra.commons.value.IntVal
 import edu.jhu.cobra.commons.value.IValue
 import edu.jhu.cobra.commons.value.MapVal
-import edu.jhu.cobra.commons.value.NumVal
 import edu.jhu.cobra.commons.value.StrVal
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -81,19 +81,19 @@ internal class MapValTest {
 
     @Test
     fun `should copy entries from map constructor`() {
-        val source = mapOf("k1" to StrVal("v1"), "k2" to NumVal(2))
+        val source = mapOf("k1" to StrVal("v1"), "k2" to IntVal(2L))
         val map = MapVal(source)
         assertEquals(2, map.size)
         assertEquals(StrVal("v1"), map["k1"])
-        assertEquals(NumVal(2), map["k2"])
+        assertEquals(IntVal(2L), map["k2"])
     }
 
     @Test
     fun `should initialize from vararg pairs`() {
-        val map = MapVal("a" to StrVal("1"), "b" to NumVal(2))
+        val map = MapVal("a" to StrVal("1"), "b" to IntVal(2L))
         assertEquals(2, map.size)
         assertEquals(StrVal("1"), map["a"])
-        assertEquals(NumVal(2), map["b"])
+        assertEquals(IntVal(2L), map["b"])
     }
 
     @Test
@@ -107,10 +107,10 @@ internal class MapValTest {
 
     @Test
     fun `should initialize from list of pairs`() {
-        val pairs = listOf("p" to NumVal(10), "q" to StrVal("r"))
+        val pairs = listOf("p" to IntVal(10L), "q" to StrVal("r"))
         val map = MapVal(pairs)
         assertEquals(2, map.size)
-        assertEquals(NumVal(10), map["p"])
+        assertEquals(IntVal(10L), map["p"])
         assertEquals(StrVal("r"), map["q"])
     }
 
@@ -194,7 +194,7 @@ internal class MapValTest {
 
     @Test
     fun `should return all keys`() {
-        val map = MapVal("a" to NumVal(1), "b" to NumVal(2))
+        val map = MapVal("a" to IntVal(1L), "b" to IntVal(2L))
         val keys = map.keys()
         assertEquals(2, keys.size)
         assertTrue(keys.contains("a"))
@@ -203,11 +203,11 @@ internal class MapValTest {
 
     @Test
     fun `should return all values`() {
-        val map = MapVal("a" to NumVal(1), "b" to NumVal(2))
+        val map = MapVal("a" to IntVal(1L), "b" to IntVal(2L))
         val values = map.values()
         assertEquals(2, values.size)
-        assertTrue(values.contains(NumVal(1)))
-        assertTrue(values.contains(NumVal(2)))
+        assertTrue(values.contains(IntVal(1L)))
+        assertTrue(values.contains(IntVal(2L)))
     }
 
     @Test
@@ -244,8 +244,8 @@ internal class MapValTest {
     @Test
     fun `should return correct size after mutations`() {
         val map = MapVal()
-        map["a"] = NumVal(1)
-        map["b"] = NumVal(2)
+        map["a"] = IntVal(1L)
+        map["b"] = IntVal(2L)
         assertEquals(2, map.size)
         map.remove("a")
         assertEquals(1, map.size)
@@ -255,7 +255,7 @@ internal class MapValTest {
 
     @Test
     fun `should iterate all entries with forEach`() {
-        val map = MapVal("a" to NumVal(1), "b" to NumVal(2))
+        val map = MapVal("a" to IntVal(1L), "b" to IntVal(2L))
         val keys = mutableListOf<String>()
         map.forEach { keys.add(it.key) }
         assertEquals(2, keys.size)
@@ -267,19 +267,19 @@ internal class MapValTest {
 
     @Test
     fun `should transform entries with map`() {
-        val map = MapVal("a" to NumVal(1), "b" to NumVal(2))
+        val map = MapVal("a" to IntVal(1L), "b" to IntVal(2L))
         val result = map.map { "${it.key}=${it.value}" }
         assertEquals(2, result.size)
-        assertTrue(result.contains("a=NumVal{1}"))
-        assertTrue(result.contains("b=NumVal{2}"))
+        assertTrue(result.contains("a=IntVal{1}"))
+        assertTrue(result.contains("b=IntVal{2}"))
     }
 
     // -- mapValues --
 
     @Test
     fun `should transform values with mapValues`() {
-        val map = MapVal("a" to NumVal(1), "b" to NumVal(2))
-        val result = map.mapValues { (it.value as NumVal).toInt() * 10 }
+        val map = MapVal("a" to IntVal(1L), "b" to IntVal(2L))
+        val result = map.mapValues { (it.value as IntVal).toInt() * 10 }
         assertEquals(10, result["a"])
         assertEquals(20, result["b"])
     }
@@ -288,11 +288,11 @@ internal class MapValTest {
 
     @Test
     fun `should flatten entries with flatMap`() {
-        val map = MapVal("a" to NumVal(1))
+        val map = MapVal("a" to IntVal(1L))
         val result = map.flatMap { listOf(it.key, it.value.toString()) }
         assertEquals(2, result.size)
         assertTrue(result.contains("a"))
-        assertTrue(result.contains("NumVal{1}"))
+        assertTrue(result.contains("IntVal{1}"))
     }
 
     // -- toList --
@@ -310,11 +310,11 @@ internal class MapValTest {
 
     @Test
     fun `should convert to pair array with toTypeArray`() {
-        val map = MapVal("a" to NumVal(1), "b" to NumVal(2))
+        val map = MapVal("a" to IntVal(1L), "b" to IntVal(2L))
         val array = map.toTypeArray()
         assertEquals(2, array.size)
-        assertTrue(array.any { it.first == "a" && it.second == NumVal(1) })
-        assertTrue(array.any { it.first == "b" && it.second == NumVal(2) })
+        assertTrue(array.any { it.first == "a" && it.second == IntVal(1L) })
+        assertTrue(array.any { it.first == "b" && it.second == IntVal(2L) })
     }
 
     // -- Boundary --

@@ -1,6 +1,6 @@
 package edu.jhu.cobra.commons.value.collection
 
-import edu.jhu.cobra.commons.value.NumVal
+import edu.jhu.cobra.commons.value.IntVal
 import edu.jhu.cobra.commons.value.RangeVal
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -11,12 +11,12 @@ import kotlin.test.assertTrue
  * Black-box tests for [RangeVal] derived from design-collection.md.
  *
  * Constructors:
- * - `should create range from NumVal pair`
+ * - `should create range from IntVal pair`
  * - `should create range from Number pair`
  *
  * Properties (start, endInclusive, first, last, core):
- * - `should expose start and endInclusive as NumVal`
- * - `should expose first and last as Number`
+ * - `should expose start and endInclusive as IntVal`
+ * - `should expose first and last as Long`
  * - `should return core as list of start and endInclusive`
  *
  * contains(Number):
@@ -26,9 +26,9 @@ import kotlin.test.assertTrue
  * - `should not contain number below start`
  * - `should not contain number above end`
  *
- * contains(NumVal):
- * - `should contain NumVal within range`
- * - `should not contain NumVal outside range`
+ * contains(IntVal):
+ * - `should contain IntVal within range`
+ * - `should not contain IntVal outside range`
  *
  * contains(RangeVal):
  * - `should contain sub-range fully inside`
@@ -45,7 +45,7 @@ import kotlin.test.assertTrue
  * plus:
  * - `should combine disjoint ranges into union bounds`
  * - `should combine overlapping ranges into union bounds`
- * - `should preserve NumVal precision on plus`
+ * - `should preserve IntVal precision on plus`
  *
  * map:
  * - `should transform start and end via map`
@@ -53,17 +53,17 @@ import kotlin.test.assertTrue
  * Boundary:
  * - `should handle single-point range`
  * - `should handle negative range`
- * - `should handle floating-point range`
+ * - `should handle large value range`
  */
 internal class RangeValTest {
 
     // -- Constructors --
 
     @Test
-    fun `should create range from NumVal pair`() {
-        val range = RangeVal(NumVal(1), NumVal(10))
-        assertEquals(NumVal(1), range.start)
-        assertEquals(NumVal(10), range.endInclusive)
+    fun `should create range from IntVal pair`() {
+        val range = RangeVal(IntVal(1L), IntVal(10L))
+        assertEquals(IntVal(1L), range.start)
+        assertEquals(IntVal(10L), range.endInclusive)
     }
 
     @Test
@@ -76,26 +76,26 @@ internal class RangeValTest {
     // -- Properties --
 
     @Test
-    fun `should expose start and endInclusive as NumVal`() {
-        val range = RangeVal(NumVal(3), NumVal(7))
-        assertEquals(NumVal(3), range.start)
-        assertEquals(NumVal(7), range.endInclusive)
+    fun `should expose start and endInclusive as IntVal`() {
+        val range = RangeVal(IntVal(3L), IntVal(7L))
+        assertEquals(IntVal(3L), range.start)
+        assertEquals(IntVal(7L), range.endInclusive)
     }
 
     @Test
-    fun `should expose first and last as Number`() {
-        val range = RangeVal(NumVal(3), NumVal(7))
-        assertEquals(3, range.first)
-        assertEquals(7, range.last)
+    fun `should expose first and last as Long`() {
+        val range = RangeVal(IntVal(3L), IntVal(7L))
+        assertEquals(3L, range.first)
+        assertEquals(7L, range.last)
     }
 
     @Test
     fun `should return core as list of start and endInclusive`() {
-        val range = RangeVal(NumVal(2), NumVal(8))
+        val range = RangeVal(IntVal(2L), IntVal(8L))
         val core = range.core
         assertEquals(2, core.size)
-        assertEquals(NumVal(2), core[0])
-        assertEquals(NumVal(8), core[1])
+        assertEquals(IntVal(2L), core[0])
+        assertEquals(IntVal(8L), core[1])
     }
 
     // -- contains(Number) --
@@ -130,21 +130,21 @@ internal class RangeValTest {
         assertFalse(6 in range)
     }
 
-    // -- contains(NumVal) --
+    // -- contains(IntVal) --
 
     @Test
-    fun `should contain NumVal within range`() {
+    fun `should contain IntVal within range`() {
         val range = RangeVal(1, 5)
-        assertTrue(NumVal(3) in range)
-        assertTrue(NumVal(1) in range)
-        assertTrue(NumVal(5) in range)
+        assertTrue(IntVal(3L) in range)
+        assertTrue(IntVal(1L) in range)
+        assertTrue(IntVal(5L) in range)
     }
 
     @Test
-    fun `should not contain NumVal outside range`() {
+    fun `should not contain IntVal outside range`() {
         val range = RangeVal(1, 5)
-        assertFalse(NumVal(0) in range)
-        assertFalse(NumVal(6) in range)
+        assertFalse(IntVal(0L) in range)
+        assertFalse(IntVal(6L) in range)
     }
 
     // -- contains(RangeVal) --
@@ -226,12 +226,12 @@ internal class RangeValTest {
     }
 
     @Test
-    fun `should preserve NumVal precision on plus`() {
-        val r1 = RangeVal(NumVal(1.5), NumVal(3.5))
-        val r2 = RangeVal(NumVal(2.0), NumVal(5.0))
+    fun `should preserve IntVal precision on plus`() {
+        val r1 = RangeVal(IntVal(1L), IntVal(3L))
+        val r2 = RangeVal(IntVal(2L), IntVal(5L))
         val combined = r1 + r2
-        assertEquals(NumVal(1.5), combined.start)
-        assertEquals(NumVal(5.0), combined.endInclusive)
+        assertEquals(IntVal(1L), combined.start)
+        assertEquals(IntVal(5L), combined.endInclusive)
     }
 
     // -- map --
@@ -239,7 +239,7 @@ internal class RangeValTest {
     @Test
     fun `should transform start and end via map`() {
         val range = RangeVal(2, 6)
-        val mapped = range.map { it.core.toInt() * 3 }
+        val mapped = range.map { it.toInt() * 3 }
         assertEquals(2, mapped.size)
         assertEquals(6, mapped[0])
         assertEquals(18, mapped[1])
@@ -267,12 +267,12 @@ internal class RangeValTest {
     }
 
     @Test
-    fun `should handle floating-point range`() {
-        val range = RangeVal(1.5, 3.5)
-        assertTrue(1.5 in range)
-        assertTrue(2.0 in range)
-        assertTrue(3.5 in range)
-        assertFalse(1.4 in range)
-        assertFalse(3.6 in range)
+    fun `should handle large value range`() {
+        val range = RangeVal(Long.MIN_VALUE, Long.MAX_VALUE)
+        assertTrue(0L in range)
+        assertTrue(Long.MIN_VALUE in range)
+        assertTrue(Long.MAX_VALUE in range)
+        assertEquals(Long.MIN_VALUE, range.first)
+        assertEquals(Long.MAX_VALUE, range.last)
     }
 }

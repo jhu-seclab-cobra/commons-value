@@ -3,8 +3,8 @@ package edu.jhu.cobra.commons.value.collection
 import edu.jhu.cobra.commons.value.BoolVal
 import edu.jhu.cobra.commons.value.IValue
 import edu.jhu.cobra.commons.value.ListVal
+import edu.jhu.cobra.commons.value.IntVal
 import edu.jhu.cobra.commons.value.NullVal
-import edu.jhu.cobra.commons.value.NumVal
 import edu.jhu.cobra.commons.value.SetVal
 import edu.jhu.cobra.commons.value.StrVal
 import kotlin.test.Test
@@ -99,19 +99,19 @@ internal class ListValTest {
 
     @Test
     fun `should copy elements from list constructor`() {
-        val source = listOf(StrVal("a"), NumVal(1))
+        val source = listOf(StrVal("a"), IntVal(1L))
         val list = ListVal(source)
         assertEquals(2, list.size)
         assertEquals(StrVal("a"), list[0])
-        assertEquals(NumVal(1), list[1])
+        assertEquals(IntVal(1L), list[1])
     }
 
     @Test
     fun `should initialize from vararg elements`() {
-        val list = ListVal(StrVal("x"), NumVal(7), BoolVal.T)
+        val list = ListVal(StrVal("x"), IntVal(7L), BoolVal.T)
         assertEquals(3, list.size)
         assertEquals(StrVal("x"), list[0])
-        assertEquals(NumVal(7), list[1])
+        assertEquals(IntVal(7L), list[1])
         assertEquals(BoolVal.T, list[2])
     }
 
@@ -141,8 +141,8 @@ internal class ListValTest {
     @Test
     fun `should replace element at valid index`() {
         val list = ListVal(StrVal("a"), StrVal("b"))
-        list[1] = NumVal(99)
-        assertEquals(NumVal(99), list[1])
+        list[1] = IntVal(99L)
+        assertEquals(IntVal(99L), list[1])
     }
 
     @Test
@@ -155,9 +155,9 @@ internal class ListValTest {
 
     @Test
     fun `should return true when element present`() {
-        val list = ListVal(StrVal("a"), NumVal(5))
+        val list = ListVal(StrVal("a"), IntVal(5L))
         assertTrue(list.contains(StrVal("a")))
-        assertTrue(list.contains(NumVal(5)))
+        assertTrue(list.contains(IntVal(5L)))
     }
 
     @Test
@@ -168,8 +168,8 @@ internal class ListValTest {
 
     @Test
     fun `should return true when all elements present`() {
-        val list = ListVal(StrVal("a"), NumVal(1), BoolVal.F)
-        assertTrue(list.containsAll(listOf(StrVal("a"), NumVal(1))))
+        val list = ListVal(StrVal("a"), IntVal(1L), BoolVal.F)
+        assertTrue(list.containsAll(listOf(StrVal("a"), IntVal(1L))))
     }
 
     @Test
@@ -182,13 +182,13 @@ internal class ListValTest {
 
     @Test
     fun `should return first index of duplicate element`() {
-        val list = ListVal(StrVal("a"), NumVal(1), StrVal("a"))
+        val list = ListVal(StrVal("a"), IntVal(1L), StrVal("a"))
         assertEquals(0, list.indexOf(StrVal("a")))
     }
 
     @Test
     fun `should return last index of duplicate element`() {
-        val list = ListVal(StrVal("a"), NumVal(1), StrVal("a"))
+        val list = ListVal(StrVal("a"), IntVal(1L), StrVal("a"))
         assertEquals(2, list.lastIndexOf(StrVal("a")))
     }
 
@@ -335,8 +335,8 @@ internal class ListValTest {
 
     @Test
     fun `should transform each element with map`() {
-        val list = ListVal(NumVal(1), NumVal(2))
-        val mapped = list.map { (it as NumVal).toInt() * 10 }
+        val list = ListVal(IntVal(1L), IntVal(2L))
+        val mapped = list.map { (it as IntVal).toInt() * 10 }
         assertEquals(listOf(10, 20), mapped)
     }
 
@@ -368,21 +368,21 @@ internal class ListValTest {
 
     @Test
     fun `should return lazy sequence with asSequence`() {
-        val list = ListVal(NumVal(1), NumVal(2), NumVal(3))
+        val list = ListVal(IntVal(1L), IntVal(2L), IntVal(3L))
         val seq = list.asSequence()
         assertEquals(3, seq.count())
-        assertEquals(NumVal(1), seq.first())
+        assertEquals(IntVal(1L), seq.first())
     }
 
     // -- toMutableSet --
 
     @Test
     fun `should convert to linked set removing duplicates with toMutableSet`() {
-        val list = ListVal(StrVal("a"), StrVal("a"), NumVal(1))
+        val list = ListVal(StrVal("a"), StrVal("a"), IntVal(1L))
         val set = list.toMutableSet()
         assertEquals(2, set.size)
         assertTrue(set.contains(StrVal("a")))
-        assertTrue(set.contains(NumVal(1)))
+        assertTrue(set.contains(IntVal(1L)))
     }
 
     // -- Boundary --
@@ -397,7 +397,7 @@ internal class ListValTest {
 
     @Test
     fun `should handle nested IValue elements`() {
-        val inner = ListVal(NumVal(1), NumVal(2))
+        val inner = ListVal(IntVal(1L), IntVal(2L))
         val outer = ListVal(inner, StrVal("x"))
         assertEquals(2, outer.size)
         assertTrue(outer[0] is ListVal)

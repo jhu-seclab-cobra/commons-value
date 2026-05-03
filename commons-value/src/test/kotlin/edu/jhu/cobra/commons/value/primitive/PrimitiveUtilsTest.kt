@@ -2,9 +2,9 @@ package edu.jhu.cobra.commons.value.primitive
 
 import edu.jhu.cobra.commons.value.BoolVal
 import edu.jhu.cobra.commons.value.FloatVal
+import edu.jhu.cobra.commons.value.IPrimitiveVal
 import edu.jhu.cobra.commons.value.IntVal
 import edu.jhu.cobra.commons.value.NullVal
-import edu.jhu.cobra.commons.value.NumVal
 import edu.jhu.cobra.commons.value.StrVal
 import edu.jhu.cobra.commons.value.Unsure
 import edu.jhu.cobra.commons.value.boolVal
@@ -15,7 +15,6 @@ import edu.jhu.cobra.commons.value.isInByteRange
 import edu.jhu.cobra.commons.value.isInIntRange
 import edu.jhu.cobra.commons.value.isInLongRange
 import edu.jhu.cobra.commons.value.isInShortRange
-import edu.jhu.cobra.commons.value.numVal
 import edu.jhu.cobra.commons.value.primitiveVal
 import edu.jhu.cobra.commons.value.startsWith
 import edu.jhu.cobra.commons.value.strVal
@@ -34,18 +33,6 @@ import kotlin.test.assertTrue
 /**
  * Black-box tests for PrimitiveUtils extension functions derived from the design doc.
  *
- * - `should wrap Byte as NumVal` — Number.numVal Byte
- * - `should wrap Short as NumVal` — Number.numVal Short
- * - `should wrap Int as NumVal` — Number.numVal Int
- * - `should wrap Long as NumVal` — Number.numVal Long
- * - `should wrap Float as NumVal` — Number.numVal Float
- * - `should wrap Double as NumVal` — Number.numVal Double
- * - `should parse integer string to NumVal` — String.numVal integer
- * - `should parse negative integer string to NumVal` — String.numVal negative integer
- * - `should parse decimal string to NumVal` — String.numVal decimal
- * - `should parse negative decimal string to NumVal` — String.numVal negative decimal
- * - `should parse large integer string to Long NumVal` — String.numVal large integer
- * - `should throw ParseException for invalid string numVal` — String.numVal error
  * - `should wrap String as StrVal` — String.strVal
  * - `should wrap empty String as StrVal` — String.strVal boundary
  * - `should wrap Char as StrVal` — Char.strVal
@@ -59,10 +46,6 @@ import kotlin.test.assertTrue
  * - `should convert Boolean to BoolVal via primitiveVal` — Any?.primitiveVal Boolean
  * - `should return IPrimitiveVal unchanged via primitiveVal` — Any?.primitiveVal identity
  * - `should throw IllegalArgumentException for unsupported primitiveVal type` — primitiveVal error
- * - `should compare NumVal less than NumVal` — compareTo NumVal <
- * - `should compare NumVal greater than NumVal` — compareTo NumVal >
- * - `should compare NumVal equal to NumVal` — compareTo NumVal ==
- * - `should compare NumVal with different Number subtypes` — compareTo cross-subtype
  * - `should compare StrVal lexicographically` — compareTo StrVal
  * - `should compare StrVal equal` — compareTo StrVal ==
  * - `should compare BoolVal F less than T` — compareTo BoolVal
@@ -141,84 +124,6 @@ import kotlin.test.assertTrue
  */
 internal class PrimitiveUtilsTest {
 
-    // --- Number.numVal ---
-
-    @Suppress("DEPRECATION")
-    @Test
-    fun `should wrap Byte as NumVal`() {
-        assertEquals(42.toByte(), 42.toByte().numVal.core)
-    }
-
-    @Suppress("DEPRECATION")
-    @Test
-    fun `should wrap Short as NumVal`() {
-        assertEquals(42.toShort(), 42.toShort().numVal.core)
-    }
-
-    @Suppress("DEPRECATION")
-    @Test
-    fun `should wrap Int as NumVal`() {
-        assertEquals(42, 42.numVal.core)
-    }
-
-    @Suppress("DEPRECATION")
-    @Test
-    fun `should wrap Long as NumVal`() {
-        assertEquals(42L, 42L.numVal.core)
-    }
-
-    @Suppress("DEPRECATION")
-    @Test
-    fun `should wrap Float as NumVal`() {
-        assertEquals(3.14f, 3.14f.numVal.core)
-    }
-
-    @Suppress("DEPRECATION")
-    @Test
-    fun `should wrap Double as NumVal`() {
-        assertEquals(3.14, 3.14.numVal.core)
-    }
-
-    // --- String.numVal ---
-
-    @Suppress("DEPRECATION")
-    @Test
-    fun `should parse integer string to NumVal`() {
-        assertEquals(42, "42".numVal.core)
-    }
-
-    @Suppress("DEPRECATION")
-    @Test
-    fun `should parse negative integer string to NumVal`() {
-        assertEquals(-42, "-42".numVal.core)
-    }
-
-    @Suppress("DEPRECATION")
-    @Test
-    fun `should parse decimal string to NumVal`() {
-        assertEquals(3.14, "3.14".numVal.core)
-    }
-
-    @Suppress("DEPRECATION")
-    @Test
-    fun `should parse negative decimal string to NumVal`() {
-        assertEquals(-3.14, "-3.14".numVal.core)
-    }
-
-    @Suppress("DEPRECATION")
-    @Test
-    fun `should parse large integer string to Long NumVal`() {
-        assertEquals(9999999999L, "9999999999".numVal.core)
-    }
-
-    @Suppress("DEPRECATION")
-    @Test
-    fun `should throw ParseException for invalid string numVal`() {
-        assertFailsWith<ParseException> {
-            "not a number".numVal
-        }
-    }
-
     // --- String.strVal / Char.strVal / Path.strVal / File.strVal ---
 
     @Test
@@ -282,10 +187,9 @@ internal class PrimitiveUtilsTest {
         assertEquals(BoolVal.T, true.primitiveVal)
     }
 
-    @Suppress("DEPRECATION")
     @Test
     fun `should return IPrimitiveVal unchanged via primitiveVal`() {
-        val original = NumVal(42)
+        val original = IntVal(42L)
         assertEquals(original, original.primitiveVal)
     }
 
@@ -297,30 +201,6 @@ internal class PrimitiveUtilsTest {
     }
 
     // --- compareTo ---
-
-    @Suppress("DEPRECATION")
-    @Test
-    fun `should compare NumVal less than NumVal`() {
-        assertTrue(NumVal(1).compareTo(NumVal(2)) < 0)
-    }
-
-    @Suppress("DEPRECATION")
-    @Test
-    fun `should compare NumVal greater than NumVal`() {
-        assertTrue(NumVal(2).compareTo(NumVal(1)) > 0)
-    }
-
-    @Suppress("DEPRECATION")
-    @Test
-    fun `should compare NumVal equal to NumVal`() {
-        assertEquals(0, NumVal(1).compareTo(NumVal(1)))
-    }
-
-    @Suppress("DEPRECATION")
-    @Test
-    fun `should compare NumVal with different Number subtypes`() {
-        assertTrue(NumVal(1.5).compareTo(NumVal(1)) > 0)
-    }
 
     @Test
     fun `should compare StrVal lexicographically`() {
@@ -352,11 +232,10 @@ internal class PrimitiveUtilsTest {
         assertEquals(0, NullVal.compareTo(NullVal))
     }
 
-    @Suppress("DEPRECATION")
     @Test
     fun `should throw IllegalArgumentException for cross-type compareTo`() {
         assertFailsWith<IllegalArgumentException> {
-            NumVal(1).compareTo(StrVal("1"))
+            IntVal(1L).compareTo(StrVal("1"))
         }
     }
 

@@ -10,7 +10,6 @@ import kotlin.test.assertFailsWith
  *
  * - `should throw IllegalArgumentException when deserializing unknown type tag` — Unknown byte tag rejected.
  * - `should throw IllegalArgumentException when deserializing empty ByteBuffer` — Empty buffer rejected.
- * - `should round-trip NumVal BigInteger` — Inherited round-trip; verifies NUM_OTHERS length-prefix fix.
  */
 internal class DftByteBufferSerializerImplTest : AbcSerializerImplUnitTest<ByteBuffer>() {
 

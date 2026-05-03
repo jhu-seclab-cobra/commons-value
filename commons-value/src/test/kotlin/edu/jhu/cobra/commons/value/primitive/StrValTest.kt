@@ -1,7 +1,7 @@
 package edu.jhu.cobra.commons.value.primitive
 
 import edu.jhu.cobra.commons.value.IPrimitiveVal
-import edu.jhu.cobra.commons.value.NumVal
+import edu.jhu.cobra.commons.value.IntVal
 import edu.jhu.cobra.commons.value.StrVal
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
@@ -36,9 +36,9 @@ import kotlin.test.assertTrue
  * - `should return char at positive index` — get(Int) positive
  * - `should return char at negative index counting from end` — get(Int) negative
  * - `should throw IndexOutOfBoundsException for out-of-range index` — get(Int) error
- * - `should return char at NumVal index` — get(NumVal) positive
- * - `should return char at negative NumVal index` — get(NumVal) negative
- * - `should throw IndexOutOfBoundsException for out-of-range NumVal index` — get(NumVal) error
+ * - `should return char at IntVal index` — get(IntVal) positive
+ * - `should return char at negative IntVal index` — get(IntVal) negative
+ * - `should throw IndexOutOfBoundsException for out-of-range IntVal index` — get(IntVal) error
  * - `should return correct length` — length property
  * - `should return zero length for empty string` — length boundary
  * - `should implement IPrimitiveVal` — type hierarchy
@@ -134,12 +134,12 @@ internal class StrValTest {
 
     @Test
     fun `should return true from equals when IPrimitiveVal core matches as string`() {
-        assertTrue(StrVal("42").equals(NumVal(42), ignoreCase = false))
+        assertTrue(StrVal("42").equals(IntVal(42L), ignoreCase = false))
     }
 
     @Test
     fun `should return false from equals when IPrimitiveVal core differs as string`() {
-        assertFalse(StrVal("hello").equals(NumVal(42), ignoreCase = false))
+        assertFalse(StrVal("hello").equals(IntVal(42L), ignoreCase = false))
     }
 
     // --- uppercase / lowercase / trim ---
@@ -234,22 +234,22 @@ internal class StrValTest {
         }
     }
 
-    // --- get(NumVal) ---
+    // --- get(IntVal) ---
 
     @Test
-    fun `should return char at NumVal positive index`() {
-        assertEquals('H', StrVal("Hello")[NumVal(0)])
+    fun `should return char at IntVal positive index`() {
+        assertEquals('H', StrVal("Hello")[IntVal(0L)])
     }
 
     @Test
-    fun `should return char at NumVal negative index`() {
-        assertEquals('o', StrVal("Hello")[NumVal(-1)])
+    fun `should return char at IntVal negative index`() {
+        assertEquals('o', StrVal("Hello")[IntVal(-1L)])
     }
 
     @Test
-    fun `should throw IndexOutOfBoundsException for out-of-range NumVal index`() {
+    fun `should throw IndexOutOfBoundsException for out-of-range IntVal index`() {
         assertFailsWith<IndexOutOfBoundsException> {
-            StrVal("Hello")[NumVal(10)]
+            StrVal("Hello")[IntVal(10L)]
         }
     }
 

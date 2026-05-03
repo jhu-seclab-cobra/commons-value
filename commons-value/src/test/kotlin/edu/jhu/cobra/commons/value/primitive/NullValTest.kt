@@ -1,8 +1,8 @@
 package edu.jhu.cobra.commons.value.primitive
 
 import edu.jhu.cobra.commons.value.BoolVal
+import edu.jhu.cobra.commons.value.IntVal
 import edu.jhu.cobra.commons.value.NullVal
-import edu.jhu.cobra.commons.value.NumVal
 import edu.jhu.cobra.commons.value.StrVal
 import edu.jhu.cobra.commons.value.Unsure
 import kotlin.test.Test
@@ -18,12 +18,12 @@ import kotlin.test.assertTrue
  * - `should have null core` — core is always null
  * - `should return true from isNull when value is NullVal` — infix isNull self
  * - `should return false from isNull when value is StrVal` — infix isNull non-null
- * - `should return false from isNull when value is NumVal` — infix isNull non-null
+ * - `should return false from isNull when value is IntVal` — infix isNull non-null
  * - `should return false from isNull when value is BoolVal` — infix isNull non-null
  * - `should return false from isNull when value is Unsure` — infix isNull non-null
  * - `should return false from isNotNull when value is NullVal` — infix isNotNull self
  * - `should return true from isNotNull when value is StrVal` — infix isNotNull non-null
- * - `should return true from isNotNull when value is NumVal` — infix isNotNull non-null
+ * - `should return true from isNotNull when value is IntVal` — infix isNotNull non-null
  * - `should return true from isNotNull when value is BoolVal` — infix isNotNull non-null
  * - `should return true from isNotNull when value is Unsure` — infix isNotNull non-null
  */
@@ -52,8 +52,8 @@ internal class NullValTest {
     }
 
     @Test
-    fun `should return false from isNull when value is NumVal`() {
-        assertFalse(NullVal isNull NumVal(42))
+    fun `should return false from isNull when value is IntVal`() {
+        assertFalse(NullVal isNull IntVal(42L))
     }
 
     @Test
@@ -79,8 +79,8 @@ internal class NullValTest {
     }
 
     @Test
-    fun `should return true from isNotNull when value is NumVal`() {
-        assertTrue(NullVal isNotNull NumVal(42))
+    fun `should return true from isNotNull when value is IntVal`() {
+        assertTrue(NullVal isNotNull IntVal(42L))
     }
 
     @Test

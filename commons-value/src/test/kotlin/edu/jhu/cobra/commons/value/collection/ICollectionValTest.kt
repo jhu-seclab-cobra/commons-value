@@ -3,8 +3,8 @@ package edu.jhu.cobra.commons.value.collection
 import edu.jhu.cobra.commons.value.ICollectionVal
 import edu.jhu.cobra.commons.value.IValue
 import edu.jhu.cobra.commons.value.ListVal
+import edu.jhu.cobra.commons.value.IntVal
 import edu.jhu.cobra.commons.value.MapVal
-import edu.jhu.cobra.commons.value.NumVal
 import edu.jhu.cobra.commons.value.RangeVal
 import edu.jhu.cobra.commons.value.SetVal
 import edu.jhu.cobra.commons.value.StrVal
@@ -31,7 +31,7 @@ internal class ICollectionValTest {
 
     @Test
     fun `should recognize SetVal as ICollectionVal`() {
-        val value: ICollectionVal = SetVal(NumVal(1))
+        val value: ICollectionVal = SetVal(IntVal(1L))
         assertTrue(value is SetVal)
     }
 
@@ -63,7 +63,7 @@ internal class ICollectionValTest {
     fun `should exhaustively match all subtypes in when expression`() {
         val cases: List<ICollectionVal> = listOf(
             ListVal(StrVal("a")),
-            SetVal(NumVal(1)),
+            SetVal(IntVal(1L)),
             MapVal("k" to StrVal("v")),
             RangeVal(1, 5),
         )

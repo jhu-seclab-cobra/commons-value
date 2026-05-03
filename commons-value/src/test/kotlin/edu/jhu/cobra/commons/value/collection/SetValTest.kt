@@ -2,8 +2,8 @@ package edu.jhu.cobra.commons.value.collection
 
 import edu.jhu.cobra.commons.value.BoolVal
 import edu.jhu.cobra.commons.value.IValue
+import edu.jhu.cobra.commons.value.IntVal
 import edu.jhu.cobra.commons.value.NullVal
-import edu.jhu.cobra.commons.value.NumVal
 import edu.jhu.cobra.commons.value.SetVal
 import edu.jhu.cobra.commons.value.StrVal
 import kotlin.test.Test
@@ -81,29 +81,29 @@ internal class SetValTest {
 
     @Test
     fun `should copy elements from collection constructor`() {
-        val source = listOf(StrVal("a"), NumVal(1))
+        val source = listOf(StrVal("a"), IntVal(1L))
         val set = SetVal(source)
         assertEquals(2, set.size)
         assertTrue(set.contains(StrVal("a")))
-        assertTrue(set.contains(NumVal(1)))
+        assertTrue(set.contains(IntVal(1L)))
     }
 
     @Test
     fun `should initialize from vararg elements`() {
-        val set = SetVal(StrVal("x"), NumVal(7), BoolVal.T)
+        val set = SetVal(StrVal("x"), IntVal(7L), BoolVal.T)
         assertEquals(3, set.size)
         assertTrue(set.contains(StrVal("x")))
-        assertTrue(set.contains(NumVal(7)))
+        assertTrue(set.contains(IntVal(7L)))
         assertTrue(set.contains(BoolVal.T))
     }
 
     @Test
     fun `should initialize from sequence`() {
-        val seq = sequenceOf(StrVal("a"), NumVal(2))
+        val seq = sequenceOf(StrVal("a"), IntVal(2L))
         val set = SetVal(seq)
         assertEquals(2, set.size)
         assertTrue(set.contains(StrVal("a")))
-        assertTrue(set.contains(NumVal(2)))
+        assertTrue(set.contains(IntVal(2L)))
     }
 
     // -- add / remove --
@@ -124,7 +124,7 @@ internal class SetValTest {
 
     @Test
     fun `should return true when removing present element`() {
-        val set = SetVal(StrVal("a"), NumVal(1))
+        val set = SetVal(StrVal("a"), IntVal(1L))
         assertTrue(set.remove(StrVal("a")))
         assertEquals(1, set.size)
     }
@@ -188,9 +188,9 @@ internal class SetValTest {
 
     @Test
     fun `should return true when element present`() {
-        val set = SetVal(StrVal("a"), NumVal(5))
+        val set = SetVal(StrVal("a"), IntVal(5L))
         assertTrue(set.contains(StrVal("a")))
-        assertTrue(set.contains(NumVal(5)))
+        assertTrue(set.contains(IntVal(5L)))
     }
 
     @Test
@@ -201,8 +201,8 @@ internal class SetValTest {
 
     @Test
     fun `should return true when all elements present`() {
-        val set = SetVal(StrVal("a"), NumVal(1), BoolVal.F)
-        assertTrue(set.containsAll(listOf(StrVal("a"), NumVal(1))))
+        val set = SetVal(StrVal("a"), IntVal(1L), BoolVal.F)
+        assertTrue(set.containsAll(listOf(StrVal("a"), IntVal(1L))))
     }
 
     @Test
@@ -251,8 +251,8 @@ internal class SetValTest {
 
     @Test
     fun `should transform each element with map`() {
-        val set = SetVal(NumVal(1), NumVal(2))
-        val mapped = set.map { (it as NumVal).toInt() * 10 }
+        val set = SetVal(IntVal(1L), IntVal(2L))
+        val mapped = set.map { (it as IntVal).toInt() * 10 }
         assertEquals(2, mapped.size)
         assertTrue(mapped.contains(10))
         assertTrue(mapped.contains(20))
@@ -272,7 +272,7 @@ internal class SetValTest {
 
     @Test
     fun `should return lazy sequence with asSequence`() {
-        val set = SetVal(NumVal(1), NumVal(2), NumVal(3))
+        val set = SetVal(IntVal(1L), IntVal(2L), IntVal(3L))
         val seq = set.asSequence()
         assertEquals(3, seq.count())
     }
@@ -281,11 +281,11 @@ internal class SetValTest {
 
     @Test
     fun `should convert to list preserving elements with toList`() {
-        val set = SetVal(StrVal("a"), NumVal(1))
+        val set = SetVal(StrVal("a"), IntVal(1L))
         val list = set.toList()
         assertEquals(2, list.size)
         assertTrue(list.contains(StrVal("a")))
-        assertTrue(list.contains(NumVal(1)))
+        assertTrue(list.contains(IntVal(1L)))
     }
 
     // -- Boundary --

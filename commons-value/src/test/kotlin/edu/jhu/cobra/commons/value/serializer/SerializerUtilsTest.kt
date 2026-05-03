@@ -1,11 +1,15 @@
 package edu.jhu.cobra.commons.value.serializer
 
+import edu.jhu.cobra.commons.value.FloatVal
+import edu.jhu.cobra.commons.value.IntVal
 import java.io.DataInput
 import java.io.EOFException
+import java.math.BigDecimal
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertIs
 
 /**
  * Tests for SerializerUtils extension functions specified in design-utils.md.
@@ -27,6 +31,13 @@ import kotlin.test.assertFailsWith
  * - `should return empty sequence when available is zero` — DataInput.asByteSequence(0) yields nothing.
  * - `should yield exact bytes when available is positive` — DataInput.asByteSequence(3) yields 3 bytes.
  * - `should yield until EOF when available is negative` — DataInput.asByteSequence(-1) yields all remaining.
+ * - `should convert Byte to IntVal via toIntOrFloatVal` — Byte dispatches to IntVal.
+ * - `should convert Short to IntVal via toIntOrFloatVal` — Short dispatches to IntVal.
+ * - `should convert Int to IntVal via toIntOrFloatVal` — Int dispatches to IntVal.
+ * - `should convert Long to IntVal via toIntOrFloatVal` — Long dispatches to IntVal.
+ * - `should convert Float to FloatVal via toIntOrFloatVal` — Float dispatches to FloatVal.
+ * - `should convert Double to FloatVal via toIntOrFloatVal` — Double dispatches to FloatVal.
+ * - `should convert BigDecimal to FloatVal via toIntOrFloatVal` — Non-standard Number dispatches to FloatVal.
  */
 internal class SerializerUtilsTest {
 
@@ -133,6 +144,57 @@ internal class SerializerUtilsTest {
     fun `should yield until EOF when available is negative`() {
         val dataInput = createDataInput(byteArrayOf(10, 20, 30))
         assertContentEquals(byteArrayOf(10, 20, 30), dataInput.asByteSequence(-1).toList().toByteArray())
+    }
+
+    // --- Number.toIntOrFloatVal ---
+
+    @Test
+    fun `should convert Byte to IntVal via toIntOrFloatVal`() {
+        val result = (42.toByte() as Number).toIntOrFloatVal()
+        assertIs<IntVal>(result)
+        assertEquals(42L, (result as IntVal).core)
+    }
+
+    @Test
+    fun `should convert Short to IntVal via toIntOrFloatVal`() {
+        val result = (42.toShort() as Number).toIntOrFloatVal()
+        assertIs<IntVal>(result)
+        assertEquals(42L, (result as IntVal).core)
+    }
+
+    @Test
+    fun `should convert Int to IntVal via toIntOrFloatVal`() {
+        val result = (42 as Number).toIntOrFloatVal()
+        assertIs<IntVal>(result)
+        assertEquals(42L, (result as IntVal).core)
+    }
+
+    @Test
+    fun `should convert Long to IntVal via toIntOrFloatVal`() {
+        val result = (42L as Number).toIntOrFloatVal()
+        assertIs<IntVal>(result)
+        assertEquals(42L, (result as IntVal).core)
+    }
+
+    @Test
+    fun `should convert Float to FloatVal via toIntOrFloatVal`() {
+        val result = (3.14f as Number).toIntOrFloatVal()
+        assertIs<FloatVal>(result)
+        assertEquals(3.14f.toDouble(), (result as FloatVal).core)
+    }
+
+    @Test
+    fun `should convert Double to FloatVal via toIntOrFloatVal`() {
+        val result = (3.14 as Number).toIntOrFloatVal()
+        assertIs<FloatVal>(result)
+        assertEquals(3.14, (result as FloatVal).core)
+    }
+
+    @Test
+    fun `should convert BigDecimal to FloatVal via toIntOrFloatVal`() {
+        val result = (BigDecimal("99.99") as Number).toIntOrFloatVal()
+        assertIs<FloatVal>(result)
+        assertEquals(99.99, (result as FloatVal).core)
     }
 
     // --- Helper ---

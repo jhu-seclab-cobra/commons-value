@@ -100,12 +100,11 @@ internal class UtilsTest {
         assertEquals(3, result.size)
     }
 
-    @Suppress("DEPRECATION")
     @Test
     fun `should return IValue identity`() {
-        val numVal = NumVal(42)
-        val result = (numVal as Any?).toVal
-        assertSame(numVal, result)
+        val intVal = IntVal(42L)
+        val result = (intVal as Any?).toVal
+        assertSame(intVal, result)
     }
 
     @Test
