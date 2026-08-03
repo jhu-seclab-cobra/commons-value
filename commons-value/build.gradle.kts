@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "edu.jhu.cobra"
-version = "0.1.0"
+version = "0.1.1"
 
 val jvmVersion = libs.versions.jvm.get().toInt()
 
@@ -24,7 +24,6 @@ dependencies {
 kotlin {
     jvmToolchain {
         languageVersion.set(JavaLanguageVersion.of(jvmVersion))
-        vendor.set(JvmVendorSpec.ADOPTIUM)
     }
 }
 
