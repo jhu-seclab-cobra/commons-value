@@ -171,7 +171,7 @@ public class MapVal(
      *
      * @return An array of key-value pairs.
      */
-    public fun toTypeArray(): Array<Pair<String, IValue>> {
+    public fun toPairArray(): Array<Pair<String, IValue>> {
         val pairIterator = core.iterator() // get the iterator
         return Array(core.size) { pairIterator.next().toPair() }
     }

@@ -94,23 +94,6 @@ public val Map<*, *>.mapVal: MapVal get() = MapVal(asSequence().map { it.key.toS
 public fun MapVal?.orEmpty(): MapVal = this ?: MapVal()
 
 /**
- * Converts a set to a [SetVal].
- *
- * This extension property creates a new [SetVal] instance by converting each element
- * in the set to an [IValue] using [toVal]. The uniqueness of elements is preserved.
- *
- * Example:
- * ```kotlin
- * val set = setOf(1, true, "text")
- * val setVal = set.setVal // Creates SetVal containing IntVal(1), BoolVal(true), StrVal("text")
- * ```
- *
- * @return A [SetVal] containing the converted elements
- * @throws IllegalArgumentException if any element cannot be converted to an [IValue]
- */
-public val Set<*>.setVal: SetVal get() = SetVal(map { it.toVal })
-
-/**
  * Returns the current [SetVal] or an empty one if null.
  *
  * This extension function provides a safe way to handle nullable [SetVal] instances

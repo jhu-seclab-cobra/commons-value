@@ -1,11 +1,5 @@
-package edu.jhu.cobra.commons.value.collection
+package edu.jhu.cobra.commons.value
 
-import edu.jhu.cobra.commons.value.BoolVal
-import edu.jhu.cobra.commons.value.IValue
-import edu.jhu.cobra.commons.value.IntVal
-import edu.jhu.cobra.commons.value.ListVal
-import edu.jhu.cobra.commons.value.NullVal
-import edu.jhu.cobra.commons.value.StrVal
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -67,12 +61,11 @@ import kotlin.test.assertTrue
  * - `should return zero size for empty list`
  * - `should return correct size after mutations`
  *
- * map / flatMap / forEach / asSequence / toMutableSet:
+ * map / flatMap / forEach / asSequence:
  * - `should transform each element with map`
  * - `should flatten transformed lists with flatMap`
  * - `should iterate all elements with forEach`
  * - `should return lazy sequence with asSequence`
- * - `should convert to linked set removing duplicates with toMutableSet`
  *
  * Boundary:
  * - `should handle single element list`
@@ -370,17 +363,6 @@ internal class ListValTest {
         val seq = list.asSequence()
         assertEquals(3, seq.count())
         assertEquals(IntVal(1L), seq.first())
-    }
-
-    // -- toMutableSet --
-
-    @Test
-    fun `should convert to linked set removing duplicates with toMutableSet`() {
-        val list = ListVal(StrVal("a"), StrVal("a"), IntVal(1L))
-        val set = list.toMutableSet()
-        assertEquals(2, set.size)
-        assertTrue(set.contains(StrVal("a")))
-        assertTrue(set.contains(IntVal(1L)))
     }
 
     // -- Boundary --

@@ -1,11 +1,5 @@
-package edu.jhu.cobra.commons.value.collection
+package edu.jhu.cobra.commons.value
 
-import edu.jhu.cobra.commons.value.BoolVal
-import edu.jhu.cobra.commons.value.IValue
-import edu.jhu.cobra.commons.value.IntVal
-import edu.jhu.cobra.commons.value.NullVal
-import edu.jhu.cobra.commons.value.SetVal
-import edu.jhu.cobra.commons.value.StrVal
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse

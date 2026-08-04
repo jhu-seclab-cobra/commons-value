@@ -1,16 +1,5 @@
-package edu.jhu.cobra.commons.value.collection
+package edu.jhu.cobra.commons.value
 
-import edu.jhu.cobra.commons.value.BoolVal
-import edu.jhu.cobra.commons.value.IntVal
-import edu.jhu.cobra.commons.value.ListVal
-import edu.jhu.cobra.commons.value.MapVal
-import edu.jhu.cobra.commons.value.SetVal
-import edu.jhu.cobra.commons.value.StrVal
-import edu.jhu.cobra.commons.value.listVal
-import edu.jhu.cobra.commons.value.mapVal
-import edu.jhu.cobra.commons.value.orEmpty
-import edu.jhu.cobra.commons.value.rangeVal
-import edu.jhu.cobra.commons.value.setVal
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -18,7 +7,7 @@ import kotlin.test.assertTrue
 
 /**
  * Black-box tests for collection extension functions derived from design-collection.md
- * and CollectionUtils.kt specifications.
+ * and CollectionConversions.kt specifications.
  *
  * Collection.listVal:
  * - `should convert mixed collection to ListVal`
@@ -29,9 +18,6 @@ import kotlin.test.assertTrue
  * - `should convert collection to SetVal removing duplicates`
  * - `should convert empty collection to empty SetVal`
  * - `should throw IllegalArgumentException for unconvertible element in setVal`
- *
- * Set.setVal:
- * - `should convert Set to SetVal`
  *
  * Map.mapVal:
  * - `should convert map to MapVal`
@@ -56,7 +42,7 @@ import kotlin.test.assertTrue
  * Boundary:
  * - `should convert nested collections to nested IValue`
  */
-internal class CollectionUtilsTest {
+internal class CollectionConversionsTest {
     // -- Collection.listVal --
 
     @Test
@@ -109,18 +95,6 @@ internal class CollectionUtilsTest {
         assertFailsWith<IllegalArgumentException> {
             listOf(Custom()).setVal
         }
-    }
-
-    // -- Set.setVal --
-
-    @Test
-    fun `should convert Set to SetVal`() {
-        val set = setOf(1, true, "text")
-        val result = set.setVal
-        assertEquals(3, result.size)
-        assertTrue(result.contains(IntVal(1L)))
-        assertTrue(result.contains(BoolVal.T))
-        assertTrue(result.contains(StrVal("text")))
     }
 
     // -- Map.mapVal --

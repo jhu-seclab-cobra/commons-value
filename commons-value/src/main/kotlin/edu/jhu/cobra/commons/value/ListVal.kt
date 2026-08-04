@@ -354,12 +354,5 @@ public class ListVal(
      */
     public fun asSequence(): Sequence<IValue> = core.asSequence()
 
-    /**
-     * Converts the list to a mutable set.
-     *
-     * @return A mutable set containing the elements of the list.
-     */
-    public fun toMutableSet(): LinkedHashSet<IValue> = linkedSetOf<IValue>().apply { addAll(core) }
-
     override fun toString(): String = core.joinToString(prefix = "[", postfix = "]")
 }

@@ -1,12 +1,5 @@
-package edu.jhu.cobra.commons.value.primitive
+package edu.jhu.cobra.commons.value
 
-import edu.jhu.cobra.commons.value.BoolVal
-import edu.jhu.cobra.commons.value.FloatVal
-import edu.jhu.cobra.commons.value.IPrimitiveVal
-import edu.jhu.cobra.commons.value.IntVal
-import edu.jhu.cobra.commons.value.NullVal
-import edu.jhu.cobra.commons.value.StrVal
-import edu.jhu.cobra.commons.value.Unsure
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue

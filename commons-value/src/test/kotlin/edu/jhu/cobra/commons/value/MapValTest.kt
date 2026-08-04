@@ -1,9 +1,5 @@
-package edu.jhu.cobra.commons.value.collection
+package edu.jhu.cobra.commons.value
 
-import edu.jhu.cobra.commons.value.BoolVal
-import edu.jhu.cobra.commons.value.IntVal
-import edu.jhu.cobra.commons.value.MapVal
-import edu.jhu.cobra.commons.value.StrVal
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -50,13 +46,13 @@ import kotlin.test.assertTrue
  * - `should return zero for empty map`
  * - `should return correct size after mutations`
  *
- * forEach / map / mapValues / flatMap / toList / toTypeArray:
+ * forEach / map / mapValues / flatMap / toList / toPairArray:
  * - `should iterate all entries with forEach`
  * - `should transform entries with map`
  * - `should transform values with mapValues`
  * - `should flatten entries with flatMap`
  * - `should convert to pair list with toList`
- * - `should convert to pair array with toTypeArray`
+ * - `should convert to pair array with toPairArray`
  *
  * Boundary:
  * - `should handle empty map operations`
@@ -322,12 +318,12 @@ internal class MapValTest {
         assertTrue(list.any { it.first == "b" && it.second == StrVal("2") })
     }
 
-    // -- toTypeArray --
+    // -- toPairArray --
 
     @Test
-    fun `should convert to pair array with toTypeArray`() {
+    fun `should convert to pair array with toPairArray`() {
         val map = MapVal("a" to IntVal(1L), "b" to IntVal(2L))
-        val array = map.toTypeArray()
+        val array = map.toPairArray()
         assertEquals(2, array.size)
         assertTrue(array.any { it.first == "a" && it.second == IntVal(1L) })
         assertTrue(array.any { it.first == "b" && it.second == IntVal(2L) })

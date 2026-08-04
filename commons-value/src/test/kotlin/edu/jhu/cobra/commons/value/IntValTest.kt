@@ -1,8 +1,5 @@
-package edu.jhu.cobra.commons.value.primitive
+package edu.jhu.cobra.commons.value
 
-import edu.jhu.cobra.commons.value.IPrimitiveVal
-import edu.jhu.cobra.commons.value.IntVal
-import edu.jhu.cobra.commons.value.intVal
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
