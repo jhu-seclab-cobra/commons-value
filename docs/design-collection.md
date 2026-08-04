@@ -116,8 +116,11 @@ Part of [commons-value design](design-primitive.md). Specifies the `ICollectionV
 | `get(key: String)` | Returns value for key, or null | `key: String` | `IValue?` | — |
 | `set(key: String, value: IValue)` | Sets key-value pair | `key: String`, `value: IValue` | — | — |
 | `add(key: String, value: IValue)` | Adds key-value pair | `key: String`, `value: IValue` | `IValue?` | — |
-| `plus(pair: Pair<String, IValue>)` | Adds pair | `pair: Pair<String, IValue>` | `IValue?` | — |
-| `minus(key: String)` / `remove(key: String)` | Removes by key, returns previous value | `key: String` | `IValue?` | — |
+| `plus(pair: Pair<String, IValue>)` | Returns new MapVal with pair added | `pair: Pair<String, IValue>` | `MapVal` | — |
+| `plusAssign(pair: Pair<String, IValue>)` | Mutably adds pair | `pair: Pair<String, IValue>` | — | — |
+| `minus(key: String)` | Returns new MapVal without key | `key: String` | `MapVal` | — |
+| `minusAssign(key: String)` | Mutably removes key | `key: String` | — | — |
+| `remove(key: String)` | Removes by key, returns previous value | `key: String` | `IValue?` | — |
 | `keys()` | Returns all keys | — | `Set<String>` | — |
 | `values()` | Returns all values | — | `Collection<IValue>` | — |
 | `contains(key: String)` | Checks key presence | `key: String` | `Boolean` | — |

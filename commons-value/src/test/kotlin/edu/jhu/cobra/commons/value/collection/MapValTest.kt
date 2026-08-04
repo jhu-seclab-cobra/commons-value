@@ -28,10 +28,12 @@ import kotlin.test.assertTrue
  * - `should set key-value pair via set operator`
  * - `should overwrite existing key via set operator`
  * - `should add key-value pair via add method`
- * - `should add key-value pair via plus operator`
+ * - `should return new map with pair added via plus operator`
+ * - `should add key-value pair via plusAssign operator`
  *
  * minus / remove:
- * - `should remove entry by key via minus operator`
+ * - `should return new map without key via minus operator`
+ * - `should remove entry by key via minusAssign operator`
  * - `should remove entry by key via remove method`
  * - `should return null when removing missing key`
  *
@@ -156,24 +158,40 @@ internal class MapValTest {
         assertEquals(StrVal("v"), map["k"])
     }
 
-    // -- plus --
+    // -- plus / plusAssign --
 
     @Test
-    fun `should add key-value pair via plus operator`() {
+    fun `should return new map with pair added via plus operator`() {
         val map = MapVal()
-        map + ("k" to StrVal("v"))
+        val added = map + ("k" to StrVal("v"))
+        assertEquals(0, map.size)
+        assertEquals(1, added.size)
+        assertEquals(StrVal("v"), added["k"])
+    }
+
+    @Test
+    fun `should add key-value pair via plusAssign operator`() {
+        val map = MapVal()
+        map += "k" to StrVal("v")
         assertEquals(1, map.size)
         assertEquals(StrVal("v"), map["k"])
     }
 
-    // -- minus / remove --
+    // -- minus / minusAssign / remove --
 
     @Test
-    fun `should remove entry by key via minus operator`() {
+    fun `should return new map without key via minus operator`() {
         val map = MapVal("k" to StrVal("v"))
         val removed = map - "k"
+        assertEquals(1, map.size)
+        assertEquals(0, removed.size)
+    }
+
+    @Test
+    fun `should remove entry by key via minusAssign operator`() {
+        val map = MapVal("k" to StrVal("v"))
+        map -= "k"
         assertEquals(0, map.size)
-        assertEquals(StrVal("v"), removed)
     }
 
     @Test

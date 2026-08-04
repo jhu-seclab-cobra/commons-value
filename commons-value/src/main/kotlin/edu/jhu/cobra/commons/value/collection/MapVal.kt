@@ -88,19 +88,38 @@ class MapVal(override val core: HashMap<String, IValue> = HashMap()) : ICollecti
     fun add(key: String, value: IValue) = core.put(key, value)
 
     /**
-     * Adds a key-value pair using the plus operator.
+     * Returns a new [MapVal] containing the entries of this map plus the given pair.
+     *
+     * @param pair The key-value pair to add.
+     * @return A new [MapVal] with the pair added; this map is unchanged.
+     */
+    operator fun plus(pair: Pair<String, IValue>): MapVal = MapVal(core + pair)
+
+    /**
+     * Adds a key-value pair to this map in place.
      *
      * @param pair The key-value pair to add.
      */
-    operator fun plus(pair: Pair<String, IValue>) = core.put(pair.first, pair.second)
+    operator fun plusAssign(pair: Pair<String, IValue>) {
+        core[pair.first] = pair.second
+    }
 
     /**
-     * Removes the specified key from the map.
+     * Returns a new [MapVal] containing the entries of this map without the given key.
      *
      * @param key The key to remove.
-     * @return The removed value, or `null` if the key was not present.
+     * @return A new [MapVal] without the key; this map is unchanged.
      */
-    operator fun minus(key: String) = core.remove(key)
+    operator fun minus(key: String): MapVal = MapVal(core - key)
+
+    /**
+     * Removes the specified key from this map in place.
+     *
+     * @param key The key to remove.
+     */
+    operator fun minusAssign(key: String) {
+        core.remove(key)
+    }
 
     /**
      * Removes the specified key from the map.
