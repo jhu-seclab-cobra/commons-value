@@ -193,15 +193,17 @@ public fun CharBuffer.remove(until: Char): Boolean {
 /**
  * Reads characters from the buffer into a new [CharBuffer] until a specified character is encountered.
  *
+ * The delimiter itself is consumed but not included in the result. If the delimiter is absent,
+ * all remaining characters are read.
+ *
  * @param until The character to stop reading at
  * @return A new [CharBuffer] containing the characters read
- * @throws BufferUnderflowException if the end of the buffer is reached before finding the character
  */
 public fun CharBuffer.getBuffer(until: Char): CharBuffer {
     val (curPos, maxPos) = position() to limit()
     val searchRange = 0 until maxPos - curPos
     val length = searchRange.firstOrNull { get(it + curPos) == until }
-    val newBuffer = CharBuffer.allocate(length ?: maxPos)
+    val newBuffer = CharBuffer.allocate(length ?: (maxPos - curPos))
     repeat(newBuffer.limit()) { newBuffer.put(this.get()) }
     if (length != null) get() // remove the found character
     return newBuffer.typedFlip()
@@ -223,9 +225,11 @@ public fun CharBuffer.getBuffer(size: Int): CharBuffer {
 /**
  * Reads characters from the buffer into a string until a specified character is encountered.
  *
+ * The delimiter itself is consumed but not included in the result. If the delimiter is absent,
+ * all remaining characters are read.
+ *
  * @param until The character to stop reading at
  * @return A string containing the characters read
- * @throws BufferUnderflowException if the end of the buffer is reached before finding the character
  */
 public fun CharBuffer.getString(until: Char): String = getBuffer(until).toString()
 

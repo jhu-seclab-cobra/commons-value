@@ -6,6 +6,7 @@ import java.io.DataInput
 import java.io.EOFException
 import java.io.IOException
 import java.math.BigDecimal
+import java.nio.CharBuffer
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
@@ -41,6 +42,10 @@ import kotlin.test.assertIs
  * - `should convert Float to FloatVal via toIntOrFloatVal` — Float dispatches to FloatVal.
  * - `should convert Double to FloatVal via toIntOrFloatVal` — Double dispatches to FloatVal.
  * - `should convert BigDecimal to FloatVal via toIntOrFloatVal` — Non-standard Number dispatches to FloatVal.
+ * - `should return remainder from getBuffer when delimiter absent after advanced position` — Delimiter-absent read
+ *   returns the remaining characters instead of over-allocating from the buffer limit.
+ * - `should return all remaining from getBuffer when delimiter absent at position zero` — Delimiter-absent read at
+ *   position zero returns the whole content.
  */
 internal class SerializerUtilsTest {
     // --- String.asNumber ---
@@ -211,6 +216,23 @@ internal class SerializerUtilsTest {
         val result = (BigDecimal("99.99") as Number).toIntOrFloatVal()
         assertIs<FloatVal>(result)
         assertEquals(99.99, (result as FloatVal).core)
+    }
+
+    // --- CharBuffer.getBuffer(until) ---
+
+    @Test
+    fun `should return remainder from getBuffer when delimiter absent after advanced position`() {
+        val buffer = CharBuffer.wrap("abc:defgh")
+        buffer.getBuffer(':')
+        val rest = buffer.getBuffer('|')
+        assertEquals("defgh", rest.toString())
+    }
+
+    @Test
+    fun `should return all remaining from getBuffer when delimiter absent at position zero`() {
+        val buffer = CharBuffer.wrap("defgh")
+        val rest = buffer.getBuffer('|')
+        assertEquals("defgh", rest.toString())
     }
 
     // --- Helper ---
