@@ -7,20 +7,20 @@ package edu.jhu.cobra.commons.value
  * @property endInclusive The ending value of the range, inclusive.
  */
 public data class RangeVal(
-    val start: IntVal,
-    val endInclusive: IntVal,
+    public val start: IntVal,
+    public val endInclusive: IntVal,
 ) : ICollectionVal {
     override val core: List<IntVal> get() = listOf(start, endInclusive)
 
     /**
      * Returns the starting value of the range as a [Long].
      */
-    val first: Long get() = start.core
+    public val first: Long get() = start.core
 
     /**
      * Returns the ending value of the range (inclusive) as a [Long].
      */
-    val last: Long get() = endInclusive.core
+    public val last: Long get() = endInclusive.core
 
     /**
      * Constructs a [RangeVal] from two [Long] values representing the start and end.

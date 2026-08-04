@@ -1,7 +1,5 @@
 package edu.jhu.cobra.commons.value
 
-import kotlin.math.ceil
-
 /**
  * Represents a set of [IValue] objects, providing various operations for set manipulation.
  * It behaves similarly to Kotlin's [Set] interface, allowing common set operations.
@@ -30,7 +28,7 @@ public class SetVal(
      */
     public val size: Int get() = core.size
 
-    public constructor(size: Int) : this(LinkedHashSet(ceil(size / 0.75).toInt()))
+    public constructor(size: Int) : this(LinkedHashSet(hashCapacityFor(size)))
 
     /**
      * Constructs a [SetVal] from a collection of [IValue] objects.
@@ -44,7 +42,7 @@ public class SetVal(
      *
      * @param value Vararg elements to initialize the set with.
      */
-    public constructor(vararg value: IValue) : this(LinkedHashSet<IValue>(ceil(value.size / 0.75).toInt()).apply { addAll(value) })
+    public constructor(vararg value: IValue) : this(LinkedHashSet<IValue>(hashCapacityFor(value.size)).apply { addAll(value) })
 
     /**
      * Constructs a [SetVal] from a sequence of [IValue] elements.

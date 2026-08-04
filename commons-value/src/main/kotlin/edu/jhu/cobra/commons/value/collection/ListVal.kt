@@ -1,5 +1,9 @@
 package edu.jhu.cobra.commons.value
 
+// Most ListVal instances hold only a few elements; a small initial capacity avoids
+// ArrayList's default ten-slot allocation.
+private const val DEFAULT_INITIAL_CAPACITY = 5
+
 /**
  * Represents a list of [IValue] objects, providing various operations for list manipulation.
  * This class behaves similarly to Kotlin's [MutableList] interface, supporting common list operations
@@ -18,7 +22,7 @@ package edu.jhu.cobra.commons.value
  * @property core The internal list of [IValue] elements.
  */
 public class ListVal(
-    override val core: ArrayList<IValue> = ArrayList(5),
+    override val core: ArrayList<IValue> = ArrayList(DEFAULT_INITIAL_CAPACITY),
 ) : ICollectionVal {
     override fun equals(other: Any?): Boolean = this === other || (other is ListVal && core == other.core)
 

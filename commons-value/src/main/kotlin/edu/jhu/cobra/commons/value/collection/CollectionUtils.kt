@@ -1,5 +1,13 @@
 package edu.jhu.cobra.commons.value
 
+import kotlin.math.ceil
+
+// Default load factor of HashMap and LinkedHashSet; fixed by the JDK collection implementations.
+private const val HASH_LOAD_FACTOR = 0.75
+
+// Initial capacity that lets a hash container hold [size] entries without rehashing.
+internal fun hashCapacityFor(size: Int): Int = ceil(size / HASH_LOAD_FACTOR).toInt()
+
 /**
  * Converts a collection of values into a [ListVal].
  *

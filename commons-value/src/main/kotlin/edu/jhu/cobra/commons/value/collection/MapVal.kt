@@ -1,7 +1,5 @@
 package edu.jhu.cobra.commons.value
 
-import kotlin.math.ceil
-
 /**
  * Represents a map with string keys and [IValue] values, providing various operations for map manipulation.
  * It behaves similarly to Kotlin's [Map] interface, allowing common map operations.
@@ -30,7 +28,7 @@ public class MapVal(
      */
     public val size: Int get() = core.size
 
-    public constructor(size: Int) : this(HashMap(ceil(size / 0.75).toInt()))
+    public constructor(size: Int) : this(HashMap(hashCapacityFor(size)))
 
     /**
      * Constructs a [MapVal] from an existing map of string keys and [IValue] values.
@@ -46,7 +44,7 @@ public class MapVal(
      */
     public constructor(
         vararg value: Pair<String, IValue>,
-    ) : this(HashMap<String, IValue>(ceil(value.size / 0.75).toInt()).apply { value.forEach { (k, v) -> put(k, v) } })
+    ) : this(HashMap<String, IValue>(hashCapacityFor(value.size)).apply { value.forEach { (k, v) -> put(k, v) } })
 
     /**
      * Constructs a [MapVal] from a sequence of key-value pairs.
