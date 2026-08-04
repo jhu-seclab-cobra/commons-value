@@ -1,7 +1,5 @@
-package edu.jhu.cobra.commons.value.collection
+package edu.jhu.cobra.commons.value
 
-import edu.jhu.cobra.commons.value.IntVal
-import edu.jhu.cobra.commons.value.RangeVal
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -39,8 +37,10 @@ import kotlin.test.assertTrue
  * infix before / after:
  * - `should return true when range ends before other starts`
  * - `should return false when ranges overlap for before`
+ * - `should return false from before when ranges share a boundary point`
  * - `should return true when range starts after other ends`
  * - `should return false when ranges overlap for after`
+ * - `should return false from after when ranges share a boundary point`
  *
  * plus:
  * - `should combine disjoint ranges into union bounds`
@@ -188,6 +188,13 @@ internal class RangeValTest {
         assertFalse(r1 before r2)
     }
 
+    @Test
+    fun `should return false from before when ranges share a boundary point`() {
+        val r1 = RangeVal(0, 5)
+        val r2 = RangeVal(5, 10)
+        assertFalse(r1 before r2)
+    }
+
     // -- infix after --
 
     @Test
@@ -201,6 +208,13 @@ internal class RangeValTest {
     fun `should return false when ranges overlap for after`() {
         val r1 = RangeVal(3, 8)
         val r2 = RangeVal(1, 5)
+        assertFalse(r1 after r2)
+    }
+
+    @Test
+    fun `should return false from after when ranges share a boundary point`() {
+        val r1 = RangeVal(5, 10)
+        val r2 = RangeVal(0, 5)
         assertFalse(r1 after r2)
     }
 

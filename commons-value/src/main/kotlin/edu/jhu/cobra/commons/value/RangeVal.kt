@@ -71,20 +71,26 @@ public data class RangeVal(
     public operator fun contains(num: Long): Boolean = first <= num && num <= last
 
     /**
-     * Determines if this range ends before another range starts.
+     * Determines if this range ends strictly before another range starts.
+     *
+     * The comparison is strict: two ranges sharing a boundary point (this range's end equals
+     * the other range's start) are not before each other.
      *
      * @param range The range to compare.
-     * @return `true` if this range ends before the other starts, `false` otherwise.
+     * @return `true` if this range ends strictly before the other starts, `false` otherwise.
      */
-    public infix fun before(range: RangeVal): Boolean = this.last <= range.first
+    public infix fun before(range: RangeVal): Boolean = this.last < range.first
 
     /**
-     * Determines if this range starts after another range ends.
+     * Determines if this range starts strictly after another range ends.
+     *
+     * The comparison is strict: two ranges sharing a boundary point (this range's start equals
+     * the other range's end) are not after each other.
      *
      * @param range The range to compare.
-     * @return `true` if this range starts after the other ends, `false` otherwise.
+     * @return `true` if this range starts strictly after the other ends, `false` otherwise.
      */
-    public infix fun after(range: RangeVal): Boolean = this.first >= range.last
+    public infix fun after(range: RangeVal): Boolean = this.first > range.last
 
     /**
      * Combines two ranges into a new one, covering the smallest start to the largest end.
