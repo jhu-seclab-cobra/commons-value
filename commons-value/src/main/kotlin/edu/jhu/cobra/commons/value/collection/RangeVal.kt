@@ -6,8 +6,10 @@ package edu.jhu.cobra.commons.value
  * @property start The starting value of the range.
  * @property endInclusive The ending value of the range, inclusive.
  */
-data class RangeVal(val start: IntVal, val endInclusive: IntVal) : ICollectionVal {
-
+data class RangeVal(
+    val start: IntVal,
+    val endInclusive: IntVal,
+) : ICollectionVal {
     override val core: List<IntVal> get() = listOf(start, endInclusive)
 
     /**
@@ -42,8 +44,7 @@ data class RangeVal(val start: IntVal, val endInclusive: IntVal) : ICollectionVa
      * @param num The number to check.
      * @return `true` if the number is within the range, `false` otherwise.
      */
-    operator fun contains(num: Number): Boolean =
-        first.toDouble() <= num.toDouble() && num.toDouble() <= last.toDouble()
+    operator fun contains(num: Number): Boolean = first.toDouble() <= num.toDouble() && num.toDouble() <= last.toDouble()
 
     /**
      * Checks if the specified [IntVal] is within the range.
@@ -51,8 +52,7 @@ data class RangeVal(val start: IntVal, val endInclusive: IntVal) : ICollectionVa
      * @param num The [IntVal] to check.
      * @return `true` if the [IntVal] is within the range, `false` otherwise.
      */
-    operator fun contains(num: IntVal): Boolean =
-        first <= num.core && num.core <= last
+    operator fun contains(num: IntVal): Boolean = first <= num.core && num.core <= last
 
     /**
      * Checks if the specified [RangeVal] is fully within this range.
@@ -60,8 +60,7 @@ data class RangeVal(val start: IntVal, val endInclusive: IntVal) : ICollectionVa
      * @param range The [RangeVal] to check.
      * @return `true` if the range is within this range, `false` otherwise.
      */
-    operator fun contains(range: RangeVal): Boolean =
-        range.first in this && range.last in this
+    operator fun contains(range: RangeVal): Boolean = range.first in this && range.last in this
 
     /**
      * Checks if the specified [Long] is within the range.
@@ -69,8 +68,7 @@ data class RangeVal(val start: IntVal, val endInclusive: IntVal) : ICollectionVa
      * @param num The [Long] to check.
      * @return `true` if the value is within the range, `false` otherwise.
      */
-    operator fun contains(num: Long): Boolean =
-        first <= num && num <= last
+    operator fun contains(num: Long): Boolean = first <= num && num <= last
 
     /**
      * Determines if this range ends before another range starts.
@@ -78,8 +76,7 @@ data class RangeVal(val start: IntVal, val endInclusive: IntVal) : ICollectionVa
      * @param range The range to compare.
      * @return `true` if this range ends before the other starts, `false` otherwise.
      */
-    infix fun before(range: RangeVal): Boolean =
-        this.last <= range.first
+    infix fun before(range: RangeVal): Boolean = this.last <= range.first
 
     /**
      * Determines if this range starts after another range ends.
@@ -87,8 +84,7 @@ data class RangeVal(val start: IntVal, val endInclusive: IntVal) : ICollectionVa
      * @param range The range to compare.
      * @return `true` if this range starts after the other ends, `false` otherwise.
      */
-    infix fun after(range: RangeVal): Boolean =
-        this.first >= range.last
+    infix fun after(range: RangeVal): Boolean = this.first >= range.last
 
     /**
      * Combines two ranges into a new one, covering the smallest start to the largest end.

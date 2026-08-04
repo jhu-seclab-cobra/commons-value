@@ -14,8 +14,9 @@ package edu.jhu.cobra.commons.value
  * @property core The actual string value.
  *
  */
-data class StrVal(override val core: String) : IPrimitiveVal {
-
+data class StrVal(
+    override val core: String,
+) : IPrimitiveVal {
     /**
      * Creates a `StrVal` initialized to an empty string.
      */
@@ -52,7 +53,10 @@ data class StrVal(override val core: String) : IPrimitiveVal {
      * @param ignoreCase Whether to ignore case during comparison.
      * @return `true` if the strings are equal, `false` otherwise.
      */
-    fun equals(string: String, ignoreCase: Boolean): Boolean = core.equals(string, ignoreCase)
+    fun equals(
+        string: String,
+        ignoreCase: Boolean,
+    ): Boolean = core.equals(string, ignoreCase)
 
     /**
      * Compares this [StrVal] with another [IPrimitiveVal], optionally ignoring case.
@@ -61,7 +65,10 @@ data class StrVal(override val core: String) : IPrimitiveVal {
      * @param ignoreCase Whether to ignore case during comparison.
      * @return `true` if the values are equal, `false` otherwise.
      */
-    fun equals(value: IPrimitiveVal, ignoreCase: Boolean): Boolean = core.equals(value.core.toString(), ignoreCase)
+    fun equals(
+        value: IPrimitiveVal,
+        ignoreCase: Boolean,
+    ): Boolean = core.equals(value.core.toString(), ignoreCase)
 
     /**
      * Converts the string to uppercase.

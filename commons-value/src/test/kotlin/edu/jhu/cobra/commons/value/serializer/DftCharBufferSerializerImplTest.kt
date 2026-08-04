@@ -15,7 +15,6 @@ import kotlin.test.assertTrue
  * - `should throw IllegalArgumentException with context when string length is negative` — Negative length prefix reported with context.
  */
 internal class DftCharBufferSerializerImplTest : AbcSerializerImplUnitTest<CharBuffer>() {
-
     override val testTarget: IValSerializer<CharBuffer> get() = DftCharBufferSerializerImpl
 
     @Test
@@ -45,9 +44,10 @@ internal class DftCharBufferSerializerImplTest : AbcSerializerImplUnitTest<CharB
     @Test
     fun `should throw IllegalArgumentException with context when string length is negative`() {
         val corruptBuffer = "Str:-1:".asCharBuffer()
-        val exception = assertFailsWith<IllegalArgumentException> {
-            DftCharBufferSerializerImpl.deserialize(corruptBuffer)
-        }
+        val exception =
+            assertFailsWith<IllegalArgumentException> {
+                DftCharBufferSerializerImpl.deserialize(corruptBuffer)
+            }
         assertTrue("size" in exception.message.orEmpty())
     }
 }

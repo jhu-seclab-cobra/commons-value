@@ -23,7 +23,6 @@ import java.nio.CharBuffer
  * instances from their serialized representation.
  */
 object DftCharBufferSerializerImpl : IValSerializer<CharBuffer> {
-
     /**
      * Serializes an [IValue] instance into a [CharBuffer].
      *
@@ -42,58 +41,81 @@ object DftCharBufferSerializerImpl : IValSerializer<CharBuffer> {
      * @return A [CharBuffer] containing the serialized representation of the value.
      * @throws IllegalArgumentException If the value type is unknown or unsupported.
      */
-    override fun serialize(value: IValue): CharBuffer = when (value) {
-        is NullVal -> "${Type.NULL.str}:".asCharBuffer()
-        is Unsure -> when (value) {
-            Unsure.NUM -> "${Type.UNSURE_NUM.str}:".asCharBuffer()
-            Unsure.STR -> "${Type.UNSURE_STR.str}:".asCharBuffer()
-            Unsure.BOOL -> "${Type.UNSURE_BOOL.str}:".asCharBuffer()
-            else -> "${Type.UNSURE_ANY.str}:".asCharBuffer()
-        }
-        is StrVal -> {
-            val hexCnt = value.length.asHexString()
-            val string = "${Type.STR.str}:$hexCnt:${value.core}"
-            string.asCharBuffer()
-        }
-        is BoolVal ->
-            if (value.isTrue()) "${Type.BOOL_TRUE.str}:".asCharBuffer()
-            else "${Type.BOOL_FALSE.str}:".asCharBuffer()
-        is IntVal -> "${Type.INT.str}:${value.core}:".asCharBuffer()
-        is FloatVal -> "${Type.FLOAT.str}:${value.core}:".asCharBuffer()
+    override fun serialize(value: IValue): CharBuffer =
+        when (value) {
+            is NullVal -> "${Type.NULL.str}:".asCharBuffer()
+            is Unsure ->
+                when (value) {
+                    Unsure.NUM -> "${Type.UNSURE_NUM.str}:".asCharBuffer()
+                    Unsure.STR -> "${Type.UNSURE_STR.str}:".asCharBuffer()
+                    Unsure.BOOL -> "${Type.UNSURE_BOOL.str}:".asCharBuffer()
+                    else -> "${Type.UNSURE_ANY.str}:".asCharBuffer()
+                }
+            is StrVal -> {
+                val hexCnt = value.length.asHexString()
+                val string = "${Type.STR.str}:$hexCnt:${value.core}"
+                string.asCharBuffer()
+            }
+            is BoolVal ->
+                if (value.isTrue()) {
+                    "${Type.BOOL_TRUE.str}:".asCharBuffer()
+                } else {
+                    "${Type.BOOL_FALSE.str}:".asCharBuffer()
+                }
+            is IntVal -> "${Type.INT.str}:${value.core}:".asCharBuffer()
+            is FloatVal -> "${Type.FLOAT.str}:${value.core}:".asCharBuffer()
 
-        is RangeVal -> "${Type.RANGE.str}:${value.first},${value.last}:".asCharBuffer()
-        is ListVal -> { // listType:cnt{element,element,...}
-            val elements = value.map { element -> serialize(element) }
-            val eleCount = value.size.asHexString() // the counter for ele
-            val eleLength = elements.sumOf { ele -> ele.length + 1 }
-            val charBuffer = CharBuffer.allocate(Type.LIST.str.length + 2 + eleCount.length + eleLength)
-            charBuffer.put(Type.LIST.str).put(':').put(eleCount).put(':') // listType:cnt{
-            elements.forEach { element -> charBuffer.put(element).put(',') } // element,element,...
-            charBuffer.typedPosition(charBuffer.position() - 1).put(':').typedFlip() // }
-        }
+            is RangeVal -> "${Type.RANGE.str}:${value.first},${value.last}:".asCharBuffer()
+            is ListVal -> { // listType:cnt{element,element,...}
+                val elements = value.map { element -> serialize(element) }
+                val eleCount = value.size.asHexString() // the counter for ele
+                val eleLength = elements.sumOf { ele -> ele.length + 1 }
+                val charBuffer = CharBuffer.allocate(Type.LIST.str.length + 2 + eleCount.length + eleLength)
+                charBuffer
+                    .put(Type.LIST.str)
+                    .put(':')
+                    .put(eleCount)
+                    .put(':') // listType:cnt{
+                elements.forEach { element -> charBuffer.put(element).put(',') } // element,element,...
+                charBuffer.typedPosition(charBuffer.position() - 1).put(':').typedFlip() // }
+            }
 
-        is SetVal -> { // setType:cnt_hex:element,element,...:
-            val elements = value.map { element -> serialize(element) }
-            val eleCount = value.size.asHexString() // the counter for ele
-            val eleLength = elements.sumOf { ele -> ele.length + 1 }
-            val charBuffer = CharBuffer.allocate(Type.SET.str.length + 2 + eleCount.length + eleLength)
-            charBuffer.put(Type.SET.str).put(':').put(eleCount).put(':') // setType:cnt:
-            elements.forEach { element -> charBuffer.put(element).put(',') } // element,element,...
-            charBuffer.typedPosition(charBuffer.position() - 1).put(':').typedFlip() // }
-        }
+            is SetVal -> { // setType:cnt_hex:element,element,...:
+                val elements = value.map { element -> serialize(element) }
+                val eleCount = value.size.asHexString() // the counter for ele
+                val eleLength = elements.sumOf { ele -> ele.length + 1 }
+                val charBuffer = CharBuffer.allocate(Type.SET.str.length + 2 + eleCount.length + eleLength)
+                charBuffer
+                    .put(Type.SET.str)
+                    .put(':')
+                    .put(eleCount)
+                    .put(':') // setType:cnt:
+                elements.forEach { element -> charBuffer.put(element).put(',') } // element,element,...
+                charBuffer.typedPosition(charBuffer.position() - 1).put(':').typedFlip() // }
+            }
 
-        is MapVal -> { // mapType:cnt_hex{key=element, key=element, key=element}
-            val elements = value.map { (k, v) -> serialize(StrVal(k)) to serialize(v) }
-            val eleCount = value.size.asHexString() // the counter for ele
-            val eleLength = elements.sumOf { (k, v) -> k.length + v.length + 2 }
-            val charBuffer = CharBuffer.allocate(Type.MAP.str.length + 2 + eleCount.length + eleLength)
-            charBuffer.put(Type.MAP.str).put(':').put(eleCount).put(':') // mapType:cnt:
-            elements.forEach { (k, v) -> charBuffer.put(k).put('=').put(v).put(',') } //key=value,...
-            charBuffer.typedPosition(charBuffer.position() - 1).put(':').typedFlip() // }
-        }
+            is MapVal -> { // mapType:cnt_hex{key=element, key=element, key=element}
+                val elements = value.map { (k, v) -> serialize(StrVal(k)) to serialize(v) }
+                val eleCount = value.size.asHexString() // the counter for ele
+                val eleLength = elements.sumOf { (k, v) -> k.length + v.length + 2 }
+                val charBuffer = CharBuffer.allocate(Type.MAP.str.length + 2 + eleCount.length + eleLength)
+                charBuffer
+                    .put(Type.MAP.str)
+                    .put(':')
+                    .put(eleCount)
+                    .put(':') // mapType:cnt:
+                elements.forEach { (k, v) ->
+                    charBuffer
+                        .put(k)
+                        .put('=')
+                        .put(v)
+                        .put(',')
+                } // key=value,...
+                charBuffer.typedPosition(charBuffer.position() - 1).put(':').typedFlip() // }
+            }
 
-        else -> throw IllegalArgumentException("Unknown type: $value")
-    }
+            else -> throw IllegalArgumentException("Unknown type: $value")
+        }
 
     /**
      * Deserializes a [CharBuffer] into an [IValue] instance.

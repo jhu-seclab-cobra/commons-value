@@ -40,7 +40,6 @@ import kotlin.test.assertIs
  * - `should convert BigDecimal to FloatVal via toIntOrFloatVal` — Non-standard Number dispatches to FloatVal.
  */
 internal class SerializerUtilsTest {
-
     // --- String.asNumber ---
 
     @Test
@@ -199,33 +198,49 @@ internal class SerializerUtilsTest {
 
     // --- Helper ---
 
-    private fun createDataInput(data: ByteArray): DataInput = object : DataInput {
-        private var position = 0
+    private fun createDataInput(data: ByteArray): DataInput =
+        object : DataInput {
+            private var position = 0
 
-        override fun readByte(): Byte {
-            if (position >= data.size) throw EOFException()
-            return data[position++]
+            override fun readByte(): Byte {
+                if (position >= data.size) throw EOFException()
+                return data[position++]
+            }
+
+            override fun readFully(b: ByteArray) {
+                for (i in b.indices) b[i] = readByte()
+            }
+
+            override fun readFully(
+                b: ByteArray,
+                off: Int,
+                len: Int,
+            ) {
+                for (i in off until off + len) b[i] = readByte()
+            }
+
+            override fun skipBytes(n: Int): Int = throw UnsupportedOperationException()
+
+            override fun readUnsignedByte(): Int = throw UnsupportedOperationException()
+
+            override fun readUnsignedShort(): Int = throw UnsupportedOperationException()
+
+            override fun readShort(): Short = throw UnsupportedOperationException()
+
+            override fun readChar(): Char = throw UnsupportedOperationException()
+
+            override fun readInt(): Int = throw UnsupportedOperationException()
+
+            override fun readLong(): Long = throw UnsupportedOperationException()
+
+            override fun readFloat(): Float = throw UnsupportedOperationException()
+
+            override fun readDouble(): Double = throw UnsupportedOperationException()
+
+            override fun readLine(): String = throw UnsupportedOperationException()
+
+            override fun readUTF(): String = throw UnsupportedOperationException()
+
+            override fun readBoolean(): Boolean = throw UnsupportedOperationException()
         }
-
-        override fun readFully(b: ByteArray) {
-            for (i in b.indices) b[i] = readByte()
-        }
-
-        override fun readFully(b: ByteArray, off: Int, len: Int) {
-            for (i in off until off + len) b[i] = readByte()
-        }
-
-        override fun skipBytes(n: Int): Int = throw UnsupportedOperationException()
-        override fun readUnsignedByte(): Int = throw UnsupportedOperationException()
-        override fun readUnsignedShort(): Int = throw UnsupportedOperationException()
-        override fun readShort(): Short = throw UnsupportedOperationException()
-        override fun readChar(): Char = throw UnsupportedOperationException()
-        override fun readInt(): Int = throw UnsupportedOperationException()
-        override fun readLong(): Long = throw UnsupportedOperationException()
-        override fun readFloat(): Float = throw UnsupportedOperationException()
-        override fun readDouble(): Double = throw UnsupportedOperationException()
-        override fun readLine(): String = throw UnsupportedOperationException()
-        override fun readUTF(): String = throw UnsupportedOperationException()
-        override fun readBoolean(): Boolean = throw UnsupportedOperationException()
-    }
 }

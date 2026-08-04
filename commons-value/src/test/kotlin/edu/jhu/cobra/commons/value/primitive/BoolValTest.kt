@@ -26,7 +26,6 @@ import kotlin.test.assertTrue
  * - `should implement IPrimitiveVal` — type hierarchy
  */
 internal class BoolValTest {
-
     @Test
     fun `should have true core for T`() {
         assertTrue(BoolVal.T.core)

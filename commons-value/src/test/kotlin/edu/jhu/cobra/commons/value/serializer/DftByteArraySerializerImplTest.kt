@@ -11,10 +11,10 @@ import kotlin.test.assertTrue
  * - `should throw IllegalArgumentException when deserializing unknown type tag` — Unknown byte tag rejected.
  * - `should throw IllegalArgumentException when deserializing empty ByteArray` — Empty input rejected.
  * - `should throw IllegalArgumentException when map key size is negative` — Negative length prefix rejected.
- * - `should throw IllegalArgumentException with context when list element size exceeds remaining` — Corrupt length prefix reported with context.
+ * - `should throw IllegalArgumentException with context when list element size exceeds remaining` —
+ *   Corrupt length prefix reported with context.
  */
 internal class DftByteArraySerializerImplTest : AbcSerializerImplUnitTest<ByteArray>() {
-
     override val testTarget: IValSerializer<ByteArray> get() = DftByteArraySerializerImpl
 
     @Test
@@ -44,9 +44,10 @@ internal class DftByteArraySerializerImplTest : AbcSerializerImplUnitTest<ByteAr
     @Test
     fun `should throw IllegalArgumentException with context when list element size exceeds remaining`() {
         val corruptBytes = byteArrayOf(Type.LIST.byte, 0, 0, 0, 100)
-        val exception = assertFailsWith<IllegalArgumentException> {
-            DftByteArraySerializerImpl.deserialize(corruptBytes)
-        }
+        val exception =
+            assertFailsWith<IllegalArgumentException> {
+                DftByteArraySerializerImpl.deserialize(corruptBytes)
+            }
         assertTrue("size" in exception.message.orEmpty())
     }
 }

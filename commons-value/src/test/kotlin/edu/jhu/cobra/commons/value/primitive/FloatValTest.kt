@@ -57,7 +57,6 @@ import kotlin.test.assertTrue
  * - `should implement IPrimitiveVal` -- FloatVal is IPrimitiveVal
  */
 internal class FloatValTest {
-
     // --- Core storage ---
 
     @Test

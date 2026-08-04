@@ -16,7 +16,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 internal class BugVerificationTest {
-
     // --- Fixed: data class shallow copy removed by converting to regular class ---
     // ListVal, SetVal, MapVal no longer have copy() — the hazard is eliminated.
 
@@ -27,8 +26,11 @@ internal class BugVerificationTest {
         val range = RangeVal(IntVal(Long.MAX_VALUE), IntVal(Long.MAX_VALUE))
         val serialized = DftByteBufferSerializerImpl.serialize(range)
         val restored = DftByteBufferSerializerImpl.deserialize(serialized) as RangeVal
-        assertEquals(Long.MAX_VALUE, restored.first,
-            "RangeVal Long bounds should survive ByteBuffer round-trip without truncation")
+        assertEquals(
+            Long.MAX_VALUE,
+            restored.first,
+            "RangeVal Long bounds should survive ByteBuffer round-trip without truncation",
+        )
     }
 
     // --- Suspected: IntVal.compareTo Int truncation ---
@@ -37,7 +39,9 @@ internal class BugVerificationTest {
     fun `IntVal compareTo with Long MAX_VALUE`() {
         val big = IntVal(Long.MAX_VALUE)
         // Long.MAX_VALUE > 0, so compareTo(0) should be positive
-        assertTrue(big.compareTo(0) > 0,
-            "IntVal(Long.MAX_VALUE).compareTo(0) should be positive, not truncated to Int")
+        assertTrue(
+            big.compareTo(0) > 0,
+            "IntVal(Long.MAX_VALUE).compareTo(0) should be positive, not truncated to Int",
+        )
     }
 }

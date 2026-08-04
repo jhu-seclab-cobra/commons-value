@@ -2,7 +2,6 @@ package edu.jhu.cobra.commons.value
 
 import kotlin.math.ceil
 
-
 /**
  * Represents a map with string keys and [IValue] values, providing various operations for map manipulation.
  * It behaves similarly to Kotlin's [Map] interface, allowing common map operations.
@@ -17,10 +16,10 @@ import kotlin.math.ceil
  * println(mapVal.size) // Outputs: 3
  * ```
  */
-class MapVal(override val core: HashMap<String, IValue> = HashMap()) : ICollectionVal {
-
-    override fun equals(other: Any?): Boolean =
-        this === other || (other is MapVal && core == other.core)
+class MapVal(
+    override val core: HashMap<String, IValue> = HashMap(),
+) : ICollectionVal {
+    override fun equals(other: Any?): Boolean = this === other || (other is MapVal && core == other.core)
 
     override fun hashCode(): Int = core.hashCode()
 
@@ -45,7 +44,9 @@ class MapVal(override val core: HashMap<String, IValue> = HashMap()) : ICollecti
      *
      * @param value Vararg key-value pairs to initialize the map with.
      */
-    constructor(vararg value: Pair<String, IValue>) : this(HashMap<String, IValue>(ceil(value.size / 0.75).toInt()).apply { value.forEach { (k, v) -> put(k, v) } })
+    constructor(
+        vararg value: Pair<String, IValue>,
+    ) : this(HashMap<String, IValue>(ceil(value.size / 0.75).toInt()).apply { value.forEach { (k, v) -> put(k, v) } })
 
     /**
      * Constructs a [MapVal] from a sequence of key-value pairs.
@@ -75,7 +76,10 @@ class MapVal(override val core: HashMap<String, IValue> = HashMap()) : ICollecti
      * @param key The key to update or add.
      * @param value The value associated with the key.
      */
-    operator fun set(key: String, value: IValue) {
+    operator fun set(
+        key: String,
+        value: IValue,
+    ) {
         core[key] = value
     }
 
@@ -85,7 +89,10 @@ class MapVal(override val core: HashMap<String, IValue> = HashMap()) : ICollecti
      * @param key The key to add.
      * @param value The value to associate with the key.
      */
-    fun add(key: String, value: IValue) = core.put(key, value)
+    fun add(
+        key: String,
+        value: IValue,
+    ) = core.put(key, value)
 
     /**
      * Returns a new [MapVal] containing the entries of this map plus the given pair.
@@ -180,4 +187,3 @@ class MapVal(override val core: HashMap<String, IValue> = HashMap()) : ICollecti
 
     override fun toString(): String = core.map { (k, v) -> "$k=$v" }.joinToString(prefix = "{", postfix = "}")
 }
-

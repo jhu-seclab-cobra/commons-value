@@ -62,7 +62,6 @@ import kotlin.test.assertTrue
  * - `should handle empty set operations`
  */
 internal class SetValTest {
-
     // -- Constructors --
 
     @Test

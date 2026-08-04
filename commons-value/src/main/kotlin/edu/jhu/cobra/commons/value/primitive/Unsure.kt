@@ -17,8 +17,9 @@ package edu.jhu.cobra.commons.value
  * println(uncertainNum) // Outputs: Unsure{__NumVal__}
  * ```
  */
-enum class Unsure(override val core: String) : IPrimitiveVal {
-
+enum class Unsure(
+    override val core: String,
+) : IPrimitiveVal {
     /**
      * Represents an uncertain or unspecified value of any type.
      */
@@ -37,10 +38,10 @@ enum class Unsure(override val core: String) : IPrimitiveVal {
     /**
      * Represents an uncertain or undefined boolean value.
      */
-    BOOL("__BoolVal__");
+    BOOL("__BoolVal__"),
+    ;
 
     companion object {
-
         private val stringValues = entries.map { it.core }.toSet()
 
         /**
@@ -50,13 +51,14 @@ enum class Unsure(override val core: String) : IPrimitiveVal {
          * @param core The string representing the uncertain type.
          * @return The corresponding [Unsure] instance or `null` if no match is found.
          */
-        fun new(core: String): Unsure? = when (core) {
-            STR.core -> STR
-            NUM.core -> NUM
-            BOOL.core -> BOOL
-            ANY.core -> ANY
-            else -> null
-        }
+        fun new(core: String): Unsure? =
+            when (core) {
+                STR.core -> STR
+                NUM.core -> NUM
+                BOOL.core -> BOOL
+                ANY.core -> ANY
+                else -> null
+            }
 
         /**
          * Creates an [Unsure] object based on the type of the given example value.
@@ -72,14 +74,15 @@ enum class Unsure(override val core: String) : IPrimitiveVal {
          * @param example The [IPrimitiveVal] example used to determine the uncertain type.
          * @return The corresponding [Unsure] instance: [STR], [NUM], [BOOL], or [ANY].
          */
-        fun new(example: IPrimitiveVal): Unsure = when (example) {
-            is StrVal -> STR
-            is IntVal -> NUM
-            is FloatVal -> NUM
-            is BoolVal -> BOOL
-            is NullVal -> ANY
-            is Unsure -> example
-        }
+        fun new(example: IPrimitiveVal): Unsure =
+            when (example) {
+                is StrVal -> STR
+                is IntVal -> NUM
+                is FloatVal -> NUM
+                is BoolVal -> BOOL
+                is NullVal -> ANY
+                is Unsure -> example
+            }
 
         /**
          * Creates an [Unsure] object based on the generic type [T].
@@ -87,13 +90,14 @@ enum class Unsure(override val core: String) : IPrimitiveVal {
          *
          * @return The corresponding [Unsure] instance: [STR], [NUM], [BOOL], or [ANY].
          */
-        inline fun <reified T : IPrimitiveVal> new(): Unsure = when (T::class) {
-            StrVal::class -> STR
-            IntVal::class -> NUM
-            FloatVal::class -> NUM
-            BoolVal::class -> BOOL
-            else -> ANY
-        }
+        inline fun <reified T : IPrimitiveVal> new(): Unsure =
+            when (T::class) {
+                StrVal::class -> STR
+                IntVal::class -> NUM
+                FloatVal::class -> NUM
+                BoolVal::class -> BOOL
+                else -> ANY
+            }
 
         /**
          * Checks if the given string is contained within the predefined string values of [Unsure].
@@ -105,6 +109,4 @@ enum class Unsure(override val core: String) : IPrimitiveVal {
     }
 
     override fun toString(): String = "Unsure{$core}"
-
-
 }

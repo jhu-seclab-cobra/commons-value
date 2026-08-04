@@ -44,7 +44,6 @@ import kotlin.test.assertTrue
  * - `should implement IPrimitiveVal` — type hierarchy
  */
 internal class StrValTest {
-
     // --- Constructors ---
 
     @Test

@@ -2,7 +2,6 @@ package edu.jhu.cobra.commons.value.collection
 
 import edu.jhu.cobra.commons.value.BoolVal
 import edu.jhu.cobra.commons.value.IntVal
-import edu.jhu.cobra.commons.value.IValue
 import edu.jhu.cobra.commons.value.MapVal
 import edu.jhu.cobra.commons.value.StrVal
 import kotlin.test.Test
@@ -64,7 +63,6 @@ import kotlin.test.assertTrue
  * - `should enforce String keys only`
  */
 internal class MapValTest {
-
     // -- Constructors --
 
     @Test

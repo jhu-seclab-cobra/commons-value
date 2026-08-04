@@ -33,7 +33,6 @@ import kotlin.test.assertEquals
  */
 @Tag("performance")
 internal class SerializerPerformanceTest {
-
     companion object {
         // Indices into randomIValue: 0=Null, 1=Str, 2=Bool, 3=Unsure, 4=List, 5=Set, 6=Map, 7=Range, 8=Int, 9=Float
         private val PRIMITIVE_TYPES = intArrayOf(0, 1, 2, 3, 8, 9)
@@ -141,18 +140,19 @@ internal class SerializerPerformanceTest {
                 MapVal("k" to IntVal(i.toLong()))
             }
         }
-        val times = (1..measureRuns).map {
-            val start = System.nanoTime()
-            repeat(valueCreationCount) { i ->
-                IntVal(i.toLong())
-                StrVal("test$i")
-                BoolVal(i % 2 == 0)
-                ListVal(IntVal(1L), FloatVal(2.0), IntVal(3L))
-                SetVal(IntVal(1L), FloatVal(2.0), IntVal(3L))
-                MapVal("k" to IntVal(i.toLong()))
+        val times =
+            (1..measureRuns).map {
+                val start = System.nanoTime()
+                repeat(valueCreationCount) { i ->
+                    IntVal(i.toLong())
+                    StrVal("test$i")
+                    BoolVal(i % 2 == 0)
+                    ListVal(IntVal(1L), FloatVal(2.0), IntVal(3L))
+                    SetVal(IntVal(1L), FloatVal(2.0), IntVal(3L))
+                    MapVal("k" to IntVal(i.toLong()))
+                }
+                (System.nanoTime() - start) / 1_000_000.0
             }
-            (System.nanoTime() - start) / 1_000_000.0
-        }
         val totalOps = valueCreationCount.toLong() * 6
         printStats("ValueCreation", times, totalOps)
     }
@@ -169,20 +169,22 @@ internal class SerializerPerformanceTest {
                 assertEquals(value, d)
             }
         }
-        val serTimes = (1..measureRuns).map {
-            val start = System.nanoTime()
-            dataSet.forEach { serializer.serialize(it) }
-            (System.nanoTime() - start) / 1_000_000.0
-        }
+        val serTimes =
+            (1..measureRuns).map {
+                val start = System.nanoTime()
+                dataSet.forEach { serializer.serialize(it) }
+                (System.nanoTime() - start) / 1_000_000.0
+            }
         printStats("$label-serialize", serTimes, dataSet.size.toLong())
 
         val serialized = dataSet.map { serializer.serialize(it) }
-        val deserTimes = (1..measureRuns).map {
-            serialized.forEach { if (it is java.nio.Buffer) it.rewind() }
-            val start = System.nanoTime()
-            serialized.forEach { serializer.deserialize(it) }
-            (System.nanoTime() - start) / 1_000_000.0
-        }
+        val deserTimes =
+            (1..measureRuns).map {
+                serialized.forEach { if (it is java.nio.Buffer) it.rewind() }
+                val start = System.nanoTime()
+                serialized.forEach { serializer.deserialize(it) }
+                (System.nanoTime() - start) / 1_000_000.0
+            }
         printStats("$label-deserialize", deserTimes, dataSet.size.toLong())
     }
 
@@ -194,14 +196,16 @@ internal class SerializerPerformanceTest {
         dataSet.forEach { serializer.deserialize(serializer.serialize(it)) }
 
         val runtime = Runtime.getRuntime()
-        runtime.gc(); Thread.sleep(50)
+        runtime.gc()
+        Thread.sleep(50)
         val beforeSer = runtime.totalMemory() - runtime.freeMemory()
         dataSet.forEach { serializer.serialize(it) }
         val afterSer = runtime.totalMemory() - runtime.freeMemory()
         val serBytes = (afterSer - beforeSer).coerceAtLeast(0) / dataSet.size
 
         val serialized = dataSet.map { serializer.serialize(it) }
-        runtime.gc(); Thread.sleep(50)
+        runtime.gc()
+        Thread.sleep(50)
         val beforeDeser = runtime.totalMemory() - runtime.freeMemory()
         serialized.forEach { serializer.deserialize(it) }
         val afterDeser = runtime.totalMemory() - runtime.freeMemory()
@@ -210,7 +214,11 @@ internal class SerializerPerformanceTest {
         println("[$label] serialize=$serBytes bytes/op, deserialize=$deserBytes bytes/op")
     }
 
-    private fun printStats(label: String, timesMs: List<Double>, ops: Long) {
+    private fun printStats(
+        label: String,
+        timesMs: List<Double>,
+        ops: Long,
+    ) {
         val avg = timesMs.average()
         val min = timesMs.min()
         val max = timesMs.max()

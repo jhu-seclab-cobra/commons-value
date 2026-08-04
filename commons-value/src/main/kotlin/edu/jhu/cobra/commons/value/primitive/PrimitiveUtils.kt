@@ -19,7 +19,7 @@ private val BIG_LONG_MIN_VALUE = BigDecimal.valueOf(Long.MIN_VALUE)
  * ```kotlin
  * val num = BigDecimal("9223372036854775807") // Long.MAX_VALUE
  * println(num.isInLongRange) // true
- * 
+ *
  * val tooBig = BigDecimal("9223372036854775808")
  * println(tooBig.isInLongRange) // false
  * ```
@@ -27,10 +27,11 @@ private val BIG_LONG_MIN_VALUE = BigDecimal.valueOf(Long.MIN_VALUE)
  * @return `true` if the number can be represented as a [Long], `false` otherwise
  */
 val Number.isInLongRange: Boolean
-    get() = when (this) {
-        is Byte, is Short, is Int, is Long -> true
-        else -> BigDecimal(toString()) in BIG_LONG_MIN_VALUE..BIG_LONG_MAX_VALUE
-    }
+    get() =
+        when (this) {
+            is Byte, is Short, is Int, is Long -> true
+            else -> BigDecimal(toString()) in BIG_LONG_MIN_VALUE..BIG_LONG_MAX_VALUE
+        }
 
 /**
  * Checks if this number is within the valid range of an [Int].
@@ -42,7 +43,7 @@ val Number.isInLongRange: Boolean
  * ```kotlin
  * val num = 2147483647L // Int.MAX_VALUE
  * println(num.isInIntRange) // true
- * 
+ *
  * val tooBig = 2147483648L
  * println(tooBig.isInIntRange) // false
  * ```
@@ -62,7 +63,7 @@ val Number.isInIntRange: Boolean
  * ```kotlin
  * val num = 32767 // Short.MAX_VALUE
  * println(num.isInShortRange) // true
- * 
+ *
  * val tooBig = 32768
  * println(tooBig.isInShortRange) // false
  * ```
@@ -82,7 +83,7 @@ val Number.isInShortRange: Boolean
  * ```kotlin
  * val num = 127 // Byte.MAX_VALUE
  * println(num.isInByteRange) // true
- * 
+ *
  * val tooBig = 128
  * println(tooBig.isInByteRange) // false
  * ```
@@ -265,7 +266,8 @@ fun StrVal.toRegex(doCaseIgnore: Boolean = false): Regex {
     val tarChars = ".^$*+?-()[]{}\\|".toSet()
     val sBuilder = StringBuilder()
     core.forEach { sBuilder.append(if (it in tarChars) "\\$it" else "$it") }
-    return sBuilder.toString()
+    return sBuilder
+        .toString()
         .replace(Unsure.ANY.core, ".*")
         .replace(Unsure.ANY.toString(), ".*")
         .replace(Unsure.STR.core, ".*")
@@ -286,12 +288,13 @@ fun StrVal.toRegex(doCaseIgnore: Boolean = false): Regex {
  *
  * @return A string containing the regular expression pattern corresponding to the current [Unsure] type.
  */
-fun Unsure.toRegex(doCaseIgnore: Boolean = false) = when (this) {
-    Unsure.ANY -> ".*"
-    Unsure.STR -> ".*"
-    Unsure.NUM -> "\\d+"
-    Unsure.BOOL -> "(true|false)"
-}.toRegex(if (doCaseIgnore) setOf(RegexOption.IGNORE_CASE) else setOf())
+fun Unsure.toRegex(doCaseIgnore: Boolean = false) =
+    when (this) {
+        Unsure.ANY -> ".*"
+        Unsure.STR -> ".*"
+        Unsure.NUM -> "\\d+"
+        Unsure.BOOL -> "(true|false)"
+    }.toRegex(if (doCaseIgnore) setOf(RegexOption.IGNORE_CASE) else setOf())
 
 /**
  * Converts this boolean to a [BoolVal] representation.
@@ -324,19 +327,20 @@ val Boolean.boolVal: BoolVal get() = if (this) BoolVal.T else BoolVal.F
  * @throws IllegalArgumentException if the value cannot be converted to an [IPrimitiveVal]
  */
 val Any?.primitiveVal: IPrimitiveVal
-    get() = when (this) {
-        null -> NullVal
-        is Long -> intVal
-        is Int -> intVal
-        is Short -> intVal
-        is Byte -> intVal
-        is Double -> floatVal
-        is Float -> floatVal
-        is String -> strVal
-        is Boolean -> boolVal
-        is IPrimitiveVal -> this
-        else -> throw IllegalArgumentException("Cannot convert $this to IPrimitiveVal")
-    }
+    get() =
+        when (this) {
+            null -> NullVal
+            is Long -> intVal
+            is Int -> intVal
+            is Short -> intVal
+            is Byte -> intVal
+            is Double -> floatVal
+            is Float -> floatVal
+            is String -> strVal
+            is Boolean -> boolVal
+            is IPrimitiveVal -> this
+            else -> throw IllegalArgumentException("Cannot convert $this to IPrimitiveVal")
+        }
 
 /**
  * Compares two [IPrimitiveVal] instances for ordering.
@@ -354,13 +358,25 @@ val Any?.primitiveVal: IPrimitiveVal
  *         a positive number if this value is greater than [other]
  * @throws IllegalArgumentException if comparing incompatible types
  */
-operator fun IPrimitiveVal.compareTo(other: IPrimitiveVal): Int = when {
-    this is IntVal && other is IntVal -> core.compareTo(other.core)
-    this is FloatVal && other is FloatVal -> core.compareTo(other.core)
-    this is IntVal && other is FloatVal -> core.toDouble().compareTo(other.core)
-    this is FloatVal && other is IntVal -> core.compareTo(other.core.toDouble())
-    this is StrVal && other is StrVal -> core.compareTo(other.core)
-    this is BoolVal && other is BoolVal -> core.compareTo(other.core)
-    this is NullVal && other is NullVal -> 0
-    else -> throw IllegalArgumentException("Cannot compare $this and $other")
-}
+operator fun IPrimitiveVal.compareTo(other: IPrimitiveVal): Int =
+    when {
+        this is StrVal && other is StrVal -> core.compareTo(other.core)
+        this is BoolVal && other is BoolVal -> core.compareTo(other.core)
+        this is NullVal && other is NullVal -> 0
+        else ->
+            compareNumeric(this, other)
+                ?: throw IllegalArgumentException("Cannot compare $this and $other")
+    }
+
+// Cross-type numeric ordering; null when the pair is not a numeric combination.
+private fun compareNumeric(
+    a: IPrimitiveVal,
+    b: IPrimitiveVal,
+): Int? =
+    when {
+        a is IntVal && b is IntVal -> a.core.compareTo(b.core)
+        a is IntVal && b is FloatVal -> a.core.toDouble().compareTo(b.core)
+        a is FloatVal && b is IntVal -> a.core.compareTo(b.core.toDouble())
+        a is FloatVal && b is FloatVal -> a.core.compareTo(b.core)
+        else -> null
+    }

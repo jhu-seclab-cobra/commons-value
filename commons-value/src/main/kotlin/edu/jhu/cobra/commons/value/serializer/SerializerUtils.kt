@@ -15,7 +15,10 @@ import java.nio.CharBuffer
  * @property byte The byte representation of the type.
  * @property str The string label for the type.
  */
-enum class Type(val byte: Byte, val str: String) {
+enum class Type(
+    val byte: Byte,
+    val str: String,
+) {
     NULL(10, "Null"),
     STR(20, "Str"),
     BOOL(30, "Bool"),
@@ -43,10 +46,11 @@ enum class Type(val byte: Byte, val str: String) {
 /**
  * Converts a [Number] to [IntVal] if it is an integer type, or [FloatVal] otherwise.
  */
-fun Number.toIntOrFloatVal(): IPrimitiveVal = when (this) {
-    is Byte, is Short, is Int, is Long -> IntVal(toLong())
-    else -> FloatVal(toDouble())
-}
+fun Number.toIntOrFloatVal(): IPrimitiveVal =
+    when (this) {
+        is Byte, is Short, is Int, is Long -> IntVal(toLong())
+        else -> FloatVal(toDouble())
+    }
 
 /**
  * Converts the string representation of a number into a [Number] object.
@@ -82,7 +86,11 @@ fun Int.asHexString(): String = Integer.toHexString(this)
  * @return The validated size
  * @throws IllegalArgumentException if [size] is negative or exceeds [remaining]
  */
-internal fun checkSizePrefix(size: Int, remaining: Int, context: String): Int {
+internal fun checkSizePrefix(
+    size: Int,
+    remaining: Int,
+    context: String,
+): Int {
     require(size in 0..remaining) { "Invalid $context $size: expected 0..$remaining" }
     return size
 }
@@ -94,8 +102,7 @@ internal fun checkSizePrefix(size: Int, remaining: Int, context: String): Int {
  * @return A byte array containing the read bytes
  * @throws IllegalArgumentException if [size] is negative or exceeds the remaining bytes
  */
-fun ByteBuffer.getArray(size: Int) =
-    ByteArray(checkSizePrefix(size, remaining(), "byte array size")).also { get(it) }
+fun ByteBuffer.getArray(size: Int) = ByteArray(checkSizePrefix(size, remaining(), "byte array size")).also { get(it) }
 
 /**
  * Reads a string from the [ByteBuffer].
@@ -107,8 +114,7 @@ fun ByteBuffer.getArray(size: Int) =
  * @return The decoded string from the buffer
  * @throws IllegalArgumentException if the size is negative or exceeds the remaining bytes
  */
-fun ByteBuffer.getString(size: Int? = null): String =
-    getArray(size ?: getInt()).decodeToString()
+fun ByteBuffer.getString(size: Int? = null): String = getArray(size ?: getInt()).decodeToString()
 
 /**
  * Creates a [ByteBuffer] from a variable number of byte elements.
@@ -116,8 +122,7 @@ fun ByteBuffer.getString(size: Int? = null): String =
  * @param elements The byte elements to wrap into a buffer
  * @return A [ByteBuffer] containing the provided elements
  */
-fun byteBufferOf(vararg elements: Byte): ByteBuffer =
-    ByteBuffer.wrap(elements)
+fun byteBufferOf(vararg elements: Byte): ByteBuffer = ByteBuffer.wrap(elements)
 
 /**
  * Puts a [Type] into the [ByteBuffer] by adding its byte representation.
@@ -245,10 +250,12 @@ fun DataInput.asByteArray(size: Int): ByteArray {
     if (size == 0) return ByteArray(0)
     return if (size > 0) {
         ByteArray(size).also { readFully(it) }
-    } else buildList {
-        val errors = runCatching { while (true) add(readByte()) }
-        errors.onFailure { if (it !is EOFException) throw it }
-    }.toByteArray()
+    } else {
+        buildList {
+            val errors = runCatching { while (true) add(readByte()) }
+            errors.onFailure { if (it !is EOFException) throw it }
+        }.toByteArray()
+    }
 }
 
 /**
@@ -259,9 +266,14 @@ fun DataInput.asByteArray(size: Int): ByteArray {
  * @throws EOFException if the end of stream is reached (when reading until EOF)
  * @throws IOException if an I/O error occurs
  */
-fun DataInput.asByteSequence(available: Int) = sequence {
-    if (available == 0) return@sequence
-    if (available > 0) repeat(available) { yield(readByte()) }
-    else kotlin.runCatching { while (true) yield(readByte()) }
-        .onFailure { if (it !is EOFException) throw it }
-}
+fun DataInput.asByteSequence(available: Int) =
+    sequence {
+        if (available == 0) return@sequence
+        if (available > 0) {
+            repeat(available) { yield(readByte()) }
+        } else {
+            kotlin
+                .runCatching { while (true) yield(readByte()) }
+                .onFailure { if (it !is EOFException) throw it }
+        }
+    }

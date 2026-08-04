@@ -5,8 +5,9 @@ package edu.jhu.cobra.commons.value
  *
  * @property core The underlying [Long] value.
  */
-data class IntVal(override val core: Long) : IPrimitiveVal {
-
+data class IntVal(
+    override val core: Long,
+) : IPrimitiveVal {
     /** Default constructor initializing the value to `0`. */
     constructor() : this(0L)
 

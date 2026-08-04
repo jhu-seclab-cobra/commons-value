@@ -16,7 +16,6 @@ import kotlin.test.assertTrue
  * - `should throw IllegalArgumentException with context when list count is negative` — Negative element count reported with context.
  */
 internal class DftByteBufferSerializerImplTest : AbcSerializerImplUnitTest<ByteBuffer>() {
-
     override val testTarget: IValSerializer<ByteBuffer> get() = DftByteBufferSerializerImpl
 
     @Test
@@ -37,7 +36,13 @@ internal class DftByteBufferSerializerImplTest : AbcSerializerImplUnitTest<ByteB
 
     @Test
     fun `should throw IllegalArgumentException when string length exceeds remaining bytes`() {
-        val buffer = ByteBuffer.allocate(6).put(Type.STR.byte).putInt(100).put('a'.code.toByte()).typedFlip()
+        val buffer =
+            ByteBuffer
+                .allocate(6)
+                .put(Type.STR.byte)
+                .putInt(100)
+                .put('a'.code.toByte())
+                .typedFlip()
         assertFailsWith<IllegalArgumentException> {
             DftByteBufferSerializerImpl.deserialize(buffer)
         }
@@ -45,7 +50,12 @@ internal class DftByteBufferSerializerImplTest : AbcSerializerImplUnitTest<ByteB
 
     @Test
     fun `should throw IllegalArgumentException when string length is negative`() {
-        val buffer = ByteBuffer.allocate(5).put(Type.STR.byte).putInt(-1).typedFlip()
+        val buffer =
+            ByteBuffer
+                .allocate(5)
+                .put(Type.STR.byte)
+                .putInt(-1)
+                .typedFlip()
         assertFailsWith<IllegalArgumentException> {
             DftByteBufferSerializerImpl.deserialize(buffer)
         }
@@ -53,10 +63,16 @@ internal class DftByteBufferSerializerImplTest : AbcSerializerImplUnitTest<ByteB
 
     @Test
     fun `should throw IllegalArgumentException with context when list count is negative`() {
-        val buffer = ByteBuffer.allocate(5).put(Type.LIST.byte).putInt(-1).typedFlip()
-        val exception = assertFailsWith<IllegalArgumentException> {
-            DftByteBufferSerializerImpl.deserialize(buffer)
-        }
+        val buffer =
+            ByteBuffer
+                .allocate(5)
+                .put(Type.LIST.byte)
+                .putInt(-1)
+                .typedFlip()
+        val exception =
+            assertFailsWith<IllegalArgumentException> {
+                DftByteBufferSerializerImpl.deserialize(buffer)
+            }
         assertTrue("count" in exception.message.orEmpty())
     }
 }

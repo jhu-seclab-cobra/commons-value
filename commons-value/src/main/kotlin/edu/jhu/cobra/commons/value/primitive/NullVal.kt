@@ -16,7 +16,6 @@ package edu.jhu.cobra.commons.value
  * @property core Always `null`, representing the null value.
  */
 data object NullVal : IPrimitiveVal {
-
     /**
      * The core value of this instance, which is always `null`.
      *

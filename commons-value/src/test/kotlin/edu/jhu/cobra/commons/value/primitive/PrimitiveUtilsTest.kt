@@ -2,7 +2,6 @@ package edu.jhu.cobra.commons.value.primitive
 
 import edu.jhu.cobra.commons.value.BoolVal
 import edu.jhu.cobra.commons.value.FloatVal
-import edu.jhu.cobra.commons.value.IPrimitiveVal
 import edu.jhu.cobra.commons.value.IntVal
 import edu.jhu.cobra.commons.value.NullVal
 import edu.jhu.cobra.commons.value.StrVal
@@ -123,7 +122,6 @@ import kotlin.test.assertTrue
  * - `should compare FloatVal greater than IntVal cross-type` — compareTo FloatVal vs IntVal
  */
 internal class PrimitiveUtilsTest {
-
     // --- String.strVal / Char.strVal / Path.strVal / File.strVal ---
 
     @Test

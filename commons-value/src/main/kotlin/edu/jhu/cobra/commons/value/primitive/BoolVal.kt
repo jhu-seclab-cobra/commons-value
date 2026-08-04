@@ -8,8 +8,9 @@ package edu.jhu.cobra.commons.value
  *
  * @property core The actual boolean value encapsulated by this instance.
  */
-class BoolVal private constructor(override val core: Boolean) : IPrimitiveVal {
-
+class BoolVal private constructor(
+    override val core: Boolean,
+) : IPrimitiveVal {
     companion object {
         /**
          * A constant instance representing the boolean value `true`.
@@ -51,8 +52,7 @@ class BoolVal private constructor(override val core: Boolean) : IPrimitiveVal {
      */
     fun isFalse(): Boolean = !core
 
-    override fun equals(other: Any?): Boolean =
-        this === other || (other is BoolVal && core == other.core)
+    override fun equals(other: Any?): Boolean = this === other || (other is BoolVal && core == other.core)
 
     override fun hashCode(): Int = core.hashCode()
 

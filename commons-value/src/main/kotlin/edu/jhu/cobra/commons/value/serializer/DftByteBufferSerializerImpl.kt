@@ -26,7 +26,6 @@ import java.nio.ByteBuffer
  * handling of both basic and complex data structures.
  */
 object DftByteBufferSerializerImpl : IValSerializer<ByteBuffer> {
-
     /**
      * Serializes an [IValue] instance into a [ByteBuffer].
      *
@@ -37,60 +36,80 @@ object DftByteBufferSerializerImpl : IValSerializer<ByteBuffer> {
      * @return A [ByteBuffer] containing the serialized representation of the value.
      * @throws IllegalArgumentException If the value type is unknown or unsupported.
      */
-    override fun serialize(value: IValue): ByteBuffer = when (value) {
-        is NullVal -> byteBufferOf(Type.NULL.byte)
-        is StrVal -> {
-            val strCore = value.core.toByteArray()
-            val bufferLen = 1 + 4 + strCore.size
-            ByteBuffer.allocate(bufferLen).put(Type.STR.byte).putInt(strCore.size).put(strCore).typedFlip()
-        }
-        is BoolVal -> byteBufferOf(if (value.core) Type.BOOL_TRUE.byte else Type.BOOL_FALSE.byte)
-        is Unsure -> byteBufferOf(
-            when (value) {
-                Unsure.NUM -> Type.UNSURE_NUM.byte
-                Unsure.STR -> Type.UNSURE_STR.byte
-                Unsure.BOOL -> Type.UNSURE_BOOL.byte
-                else -> Type.UNSURE_ANY.byte
+    override fun serialize(value: IValue): ByteBuffer =
+        when (value) {
+            is NullVal -> byteBufferOf(Type.NULL.byte)
+            is StrVal -> {
+                val strCore = value.core.toByteArray()
+                val bufferLen = 1 + 4 + strCore.size
+                ByteBuffer
+                    .allocate(bufferLen)
+                    .put(Type.STR.byte)
+                    .putInt(strCore.size)
+                    .put(strCore)
+                    .typedFlip()
             }
-        )
+            is BoolVal -> byteBufferOf(if (value.core) Type.BOOL_TRUE.byte else Type.BOOL_FALSE.byte)
+            is Unsure ->
+                byteBufferOf(
+                    when (value) {
+                        Unsure.NUM -> Type.UNSURE_NUM.byte
+                        Unsure.STR -> Type.UNSURE_STR.byte
+                        Unsure.BOOL -> Type.UNSURE_BOOL.byte
+                        else -> Type.UNSURE_ANY.byte
+                    },
+                )
 
-        is IntVal -> ByteBuffer.allocate(9).put(Type.INT.byte).putLong(value.core).typedFlip()
-        is FloatVal -> ByteBuffer.allocate(9).put(Type.FLOAT.byte).putDouble(value.core).typedFlip()
+            is IntVal ->
+                ByteBuffer
+                    .allocate(9)
+                    .put(Type.INT.byte)
+                    .putLong(value.core)
+                    .typedFlip()
+            is FloatVal ->
+                ByteBuffer
+                    .allocate(9)
+                    .put(Type.FLOAT.byte)
+                    .putDouble(value.core)
+                    .typedFlip()
 
-        is RangeVal -> {
-            ByteBuffer.allocate(1 + 9 + 9)
-                .put(Type.RANGE.byte)
-                .put(Type.INT.byte).putLong(value.start.core)
-                .put(Type.INT.byte).putLong(value.endInclusive.core)
-                .typedFlip()
+            is RangeVal -> {
+                ByteBuffer
+                    .allocate(1 + 9 + 9)
+                    .put(Type.RANGE.byte)
+                    .put(Type.INT.byte)
+                    .putLong(value.start.core)
+                    .put(Type.INT.byte)
+                    .putLong(value.endInclusive.core)
+                    .typedFlip()
+            }
+
+            is ListVal -> { // 1 byte type | count | element1 | element2 | ...
+                val allElements = value.map { element -> serialize(element) }
+                val bufferSize = 1 + 4 + allElements.sumOf { array -> array.limit() }
+                val buffer = ByteBuffer.allocate(bufferSize).put(Type.LIST).putInt(allElements.size)
+                allElements.forEach { buffer.put(it) }
+                buffer.typedFlip()
+            }
+
+            is SetVal -> { // 1 byte type | count | element1 | element2 | ...
+                val allElements = value.map { element -> serialize(element) }
+                val bufferSize = 1 + 4 + allElements.sumOf { array -> array.limit() }
+                val buffer = ByteBuffer.allocate(bufferSize).put(Type.SET).putInt(allElements.size)
+                allElements.forEach { buffer.put(it) }
+                buffer.typedFlip()
+            }
+
+            is MapVal -> { // 1 byte type | count | size_keyN | keyN | size_valueN | valueN
+                val elements = value.map { (k, v) -> k.toByteArray() to serialize(v) }
+                val bufferLength = 1 + 4 + elements.sumOf { (k, v) -> 4 + k.size + v.limit() }
+                val buffer = ByteBuffer.allocate(bufferLength).put(Type.MAP).putInt(value.size)
+                elements.forEach { (k, v) -> buffer.putInt(k.size).put(k).put(v) }
+                buffer.typedFlip()
+            }
+
+            else -> throw IllegalArgumentException("Unknown value type: $value")
         }
-
-        is ListVal -> { // 1 byte type | count | element1 | element2 | ...
-            val allElements = value.map { element -> serialize(element) }
-            val bufferSize = 1 + 4 + allElements.sumOf { array -> array.limit() }
-            val buffer = ByteBuffer.allocate(bufferSize).put(Type.LIST).putInt(allElements.size)
-            allElements.forEach { buffer.put(it) }
-            buffer.typedFlip()
-        }
-
-        is SetVal -> { // 1 byte type | count | element1 | element2 | ...
-            val allElements = value.map { element -> serialize(element) }
-            val bufferSize = 1 + 4 + allElements.sumOf { array -> array.limit() }
-            val buffer = ByteBuffer.allocate(bufferSize).put(Type.SET).putInt(allElements.size)
-            allElements.forEach { buffer.put(it) }
-            buffer.typedFlip()
-        }
-
-        is MapVal -> { // 1 byte type | count | size_keyN | keyN | size_valueN | valueN
-            val elements = value.map { (k, v) -> k.toByteArray() to serialize(v) }
-            val bufferLength = 1 + 4 + elements.sumOf { (k, v) -> 4 + k.size + v.limit() }
-            val buffer = ByteBuffer.allocate(bufferLength).put(Type.MAP).putInt(value.size)
-            elements.forEach { (k, v) -> buffer.putInt(k.size).put(k).put(v) }
-            buffer.typedFlip()
-        }
-
-        else -> throw IllegalArgumentException("Unknown value type: $value")
-    }
 
     /**
      * Deserializes a [ByteBuffer] into an [IValue] instance.
@@ -103,7 +122,7 @@ object DftByteBufferSerializerImpl : IValSerializer<ByteBuffer> {
      * @throws IllegalArgumentException If the material contains an unknown or unsupported type identifier.
      */
     override fun deserialize(material: ByteBuffer): IValue {
-        if (material.limit() == 0) throw IllegalArgumentException("Empty byte buffer")
+        require(material.limit() > 0) { "Empty byte buffer" }
         return when (val type = material.get()) {
             Type.NULL.byte -> NullVal
             Type.STR.byte -> StrVal(material.getString())

@@ -2,8 +2,8 @@ package edu.jhu.cobra.commons.value.collection
 
 import edu.jhu.cobra.commons.value.ICollectionVal
 import edu.jhu.cobra.commons.value.IValue
-import edu.jhu.cobra.commons.value.ListVal
 import edu.jhu.cobra.commons.value.IntVal
+import edu.jhu.cobra.commons.value.ListVal
 import edu.jhu.cobra.commons.value.MapVal
 import edu.jhu.cobra.commons.value.RangeVal
 import edu.jhu.cobra.commons.value.SetVal
@@ -22,7 +22,6 @@ import kotlin.test.assertTrue
  * - `should exhaustively match all subtypes in when expression`
  */
 internal class ICollectionValTest {
-
     @Test
     fun `should recognize ListVal as ICollectionVal`() {
         val value: ICollectionVal = ListVal(StrVal("a"))
@@ -49,32 +48,35 @@ internal class ICollectionValTest {
 
     @Test
     fun `should recognize all four types as IValue`() {
-        val values: List<IValue> = listOf(
-            ListVal(),
-            SetVal(),
-            MapVal(),
-            RangeVal(0, 0),
-        )
+        val values: List<IValue> =
+            listOf(
+                ListVal(),
+                SetVal(),
+                MapVal(),
+                RangeVal(0, 0),
+            )
         values.forEach { assertTrue(it is ICollectionVal) }
         values.forEach { assertTrue(it is IValue) }
     }
 
     @Test
     fun `should exhaustively match all subtypes in when expression`() {
-        val cases: List<ICollectionVal> = listOf(
-            ListVal(StrVal("a")),
-            SetVal(IntVal(1L)),
-            MapVal("k" to StrVal("v")),
-            RangeVal(1, 5),
-        )
-        val labels = cases.map { value ->
-            when (value) {
-                is ListVal -> "list"
-                is SetVal -> "set"
-                is MapVal -> "map"
-                is RangeVal -> "range"
+        val cases: List<ICollectionVal> =
+            listOf(
+                ListVal(StrVal("a")),
+                SetVal(IntVal(1L)),
+                MapVal("k" to StrVal("v")),
+                RangeVal(1, 5),
+            )
+        val labels =
+            cases.map { value ->
+                when (value) {
+                    is ListVal -> "list"
+                    is SetVal -> "set"
+                    is MapVal -> "map"
+                    is RangeVal -> "range"
+                }
             }
-        }
         assertTrue(labels.contains("list"))
         assertTrue(labels.contains("set"))
         assertTrue(labels.contains("map"))

@@ -17,10 +17,10 @@ package edu.jhu.cobra.commons.value
  *
  * @property core The internal list of [IValue] elements.
  */
-class ListVal(override val core: ArrayList<IValue> = ArrayList(5)) : ICollectionVal {
-
-    override fun equals(other: Any?): Boolean =
-        this === other || (other is ListVal && core == other.core)
+class ListVal(
+    override val core: ArrayList<IValue> = ArrayList(5),
+) : ICollectionVal {
+    override fun equals(other: Any?): Boolean = this === other || (other is ListVal && core == other.core)
 
     override fun hashCode(): Int = core.hashCode()
 
@@ -109,7 +109,10 @@ class ListVal(override val core: ArrayList<IValue> = ArrayList(5)) : ICollection
      * @param value The new [IValue] to set at the specified position.
      * @throws IndexOutOfBoundsException If [index] is out of the list's range.
      */
-    operator fun set(index: Int, value: IValue) {
+    operator fun set(
+        index: Int,
+        value: IValue,
+    ) {
         core[index] = value
     }
 
@@ -222,7 +225,10 @@ class ListVal(override val core: ArrayList<IValue> = ArrayList(5)) : ICollection
      * @throws IndexOutOfBoundsException If [fromIndex] or [toIndex] is out of bounds.
      * @throws IllegalArgumentException If [fromIndex] is greater than [toIndex].
      */
-    fun subList(fromIndex: Int, toIndex: Int): ListVal = ListVal(core.subList(fromIndex, toIndex))
+    fun subList(
+        fromIndex: Int,
+        toIndex: Int,
+    ): ListVal = ListVal(core.subList(fromIndex, toIndex))
 
     /**
      * Returns a new [ListVal] containing all the elements of the current list

@@ -16,10 +16,10 @@ import kotlin.math.ceil
  * println(setVal.contains(StrVal("Item1"))) // Outputs: true
  * ```
  */
-class SetVal(override val core: LinkedHashSet<IValue> = LinkedHashSet()) : ICollectionVal {
-
-    override fun equals(other: Any?): Boolean =
-        this === other || (other is SetVal && core == other.core)
+class SetVal(
+    override val core: LinkedHashSet<IValue> = LinkedHashSet(),
+) : ICollectionVal {
+    override fun equals(other: Any?): Boolean = this === other || (other is SetVal && core == other.core)
 
     override fun hashCode(): Int = core.hashCode()
 

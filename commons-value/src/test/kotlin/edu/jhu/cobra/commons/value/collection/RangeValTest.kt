@@ -56,7 +56,6 @@ import kotlin.test.assertTrue
  * - `should handle large value range`
  */
 internal class RangeValTest {
-
     // -- Constructors --
 
     @Test

@@ -31,7 +31,6 @@ import kotlin.test.assertTrue
  * - `should support exhaustive when over Unsure` -- sealed branch coverage
  */
 internal class IPrimitiveValTest {
-
     @Test
     fun `should be implemented by StrVal`() {
         val value: IPrimitiveVal = StrVal("test")
@@ -104,12 +103,13 @@ internal class IPrimitiveValTest {
         assertEquals("unsure", result)
     }
 
-    private fun exhaustiveWhen(value: IPrimitiveVal): String = when (value) {
-        is StrVal -> "str"
-        is IntVal -> "int"
-        is FloatVal -> "float"
-        is BoolVal -> "bool"
-        is NullVal -> "null"
-        is Unsure -> "unsure"
-    }
+    private fun exhaustiveWhen(value: IPrimitiveVal): String =
+        when (value) {
+            is StrVal -> "str"
+            is IntVal -> "int"
+            is FloatVal -> "float"
+            is BoolVal -> "bool"
+            is NullVal -> "null"
+            is Unsure -> "unsure"
+        }
 }

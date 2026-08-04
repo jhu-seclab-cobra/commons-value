@@ -57,7 +57,6 @@ import kotlin.test.assertTrue
  * - `should convert nested collections to nested IValue`
  */
 internal class CollectionUtilsTest {
-
     // -- Collection.listVal --
 
     @Test

@@ -27,7 +27,6 @@ import kotlin.test.assertSame
  * - `should convert Float to FloatVal via toVal` — Float dispatches to floatVal.
  */
 internal class UtilsTest {
-
     @Test
     fun `should convert null to NullVal`() {
         val result = null.toVal

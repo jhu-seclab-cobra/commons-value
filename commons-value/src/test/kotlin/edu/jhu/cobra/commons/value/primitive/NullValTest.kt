@@ -28,7 +28,6 @@ import kotlin.test.assertTrue
  * - `should return true from isNotNull when value is Unsure` — infix isNotNull non-null
  */
 internal class NullValTest {
-
     @Test
     fun `should be a singleton`() {
         assertSame(NullVal, NullVal)

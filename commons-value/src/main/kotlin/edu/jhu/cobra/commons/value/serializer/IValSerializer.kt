@@ -13,7 +13,6 @@ import edu.jhu.cobra.commons.value.IValue
  *          such as JSON, XML, binary formats, or even more domain-specific material types.
  */
 interface IValSerializer<Material : Any> {
-
     /**
      * Serializes an [IValue] instance into the specified material format.
      *

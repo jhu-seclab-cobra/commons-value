@@ -67,7 +67,6 @@ import kotlin.test.assertTrue
  * - `should round-trip MapVal with IntVal and FloatVal values` — MapVal with IntVal and FloatVal values round-trips.
  */
 internal abstract class AbcSerializerImplUnitTest<M : Any> {
-
     abstract val testTarget: IValSerializer<M>
 
     private fun assertRoundTrip(value: IValue) {
@@ -278,10 +277,11 @@ internal abstract class AbcSerializerImplUnitTest<M : Any> {
 
     @Test
     fun `should round-trip nested ListVal`() {
-        val nested = ListVal(
-            ListVal(IntVal(1L), IntVal(2L)),
-            ListVal(StrVal("a"), StrVal("b")),
-        )
+        val nested =
+            ListVal(
+                ListVal(IntVal(1L), IntVal(2L)),
+                ListVal(StrVal("a"), StrVal("b")),
+            )
         assertRoundTrip(nested)
     }
 
@@ -299,10 +299,11 @@ internal abstract class AbcSerializerImplUnitTest<M : Any> {
 
     @Test
     fun `should round-trip nested SetVal`() {
-        val nested = SetVal(
-            SetVal(IntVal(1L), IntVal(2L)),
-            SetVal(StrVal("a"), StrVal("b")),
-        )
+        val nested =
+            SetVal(
+                SetVal(IntVal(1L), IntVal(2L)),
+                SetVal(StrVal("a"), StrVal("b")),
+            )
         assertRoundTrip(nested)
     }
 
@@ -326,10 +327,11 @@ internal abstract class AbcSerializerImplUnitTest<M : Any> {
 
     @Test
     fun `should round-trip nested MapVal`() {
-        val nested = MapVal(
-            "inner" to MapVal("key" to IntVal(1L)),
-            "list" to ListVal(StrVal("a")),
-        )
+        val nested =
+            MapVal(
+                "inner" to MapVal("key" to IntVal(1L)),
+                "list" to ListVal(StrVal("a")),
+            )
         assertRoundTrip(nested)
     }
 
@@ -349,14 +351,15 @@ internal abstract class AbcSerializerImplUnitTest<M : Any> {
 
     @Test
     fun `should round-trip mixed nested collection`() {
-        val mixed = ListVal(
-            SetVal(IntVal(1L), IntVal(2L)),
-            MapVal("k" to StrVal("v")),
-            RangeVal(0, 99),
-            BoolVal.F,
-            NullVal,
-            Unsure.ANY,
-        )
+        val mixed =
+            ListVal(
+                SetVal(IntVal(1L), IntVal(2L)),
+                MapVal("k" to StrVal("v")),
+                RangeVal(0, 99),
+                BoolVal.F,
+                NullVal,
+                Unsure.ANY,
+            )
         assertRoundTrip(mixed)
     }
 

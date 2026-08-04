@@ -5,8 +5,9 @@ package edu.jhu.cobra.commons.value
  *
  * @property core The underlying [Double] value.
  */
-data class FloatVal(override val core: Double) : IPrimitiveVal {
-
+data class FloatVal(
+    override val core: Double,
+) : IPrimitiveVal {
     /** Default constructor initializing the value to `0.0`. */
     constructor() : this(0.0)
 
