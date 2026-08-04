@@ -6,7 +6,7 @@ Part of [commons-value design](design-primitive.md). Specifies extension functio
 
 ## Function Specifications
 
-### PrimitiveUtils (extension functions)
+### PrimitiveConversions (extension functions)
 
 **`Long.intVal: IntVal`** -- Wraps Long as IntVal.
 
@@ -36,13 +36,13 @@ Part of [commons-value design](design-primitive.md). Specifies extension functio
 
 **`String.startsWith(other: StrVal): Boolean`** -- Checks if string starts with StrVal's content.
 
-### CollectionUtils (extension properties)
+**`Number.isInLongRange / isInIntRange / isInShortRange / isInByteRange: Boolean`** -- Whether the number's exact numeric value lies within the target type's range. Compares via `BigDecimal`, so fractional values are judged by numeric value (2.5 is in Int range; Int.MAX_VALUE + 0.5 is not). Non-finite doubles and floats (NaN, infinities) are `false`. Exact-width integer inputs short-circuit to `true`.
+
+### CollectionConversions (extension properties)
 
 **`Collection<*>.listVal: ListVal`** — Converts collection to ListVal via `toVal` on each element.
 
 **`Collection<*>.setVal: SetVal`** — Converts collection to SetVal via `toVal` on each element.
-
-**`Set<*>.setVal: SetVal`** — Converts set to SetVal via `toVal` on each element.
 
 **`Map<*, *>.mapVal: MapVal`** — Converts map to MapVal; keys toString'd, values via `toVal`.
 
@@ -54,23 +54,15 @@ Part of [commons-value design](design-primitive.md). Specifies extension functio
 
 **`MapVal?.orEmpty(): MapVal`** — Returns self or empty MapVal if null.
 
-### Utils (top-level extension)
+### ValueConversions (top-level extension)
 
 **`Any?.toVal: IValue`** -- Universal converter: null -> NullVal, Long/Int -> IntVal, Double/Float -> FloatVal, String -> StrVal, Boolean -> BoolVal, List -> ListVal, Map -> MapVal, IntRange -> RangeVal, Set -> SetVal, IValue -> identity. Throws `IllegalArgumentException` for unsupported types.
 
-### SerializerUtils (extension functions)
-
-**`String.asNumber(): Number`** — Parses string to Number via Apache Commons NumberUtils. Throws `NumberFormatException`.
+### WireFormat (extension functions)
 
 **`String.asHexInt(): Int`** — Parses hex string to Int. Throws `NumberFormatException`.
 
 **`Int.asHexString(): String`** — Converts Int to hex string.
-
-**`DataInput.asByteArray(size: Int): ByteArray`** — Reads bytes from DataInput; size=0 returns empty, size>0 reads exactly that many, size<0 reads until EOF.
-
-**`DataInput.asByteSequence(available: Int): Sequence<Byte>`** — Lazy byte sequence from DataInput; available=0 returns empty, available>0 yields that many, available<0 reads until EOF.
-
-**`Number.toIntOrFloatVal(): IPrimitiveVal`** — Converts a Number to IntVal if it is an integer type (Byte, Short, Int, Long), or FloatVal otherwise.
 
 ---
 
@@ -80,5 +72,5 @@ Part of [commons-value design](design-primitive.md). Specifies extension functio
 |-----------|------------|
 | `IllegalArgumentException` | `Any?.toVal` / `Any?.primitiveVal` called on unsupported type; `IPrimitiveVal.compareTo` with incompatible types; serializer encounters unknown IValue subtype; deserializer encounters unknown type tag; empty ByteBuffer deserialization |
 | `IndexOutOfBoundsException` | `ListVal.get`/`set`/`subList` with out-of-range index; `StrVal.get` with out-of-range index |
-| `NumberFormatException` | `String.intVal` / `String.floatVal` / `String.asNumber()` / `String.asHexInt()` on invalid input |
+| `NumberFormatException` | `String.intVal` / `String.floatVal` / `String.asHexInt()` on invalid input |
 | `BufferUnderflowException` | ByteBuffer/CharBuffer read operations when insufficient data remains |

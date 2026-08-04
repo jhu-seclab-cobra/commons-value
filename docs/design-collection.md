@@ -48,7 +48,6 @@ Part of [commons-value design](design-primitive.md). Specifies the `ICollectionV
 | `flatMap(transform)` | Flat-maps each element | `transform: (IValue) -> List<R>` | `List<R>` | — |
 | `forEach(action)` | Iterates each element | `action: (IValue) -> Unit` | — | — |
 | `asSequence()` | Returns lazy sequence | — | `Sequence<IValue>` | — |
-| `toMutableSet()` | Converts to a mutable linked set | — | `LinkedHashSet<IValue>` | — |
 
 **Properties:**
 - `size: Int` — Number of elements.
@@ -130,7 +129,7 @@ Part of [commons-value design](design-primitive.md). Specifies the `ICollectionV
 | `mapValues(behavior)` | Transforms values | `behavior: (Map.Entry<String, IValue>) -> R` | `Map<String, R>` | — |
 | `flatMap(behavior)` | Flat-maps entries | `behavior: (Map.Entry<String, IValue>) -> Iterable<R>` | `List<R>` | — |
 | `toList()` | Converts to pair list | — | `List<Pair<String, IValue>>` | — |
-| `toTypeArray()` | Converts to pair array | — | `Array<Pair<String, IValue>>` | — |
+| `toPairArray()` | Converts to pair array | — | `Array<Pair<String, IValue>>` | — |
 
 **Properties:**
 - `size: Int` — Number of key-value pairs.
@@ -159,8 +158,8 @@ Part of [commons-value design](design-primitive.md). Specifies the `ICollectionV
 | `contains(num: Long)` | Checks if long is within range | `num: Long` | `Boolean` | -- |
 | `contains(num: IntVal)` | Checks if IntVal is within range | `num: IntVal` | `Boolean` | -- |
 | `contains(range: RangeVal)` | Checks if sub-range is fully contained | `range: RangeVal` | `Boolean` | -- |
-| `infix before(range: RangeVal)` | Checks if this range ends before other starts | `range: RangeVal` | `Boolean` | -- |
-| `infix after(range: RangeVal)` | Checks if this range starts after other ends | `range: RangeVal` | `Boolean` | -- |
+| `infix before(range: RangeVal)` | Checks if this range ends strictly before other starts (`last < range.first`; a shared boundary point is not before) | `range: RangeVal` | `Boolean` | -- |
+| `infix after(range: RangeVal)` | Checks if this range starts strictly after other ends (`first > range.last`; a shared boundary point is not after) | `range: RangeVal` | `Boolean` | -- |
 | `plus(range: RangeVal)` | Combines two ranges into their union bounds | `range: RangeVal` | `RangeVal` | -- |
 | `map(transform)` | Transforms start and end values | `transform: (IntVal) -> R` | `List<R>` | -- |
 

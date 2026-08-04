@@ -146,13 +146,6 @@ No type introspection properties -- the type IS IntVal.
 **State/Fields:**
 - `core: null` -- Always null.
 
-**Methods:**
-
-| Method | Behavior | Input | Output | Errors |
-|--------|----------|-------|--------|--------|
-| `infix isNull(value: IValue)` | Checks if value is NullVal | `value: IValue` | `Boolean` | -- |
-| `infix isNotNull(value: IValue)` | Checks if value is not NullVal | `value: IValue` | `Boolean` | -- |
-
 ---
 
 ### Unsure

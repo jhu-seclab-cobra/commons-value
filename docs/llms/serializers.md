@@ -27,7 +27,7 @@ val restored = serializer.deserialize(bytes) // IntVal(42L)
 
 ### Type Enum
 
-- **`Type(byte: Byte, str: String)`** -- Internal type tag enum. Entries: `NULL`, `STR`, `BOOL`, `BOOL_TRUE`, `BOOL_FALSE`, `UNSURE_ANY`, `UNSURE_STR`, `UNSURE_NUM`, `UNSURE_BOOL`, `NUM_BYTE`, `NUM_SHORT`, `NUM_INT`, `NUM_LONG`, `NUM_FLOAT`, `NUM_DOUBLE`, `NUM_OTHERS`, `INT`, `FLOAT`, `RANGE`, `LIST`, `SET`, `MAP`.
+- **`Type(byte: Byte, str: String)`** -- Internal type tag enum. Entries: `NULL`, `STR`, `BOOL`, `BOOL_TRUE`, `BOOL_FALSE`, `UNSURE_ANY`, `UNSURE_STR`, `UNSURE_NUM`, `UNSURE_BOOL`, `INT`, `FLOAT`, `RANGE`, `LIST`, `SET`, `MAP`.
 
 ## Gotchas
 

@@ -37,7 +37,6 @@ val list = listOf(1, 2).listVal  // ListVal(IntVal(1L), IntVal(2L))
 
 - **`Collection<*>.listVal: ListVal`** -- Converts collection elements via `toVal`.
 - **`Collection<*>.setVal: SetVal`** -- Converts collection elements via `toVal`, deduplicating.
-- **`Set<*>.setVal: SetVal`** -- Converts set elements via `toVal`.
 - **`Map<*, *>.mapVal: MapVal`** -- Converts keys via `toString()`, values via `toVal`.
 - **`IntRange.rangeVal: RangeVal`** -- Converts `IntRange` to `RangeVal`.
 
@@ -58,10 +57,10 @@ val list = listOf(1, 2).listVal  // ListVal(IntVal(1L), IntVal(2L))
 
 ### Range Checks (on `Number`)
 
-- **`Number.isInLongRange: Boolean`** -- `true` if representable as `Long`.
-- **`Number.isInIntRange: Boolean`** -- `true` if representable as `Int`.
-- **`Number.isInShortRange: Boolean`** -- `true` if representable as `Short`.
-- **`Number.isInByteRange: Boolean`** -- `true` if representable as `Byte`.
+- **`Number.isInLongRange: Boolean`** -- `true` if the exact numeric value fits in `Long` (BigDecimal comparison; `false` for NaN and infinities; fractional values judged by numeric value).
+- **`Number.isInIntRange: Boolean`** -- `true` if the exact numeric value fits in `Int` (same semantics as `isInLongRange`).
+- **`Number.isInShortRange: Boolean`** -- `true` if the exact numeric value fits in `Short` (same semantics as `isInLongRange`).
+- **`Number.isInByteRange: Boolean`** -- `true` if the exact numeric value fits in `Byte` (same semantics as `isInLongRange`).
 
 ### String Interop
 

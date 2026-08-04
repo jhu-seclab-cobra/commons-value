@@ -85,15 +85,15 @@ when (val v: IValue = list[0]) {
 - **`IntVal(core: Long)`** -- Integer IR value. Stores `Long` internally. Default constructor creates `0L`. Methods: `toInt()`, `toDouble()`, `compareTo(Int)`, `compareTo(Long)`. Extension constructors: `Int.intVal`, `Long.intVal`, `String.intVal`.
 - **`FloatVal(core: Double)`** -- Floating-point IR value. Stores `Double` internally. Default constructor creates `0.0`. Methods: `toIntVal()`, `toLong()`, `compareTo(Double)`. Extension constructors: `Double.floatVal`, `Float.floatVal`, `String.floatVal`.
 - **`BoolVal`** -- Boolean IR value. Private constructor; obtain via `BoolVal(true)`, `BoolVal(false)`, `BoolVal.T`, `BoolVal.F`. Methods: `isTrue()`, `isFalse()`.
-- **`NullVal`** -- Singleton data object. `core` is always `null`. Infix: `NullVal isNull value`, `NullVal isNotNull value`.
+- **`NullVal`** -- Singleton data object. `core` is always `null`.
 - **`Unsure`** -- Enum for unknown-but-typed values. Entries: `ANY`, `STR`, `NUM`, `BOOL`. Factory: `Unsure.new(String): Unsure?`, `Unsure.new(IPrimitiveVal): Unsure`, `Unsure.new<T>(): Unsure`. Operator: `String in Unsure`.
 
 ### Collection Types
 
-- **`ListVal(core: ArrayList<IValue>)`** -- Mutable ordered list. Constructors: `ListVal()`, `ListVal(size: Int)`, `ListVal(List<IValue>)`, `ListVal(vararg IValue)`. Operators: `get(Int)`, `set(Int, IValue)`, `plus(IValue)`, `plusAssign(IValue)`, `minus(IValue)`, `minusAssign(IValue)`. Methods: `size`, `contains(IValue)`, `containsAll(Collection)`, `indexOf(IValue)`, `lastIndexOf(IValue)`, `subList(Int, Int)`, `isEmpty()`, `isNotEmpty()`, `map {}`, `flatMap {}`, `forEach {}`, `asSequence()`, `toMutableSet()`.
+- **`ListVal(core: ArrayList<IValue>)`** -- Mutable ordered list. Constructors: `ListVal()`, `ListVal(size: Int)`, `ListVal(List<IValue>)`, `ListVal(vararg IValue)`. Operators: `get(Int)`, `set(Int, IValue)`, `plus(IValue)`, `plusAssign(IValue)`, `minus(IValue)`, `minusAssign(IValue)`. Methods: `size`, `contains(IValue)`, `containsAll(Collection)`, `indexOf(IValue)`, `lastIndexOf(IValue)`, `subList(Int, Int)`, `isEmpty()`, `isNotEmpty()`, `map {}`, `flatMap {}`, `forEach {}`, `asSequence()`.
 - **`SetVal(core: LinkedHashSet<IValue>)`** -- Mutable insertion-ordered set. Constructors: `SetVal()`, `SetVal(size: Int)`, `SetVal(Collection<IValue>)`, `SetVal(vararg IValue)`, `SetVal(Sequence<IValue>)`. Methods: `add(IValue)`, `remove(IValue)`, `contains(IValue)`, `containsAll(Collection)`, `size`, `isEmpty()`, `isNotEmpty()`, `map {}`, `forEach {}`, `asSequence()`, `toList()`. Operators: `plus`, `plusAssign`, `minus`, `minusAssign`.
-- **`MapVal(core: HashMap<String, IValue>)`** -- Mutable string-keyed map. Constructors: `MapVal()`, `MapVal(size: Int)`, `MapVal(Map<String, IValue>)`, `MapVal(vararg Pair<String, IValue>)`, `MapVal(Sequence<Pair>)`, `MapVal(List<Pair>)`. Operators: `get(String): IValue?`, `set(String, IValue)`, `plus(Pair)`, `minus(String)`, `contains(String)`. Methods: `add(String, IValue)`, `remove(String)`, `keys()`, `values()`, `size`, `isEmpty()`, `map {}`, `mapValues {}`, `flatMap {}`, `forEach {}`, `toList()`, `toTypeArray()`.
-- **`RangeVal(start: IntVal, endInclusive: IntVal)`** -- Numeric range. Constructor: `RangeVal(Number, Number)`. Properties: `first: Long`, `last: Long`. Operators: `contains(Number)`, `contains(IntVal)`, `contains(RangeVal)`, `plus(RangeVal)`. Infix: `before(RangeVal)`, `after(RangeVal)`. Methods: `map((IntVal) -> R) {}`.
+- **`MapVal(core: HashMap<String, IValue>)`** -- Mutable string-keyed map. Constructors: `MapVal()`, `MapVal(size: Int)`, `MapVal(Map<String, IValue>)`, `MapVal(vararg Pair<String, IValue>)`, `MapVal(Sequence<Pair>)`, `MapVal(List<Pair>)`. Operators: `get(String): IValue?`, `set(String, IValue)`, `plus(Pair)`, `minus(String)`, `contains(String)`. Methods: `add(String, IValue)`, `remove(String)`, `keys()`, `values()`, `size`, `isEmpty()`, `map {}`, `mapValues {}`, `flatMap {}`, `forEach {}`, `toList()`, `toPairArray()`.
+- **`RangeVal(start: IntVal, endInclusive: IntVal)`** -- Numeric range. Constructor: `RangeVal(Number, Number)`. Properties: `first: Long`, `last: Long`. Operators: `contains(Number)`, `contains(IntVal)`, `contains(RangeVal)`, `plus(RangeVal)`. Infix: `before(RangeVal)`, `after(RangeVal)` (strict: ranges sharing a boundary point are neither). Methods: `map((IntVal) -> R) {}`.
 
 ## Gotchas
 
@@ -139,7 +139,7 @@ val restored = serializer.deserialize(bytes) // IntVal(42L)
 
 ### Type Enum
 
-- **`Type(byte: Byte, str: String)`** -- Internal type tag enum. Entries: `NULL`, `STR`, `BOOL`, `BOOL_TRUE`, `BOOL_FALSE`, `UNSURE_ANY`, `UNSURE_STR`, `UNSURE_NUM`, `UNSURE_BOOL`, `NUM_BYTE`, `NUM_SHORT`, `NUM_INT`, `NUM_LONG`, `NUM_FLOAT`, `NUM_DOUBLE`, `NUM_OTHERS`, `INT`, `FLOAT`, `RANGE`, `LIST`, `SET`, `MAP`.
+- **`Type(byte: Byte, str: String)`** -- Internal type tag enum. Entries: `NULL`, `STR`, `BOOL`, `BOOL_TRUE`, `BOOL_FALSE`, `UNSURE_ANY`, `UNSURE_STR`, `UNSURE_NUM`, `UNSURE_BOOL`, `INT`, `FLOAT`, `RANGE`, `LIST`, `SET`, `MAP`.
 
 ## Gotchas
 
@@ -194,7 +194,6 @@ val list = listOf(1, 2).listVal  // ListVal(IntVal(1L), IntVal(2L))
 
 - **`Collection<*>.listVal: ListVal`** -- Converts collection elements via `toVal`.
 - **`Collection<*>.setVal: SetVal`** -- Converts collection elements via `toVal`, deduplicating.
-- **`Set<*>.setVal: SetVal`** -- Converts set elements via `toVal`.
 - **`Map<*, *>.mapVal: MapVal`** -- Converts keys via `toString()`, values via `toVal`.
 - **`IntRange.rangeVal: RangeVal`** -- Converts `IntRange` to `RangeVal`.
 
@@ -215,10 +214,10 @@ val list = listOf(1, 2).listVal  // ListVal(IntVal(1L), IntVal(2L))
 
 ### Range Checks (on `Number`)
 
-- **`Number.isInLongRange: Boolean`** -- `true` if representable as `Long`.
-- **`Number.isInIntRange: Boolean`** -- `true` if representable as `Int`.
-- **`Number.isInShortRange: Boolean`** -- `true` if representable as `Short`.
-- **`Number.isInByteRange: Boolean`** -- `true` if representable as `Byte`.
+- **`Number.isInLongRange: Boolean`** -- `true` if the exact numeric value fits in `Long` (BigDecimal comparison; `false` for NaN and infinities; fractional values judged by numeric value).
+- **`Number.isInIntRange: Boolean`** -- `true` if the exact numeric value fits in `Int` (same semantics as `isInLongRange`).
+- **`Number.isInShortRange: Boolean`** -- `true` if the exact numeric value fits in `Short` (same semantics as `isInLongRange`).
+- **`Number.isInByteRange: Boolean`** -- `true` if the exact numeric value fits in `Byte` (same semantics as `isInLongRange`).
 
 ### String Interop
 
