@@ -252,8 +252,11 @@ public fun DataInput.asByteArray(size: Int): ByteArray {
         ByteArray(size).also { readFully(it) }
     } else {
         buildList {
-            val errors = runCatching { while (true) add(readByte()) }
-            errors.onFailure { if (it !is EOFException) throw it }
+            try {
+                while (true) add(readByte())
+            } catch (_: EOFException) {
+                // End of stream terminates the read-until-EOF loop.
+            }
         }.toByteArray()
     }
 }
@@ -272,8 +275,10 @@ public fun DataInput.asByteSequence(available: Int): Sequence<Byte> =
         if (available > 0) {
             repeat(available) { yield(readByte()) }
         } else {
-            kotlin
-                .runCatching { while (true) yield(readByte()) }
-                .onFailure { if (it !is EOFException) throw it }
+            try {
+                while (true) yield(readByte())
+            } catch (_: EOFException) {
+                // End of stream terminates the read-until-EOF loop.
+            }
         }
     }

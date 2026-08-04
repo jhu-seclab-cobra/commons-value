@@ -4,6 +4,7 @@ import edu.jhu.cobra.commons.value.FloatVal
 import edu.jhu.cobra.commons.value.IntVal
 import java.io.DataInput
 import java.io.EOFException
+import java.io.IOException
 import java.math.BigDecimal
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
@@ -28,9 +29,11 @@ import kotlin.test.assertIs
  * - `should return empty ByteArray when size is zero` — DataInput.asByteArray(0) returns empty.
  * - `should read exact bytes when size is positive` — DataInput.asByteArray(3) reads 3 bytes.
  * - `should read until EOF when size is negative` — DataInput.asByteArray(-1) reads all remaining.
+ * - `should propagate non-EOF exception when reading until EOF via asByteArray` — IOException is not swallowed.
  * - `should return empty sequence when available is zero` — DataInput.asByteSequence(0) yields nothing.
  * - `should yield exact bytes when available is positive` — DataInput.asByteSequence(3) yields 3 bytes.
  * - `should yield until EOF when available is negative` — DataInput.asByteSequence(-1) yields all remaining.
+ * - `should propagate non-EOF exception when yielding until EOF via asByteSequence` — IOException is not swallowed.
  * - `should convert Byte to IntVal via toIntOrFloatVal` — Byte dispatches to IntVal.
  * - `should convert Short to IntVal via toIntOrFloatVal` — Short dispatches to IntVal.
  * - `should convert Int to IntVal via toIntOrFloatVal` — Int dispatches to IntVal.
@@ -125,6 +128,13 @@ internal class SerializerUtilsTest {
         assertContentEquals(byteArrayOf(10, 20, 30), dataInput.asByteArray(-1))
     }
 
+    @Test
+    fun `should propagate non-EOF exception when reading until EOF via asByteArray`() {
+        val dataInput = createFailingDataInput(byteArrayOf(1, 2), IOException("stream corrupted"))
+        val exception = assertFailsWith<IOException> { dataInput.asByteArray(-1) }
+        assertEquals("stream corrupted", exception.message)
+    }
+
     // --- DataInput.asByteSequence ---
 
     @Test
@@ -143,6 +153,13 @@ internal class SerializerUtilsTest {
     fun `should yield until EOF when available is negative`() {
         val dataInput = createDataInput(byteArrayOf(10, 20, 30))
         assertContentEquals(byteArrayOf(10, 20, 30), dataInput.asByteSequence(-1).toList().toByteArray())
+    }
+
+    @Test
+    fun `should propagate non-EOF exception when yielding until EOF via asByteSequence`() {
+        val dataInput = createFailingDataInput(byteArrayOf(1, 2), IOException("stream corrupted"))
+        val exception = assertFailsWith<IOException> { dataInput.asByteSequence(-1).toList() }
+        assertEquals("stream corrupted", exception.message)
     }
 
     // --- Number.toIntOrFloatVal ---
@@ -197,6 +214,21 @@ internal class SerializerUtilsTest {
     }
 
     // --- Helper ---
+
+    private fun createFailingDataInput(
+        data: ByteArray,
+        failure: IOException,
+    ): DataInput {
+        var position = 0
+        val delegate = createDataInput(data)
+        return object : DataInput by delegate {
+            override fun readByte(): Byte {
+                if (position >= data.size) throw failure
+                position++
+                return delegate.readByte()
+            }
+        }
+    }
 
     private fun createDataInput(data: ByteArray): DataInput =
         object : DataInput {
