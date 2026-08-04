@@ -16,6 +16,9 @@ import edu.jhu.cobra.commons.value.mapVal
 import edu.jhu.cobra.commons.value.setVal
 import kotlin.random.Random
 
+// Fixed seed so failures on randomly generated values reproduce across runs.
+val seededRandom = Random(20260804)
+
 inline fun <reified T : IValue> random(): T =
     when (T::class) {
         NullVal::class -> randomIValue(0) as T
@@ -35,20 +38,20 @@ fun randomIValue(typeNum: Int = -1): IValue =
     when (typeNum) {
         0 -> NullVal
         1 -> StrVal(randomString(5, 30))
-        2 -> BoolVal(Random.nextBoolean())
-        3 -> Unsure.entries[Random.nextInt(0, 4)]
-        4 -> randomList(Random.nextInt(1, 10)).listVal
-        5 -> randomList(Random.nextInt(1, 10)).setVal
-        6 -> randomMap(Random.nextInt(1, 10)).mapVal
-        7 -> RangeVal(Random.nextLong(), Random.nextLong())
-        8 -> IntVal(Random.nextLong())
-        9 -> FloatVal(Random.nextDouble())
-        else -> randomIValue(Random.nextInt(0, 10))
+        2 -> BoolVal(seededRandom.nextBoolean())
+        3 -> Unsure.entries[seededRandom.nextInt(0, 4)]
+        4 -> randomList(seededRandom.nextInt(1, 10)).listVal
+        5 -> randomList(seededRandom.nextInt(1, 10)).setVal
+        6 -> randomMap(seededRandom.nextInt(1, 10)).mapVal
+        7 -> RangeVal(seededRandom.nextLong(), seededRandom.nextLong())
+        8 -> IntVal(seededRandom.nextLong())
+        9 -> FloatVal(seededRandom.nextDouble())
+        else -> randomIValue(seededRandom.nextInt(0, 10))
     }
 
 private val PRIMITIVE_INDICES = intArrayOf(0, 1, 2, 3, 8, 9)
 
-private fun randomPrimitiveIndex(): Int = PRIMITIVE_INDICES[Random.nextInt(PRIMITIVE_INDICES.size)]
+private fun randomPrimitiveIndex(): Int = PRIMITIVE_INDICES[seededRandom.nextInt(PRIMITIVE_INDICES.size)]
 
 private fun randomMap(size: Int): Map<String, IValue> = (1..size).associate { randomString(3, 15) to randomIValue(randomPrimitiveIndex()) }
 
@@ -59,6 +62,6 @@ private fun randomString(
     maxLength: Int,
 ): String {
     val chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
-    val length = Random.nextInt(minLength, maxLength + 1)
-    return (1..length).asSequence().map { chars.random() }.joinToString("")
+    val length = seededRandom.nextInt(minLength, maxLength + 1)
+    return (1..length).asSequence().map { chars.random(seededRandom) }.joinToString("")
 }
