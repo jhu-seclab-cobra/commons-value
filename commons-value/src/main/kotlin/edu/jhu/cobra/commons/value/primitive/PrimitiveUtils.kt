@@ -238,12 +238,32 @@ public val File.strVal: StrVal get() = StrVal(this.path)
  */
 public fun String.startsWith(other: StrVal): Boolean = startsWith(other.core)
 
+// Characters that carry special meaning in regex syntax; each is escaped so pattern text matches literally.
+private val REGEX_METACHARACTERS = ".^$*+?-()[]{}\\|".toSet()
+
+// Escapes every regex metacharacter so the text matches itself literally inside a pattern.
+private fun escapeRegexChars(text: String): String =
+    buildString(text.length) {
+        text.forEach { append(if (it in REGEX_METACHARACTERS) "\\$it" else "$it") }
+    }
+
+// Regex fragment each Unsure placeholder stands for.
+private val Unsure.regexPattern: String
+    get() =
+        when (this) {
+            Unsure.ANY -> ".*"
+            Unsure.STR -> ".*"
+            Unsure.NUM -> "\\d+"
+            Unsure.BOOL -> "(true|false)"
+        }
+
 /**
  * Converts this [StrVal] to a [Regex] pattern, with special character escaping and pattern substitution.
  *
  * This function:
  * 1. Escapes special regex characters
- * 2. Replaces COBRA-specific patterns with their regex equivalents:
+ * 2. Replaces COBRA-specific placeholders — both the bare core spelling (e.g. `__NumVal__`) and the
+ *    `Unsure{...}` rendering produced by [Unsure.toString] — with their regex equivalents:
  *    - `Unsure.ANY` → `.*`
  *    - `Unsure.STR` → `.*`
  *    - `Unsure.NUM` → `\d+`
@@ -262,20 +282,15 @@ public fun String.startsWith(other: StrVal): Boolean = startsWith(other.core)
  * @return A [Regex] object based on this [StrVal]'s content
  */
 public fun StrVal.toRegex(doCaseIgnore: Boolean = false): Regex {
-    val tarChars = ".^$*+?-()[]{}\\|".toSet()
-    val sBuilder = StringBuilder()
-    core.forEach { sBuilder.append(if (it in tarChars) "\\$it" else "$it") }
-    return sBuilder
-        .toString()
-        .replace(Unsure.ANY.core, ".*")
-        .replace(Unsure.ANY.toString(), ".*")
-        .replace(Unsure.STR.core, ".*")
-        .replace(Unsure.STR.toString(), ".*")
-        .replace(Unsure.NUM.core, "\\d+")
-        .replace(Unsure.NUM.toString(), "\\d+")
-        .replace(Unsure.BOOL.core, "(true|false)")
-        .replace(Unsure.BOOL.toString(), "(true|false)")
-        .toRegex(if (doCaseIgnore) setOf(RegexOption.IGNORE_CASE) else setOf())
+    // Substitution runs on the escaped text, so each placeholder is matched in its escaped rendering.
+    // The "Unsure{...}" spelling is replaced before the bare core it contains as a substring.
+    val substituted =
+        Unsure.entries.fold(escapeRegexChars(core)) { pattern, unsure ->
+            pattern
+                .replace(escapeRegexChars(unsure.toString()), unsure.regexPattern)
+                .replace(unsure.core, unsure.regexPattern)
+        }
+    return substituted.toRegex(if (doCaseIgnore) setOf(RegexOption.IGNORE_CASE) else setOf())
 }
 
 /**
@@ -288,12 +303,7 @@ public fun StrVal.toRegex(doCaseIgnore: Boolean = false): Regex {
  * @return A string containing the regular expression pattern corresponding to the current [Unsure] type.
  */
 public fun Unsure.toRegex(doCaseIgnore: Boolean = false): Regex =
-    when (this) {
-        Unsure.ANY -> ".*"
-        Unsure.STR -> ".*"
-        Unsure.NUM -> "\\d+"
-        Unsure.BOOL -> "(true|false)"
-    }.toRegex(if (doCaseIgnore) setOf(RegexOption.IGNORE_CASE) else setOf())
+    regexPattern.toRegex(if (doCaseIgnore) setOf(RegexOption.IGNORE_CASE) else setOf())
 
 /**
  * Converts this boolean to a [BoolVal] representation.

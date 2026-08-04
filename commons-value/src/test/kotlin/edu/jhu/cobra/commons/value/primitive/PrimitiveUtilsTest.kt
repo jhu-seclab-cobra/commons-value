@@ -55,6 +55,8 @@ import kotlin.test.assertTrue
  * - `should replace Unsure STR placeholder with wildcard in StrVal toRegex` — StrVal.toRegex STR
  * - `should replace Unsure NUM placeholder with digit pattern in StrVal toRegex` — StrVal.toRegex NUM
  * - `should replace Unsure BOOL placeholder with bool pattern in StrVal toRegex` — StrVal.toRegex BOOL
+ * - `should replace Unsure NUM toString rendering with digit pattern in StrVal toRegex` — StrVal.toRegex NUM toString form
+ * - `should replace Unsure ANY toString rendering with wildcard in StrVal toRegex` — StrVal.toRegex ANY toString form
  * - `should produce case-insensitive regex from StrVal toRegex` — StrVal.toRegex ignoreCase
  * - `should match any string for Unsure ANY toRegex` — Unsure.toRegex ANY
  * - `should match any string for Unsure STR toRegex` — Unsure.toRegex STR
@@ -267,6 +269,21 @@ internal class PrimitiveUtilsTest {
         assertTrue(regex.matches("istrue"))
         assertTrue(regex.matches("isfalse"))
         assertFalse(regex.matches("ismaybe"))
+    }
+
+    @Test
+    fun `should replace Unsure NUM toString rendering with digit pattern in StrVal toRegex`() {
+        val regex = StrVal("item${Unsure.NUM}").toRegex()
+        assertTrue(regex.matches("item123"))
+        assertFalse(regex.matches("itemabc"))
+        assertFalse(regex.matches("item${Unsure.NUM}"))
+    }
+
+    @Test
+    fun `should replace Unsure ANY toString rendering with wildcard in StrVal toRegex`() {
+        val regex = StrVal("prefix${Unsure.ANY}suffix").toRegex()
+        assertTrue(regex.matches("prefixanythingsuffix"))
+        assertFalse(regex.matches("prefixanything"))
     }
 
     @Test
