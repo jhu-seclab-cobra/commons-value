@@ -4,7 +4,6 @@ import edu.jhu.cobra.commons.value.FloatVal
 import edu.jhu.cobra.commons.value.IPrimitiveVal
 import edu.jhu.cobra.commons.value.IntVal
 import edu.jhu.cobra.commons.value.floatVal
-import java.text.ParseException
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -41,9 +40,9 @@ import kotlin.test.assertTrue
  * - `should construct from Double extension` -- Double.floatVal
  * - `should construct from Float extension` -- Float.floatVal
  * - `should parse valid float string` -- String.floatVal "3.14", "-0.5", "0.0"
- * - `should throw ParseException for non-numeric string` -- "abc"
- * - `should throw ParseException for empty string` -- ""
- * - `should throw ParseException for blank string` -- " "
+ * - `should throw NumberFormatException for non-numeric string` -- "abc"
+ * - `should throw NumberFormatException for empty string` -- ""
+ * - `should throw NumberFormatException for blank string` -- " "
  *
  * compareTo:
  * - `should return positive when greater than Double` -- compareTo(Double) >
@@ -170,18 +169,18 @@ internal class FloatValTest {
     }
 
     @Test
-    fun `should throw ParseException for non-numeric string`() {
-        assertFailsWith<ParseException> { "abc".floatVal }
+    fun `should throw NumberFormatException for non-numeric string`() {
+        assertFailsWith<NumberFormatException> { "abc".floatVal }
     }
 
     @Test
-    fun `should throw ParseException for empty string`() {
-        assertFailsWith<ParseException> { "".floatVal }
+    fun `should throw NumberFormatException for empty string`() {
+        assertFailsWith<NumberFormatException> { "".floatVal }
     }
 
     @Test
-    fun `should throw ParseException for blank string`() {
-        assertFailsWith<ParseException> { " ".floatVal }
+    fun `should throw NumberFormatException for blank string`() {
+        assertFailsWith<NumberFormatException> { " ".floatVal }
     }
 
     // --- compareTo ---

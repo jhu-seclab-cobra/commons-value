@@ -3,7 +3,6 @@ package edu.jhu.cobra.commons.value.primitive
 import edu.jhu.cobra.commons.value.IPrimitiveVal
 import edu.jhu.cobra.commons.value.IntVal
 import edu.jhu.cobra.commons.value.intVal
-import java.text.ParseException
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -47,10 +46,10 @@ import kotlin.test.assertTrue
  * - `should parse valid integer string` -- String.intVal "42", "-1", "0"
  * - `should parse Long MAX_VALUE string` -- String.intVal boundary
  * - `should parse Long MIN_VALUE string` -- String.intVal boundary
- * - `should throw ParseException for non-numeric string` -- "abc"
- * - `should throw ParseException for floating-point string` -- "3.14"
- * - `should throw ParseException for empty string` -- ""
- * - `should throw ParseException for blank string` -- " "
+ * - `should throw NumberFormatException for non-numeric string` -- "abc"
+ * - `should throw NumberFormatException for floating-point string` -- "3.14"
+ * - `should throw NumberFormatException for empty string` -- ""
+ * - `should throw NumberFormatException for blank string` -- " "
  *
  * compareTo:
  * - `should return positive when greater than Int` -- compareTo(Int) >
@@ -200,23 +199,23 @@ internal class IntValTest {
     }
 
     @Test
-    fun `should throw ParseException for non-numeric string`() {
-        assertFailsWith<ParseException> { "abc".intVal }
+    fun `should throw NumberFormatException for non-numeric string`() {
+        assertFailsWith<NumberFormatException> { "abc".intVal }
     }
 
     @Test
-    fun `should throw ParseException for floating-point string`() {
-        assertFailsWith<ParseException> { "3.14".intVal }
+    fun `should throw NumberFormatException for floating-point string`() {
+        assertFailsWith<NumberFormatException> { "3.14".intVal }
     }
 
     @Test
-    fun `should throw ParseException for empty string`() {
-        assertFailsWith<ParseException> { "".intVal }
+    fun `should throw NumberFormatException for empty string`() {
+        assertFailsWith<NumberFormatException> { "".intVal }
     }
 
     @Test
-    fun `should throw ParseException for blank string`() {
-        assertFailsWith<ParseException> { " ".intVal }
+    fun `should throw NumberFormatException for blank string`() {
+        assertFailsWith<NumberFormatException> { " ".intVal }
     }
 
     // --- compareTo ---

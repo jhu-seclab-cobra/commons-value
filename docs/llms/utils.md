@@ -21,10 +21,10 @@ val list = listOf(1, 2).listVal  // ListVal(IntVal(1L), IntVal(2L))
 
 - **`Int.intVal: IntVal`** -- Converts `Int` to `IntVal` (widens to `Long`).
 - **`Long.intVal: IntVal`** -- Wraps `Long` in `IntVal`.
-- **`String.intVal: IntVal`** -- Parses string to `IntVal`. Raises `ParseException` on invalid input.
+- **`String.intVal: IntVal`** -- Parses string to `IntVal`. Raises `NumberFormatException` on invalid input.
 - **`Double.floatVal: FloatVal`** -- Wraps `Double` in `FloatVal`.
 - **`Float.floatVal: FloatVal`** -- Converts `Float` to `FloatVal` (widens to `Double`).
-- **`String.floatVal: FloatVal`** -- Parses string to `FloatVal`. Raises `ParseException` on invalid input.
+- **`String.floatVal: FloatVal`** -- Parses string to `FloatVal`. Raises `NumberFormatException` on invalid input.
 - **`String.strVal: StrVal`** -- Wraps string in `StrVal`.
 - **`Char.strVal: StrVal`** -- Wraps character as single-char `StrVal`.
 - **`Path.strVal: StrVal`** -- Wraps `java.nio.file.Path` as `StrVal`.
@@ -69,7 +69,6 @@ val list = listOf(1, 2).listVal  // ListVal(IntVal(1L), IntVal(2L))
 
 ## Gotchas
 
-- `String.intVal` and `String.floatVal` throw `ParseException`, not `NumberFormatException`.
 - `Any?.toVal` delegates to type-specific extensions. Unsupported types raise `IllegalArgumentException`.
 - `Map<*, *>.mapVal` calls `toString()` on keys -- non-string keys lose type information.
 - `IPrimitiveVal.compareTo` does not support cross-type comparison (e.g., `IntVal` vs `StrVal`).

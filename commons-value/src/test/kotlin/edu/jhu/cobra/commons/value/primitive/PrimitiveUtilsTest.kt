@@ -20,7 +20,6 @@ import edu.jhu.cobra.commons.value.strVal
 import edu.jhu.cobra.commons.value.toRegex
 import java.io.File
 import java.math.BigInteger
-import java.text.ParseException
 import kotlin.io.path.Path
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -96,10 +95,11 @@ import kotlin.test.assertTrue
  * - `should parse negative string to IntVal` — String.intVal negative
  * - `should parse zero string to IntVal` — String.intVal zero
  * - `should parse Long MAX_VALUE string to IntVal` — String.intVal boundary
- * - `should throw ParseException for non-integer string intVal` — String.intVal error
- * - `should throw ParseException for decimal string intVal` — String.intVal error decimal
- * - `should throw ParseException for empty string intVal` — String.intVal error empty
- * - `should throw ParseException for blank string intVal` — String.intVal error blank
+ * - `should throw NumberFormatException for non-integer string intVal` — String.intVal error
+ * - `should throw NumberFormatException for decimal string intVal` — String.intVal error decimal
+ * - `should throw NumberFormatException for empty string intVal` — String.intVal error empty
+ * - `should throw NumberFormatException for blank string intVal` — String.intVal error blank
+ * - `should include offending input in intVal NumberFormatException message` — String.intVal error message
  * - `should wrap Double 0 as FloatVal` — Double.floatVal zero
  * - `should wrap Double 3_14 as FloatVal` — Double.floatVal typical
  * - `should wrap Double MAX_VALUE as FloatVal` — Double.floatVal boundary max
@@ -107,9 +107,10 @@ import kotlin.test.assertTrue
  * - `should parse decimal string to FloatVal` — String.floatVal typical
  * - `should parse negative string to FloatVal` — String.floatVal negative
  * - `should parse zero string to FloatVal` — String.floatVal zero
- * - `should throw ParseException for non-numeric string floatVal` — String.floatVal error
- * - `should throw ParseException for empty string floatVal` — String.floatVal error empty
- * - `should throw ParseException for blank string floatVal` — String.floatVal error blank
+ * - `should throw NumberFormatException for non-numeric string floatVal` — String.floatVal error
+ * - `should throw NumberFormatException for empty string floatVal` — String.floatVal error empty
+ * - `should throw NumberFormatException for blank string floatVal` — String.floatVal error blank
+ * - `should include offending input in floatVal NumberFormatException message` — String.floatVal error message
  * - `should convert Int to IntVal via primitiveVal` — primitiveVal Int dispatches to intVal
  * - `should convert Long to IntVal via primitiveVal` — primitiveVal Long dispatches to intVal
  * - `should convert Double to FloatVal via primitiveVal` — primitiveVal Double dispatches to floatVal
@@ -509,23 +510,29 @@ internal class PrimitiveUtilsTest {
     }
 
     @Test
-    fun `should throw ParseException for non-integer string intVal`() {
-        assertFailsWith<ParseException> { "abc".intVal }
+    fun `should throw NumberFormatException for non-integer string intVal`() {
+        assertFailsWith<NumberFormatException> { "abc".intVal }
     }
 
     @Test
-    fun `should throw ParseException for decimal string intVal`() {
-        assertFailsWith<ParseException> { "3.14".intVal }
+    fun `should throw NumberFormatException for decimal string intVal`() {
+        assertFailsWith<NumberFormatException> { "3.14".intVal }
     }
 
     @Test
-    fun `should throw ParseException for empty string intVal`() {
-        assertFailsWith<ParseException> { "".intVal }
+    fun `should throw NumberFormatException for empty string intVal`() {
+        assertFailsWith<NumberFormatException> { "".intVal }
     }
 
     @Test
-    fun `should throw ParseException for blank string intVal`() {
-        assertFailsWith<ParseException> { " ".intVal }
+    fun `should throw NumberFormatException for blank string intVal`() {
+        assertFailsWith<NumberFormatException> { " ".intVal }
+    }
+
+    @Test
+    fun `should include offending input in intVal NumberFormatException message`() {
+        val exception = assertFailsWith<NumberFormatException> { "abc".intVal }
+        assertTrue(exception.message.orEmpty().contains("abc"))
     }
 
     // --- Double.floatVal ---
@@ -572,18 +579,24 @@ internal class PrimitiveUtilsTest {
     }
 
     @Test
-    fun `should throw ParseException for non-numeric string floatVal`() {
-        assertFailsWith<ParseException> { "abc".floatVal }
+    fun `should throw NumberFormatException for non-numeric string floatVal`() {
+        assertFailsWith<NumberFormatException> { "abc".floatVal }
     }
 
     @Test
-    fun `should throw ParseException for empty string floatVal`() {
-        assertFailsWith<ParseException> { "".floatVal }
+    fun `should throw NumberFormatException for empty string floatVal`() {
+        assertFailsWith<NumberFormatException> { "".floatVal }
     }
 
     @Test
-    fun `should throw ParseException for blank string floatVal`() {
-        assertFailsWith<ParseException> { " ".floatVal }
+    fun `should throw NumberFormatException for blank string floatVal`() {
+        assertFailsWith<NumberFormatException> { " ".floatVal }
+    }
+
+    @Test
+    fun `should include offending input in floatVal NumberFormatException message`() {
+        val exception = assertFailsWith<NumberFormatException> { "not-a-float".floatVal }
+        assertTrue(exception.message.orEmpty().contains("not-a-float"))
     }
 
     // --- primitiveVal with IntVal/FloatVal ---

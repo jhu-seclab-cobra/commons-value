@@ -12,9 +12,9 @@ Part of [commons-value design](design-primitive.md). Specifies extension functio
 
 **`Double.floatVal: FloatVal`** -- Wraps Double as FloatVal.
 
-**`String.intVal: IntVal`** -- Parses string to integer, returns IntVal. Uses `toLongOrNull()`. Throws `ParseException` on invalid input.
+**`String.intVal: IntVal`** -- Parses string to integer, returns IntVal. Uses `toLongOrNull()`. Throws `NumberFormatException` on invalid input.
 
-**`String.floatVal: FloatVal`** -- Parses string to decimal, returns FloatVal. Uses `toDoubleOrNull()`. Throws `ParseException` on invalid input.
+**`String.floatVal: FloatVal`** -- Parses string to decimal, returns FloatVal. Uses `toDoubleOrNull()`. Throws `NumberFormatException` on invalid input.
 
 **`String.strVal: StrVal`** -- Wraps String as StrVal.
 
@@ -80,6 +80,5 @@ Part of [commons-value design](design-primitive.md). Specifies extension functio
 |-----------|------------|
 | `IllegalArgumentException` | `Any?.toVal` / `Any?.primitiveVal` called on unsupported type; `IPrimitiveVal.compareTo` with incompatible types; serializer encounters unknown IValue subtype; deserializer encounters unknown type tag; empty ByteBuffer deserialization |
 | `IndexOutOfBoundsException` | `ListVal.get`/`set`/`subList` with out-of-range index; `StrVal.get` with out-of-range index |
-| `ParseException` | `String.intVal` / `String.floatVal` when string is not a valid number |
-| `NumberFormatException` | `String.asNumber()` / `String.asHexInt()` on invalid input |
+| `NumberFormatException` | `String.intVal` / `String.floatVal` / `String.asNumber()` / `String.asHexInt()` on invalid input |
 | `BufferUnderflowException` | ByteBuffer/CharBuffer read operations when insufficient data remains |

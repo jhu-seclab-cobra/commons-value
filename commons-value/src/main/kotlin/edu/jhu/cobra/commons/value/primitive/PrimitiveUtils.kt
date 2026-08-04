@@ -3,7 +3,6 @@ package edu.jhu.cobra.commons.value
 import java.io.File
 import java.math.BigDecimal
 import java.nio.file.Path
-import java.text.ParseException
 import kotlin.io.path.pathString
 
 private val BIG_LONG_MAX_VALUE = BigDecimal.valueOf(Long.MAX_VALUE)
@@ -139,11 +138,11 @@ public val Float.floatVal: FloatVal get() = FloatVal(this.toDouble())
  * Parses this string as an integer and converts it to an [IntVal].
  *
  * @return An [IntVal] containing the parsed value
- * @throws ParseException if the string cannot be parsed as an integer
+ * @throws NumberFormatException if the string cannot be parsed as an integer
  */
 public val String.intVal: IntVal
     get() {
-        val longNum = toLongOrNull() ?: throw ParseException("Cannot parse '$this' as integer", 0)
+        val longNum = toLongOrNull() ?: throw NumberFormatException("Cannot parse '$this' as integer")
         return IntVal(longNum)
     }
 
@@ -151,11 +150,11 @@ public val String.intVal: IntVal
  * Parses this string as a floating-point number and converts it to a [FloatVal].
  *
  * @return A [FloatVal] containing the parsed value
- * @throws ParseException if the string cannot be parsed as a float
+ * @throws NumberFormatException if the string cannot be parsed as a float
  */
 public val String.floatVal: FloatVal
     get() {
-        val doubleNum = toDoubleOrNull() ?: throw ParseException("Cannot parse '$this' as float", 0)
+        val doubleNum = toDoubleOrNull() ?: throw NumberFormatException("Cannot parse '$this' as float")
         return FloatVal(doubleNum)
     }
 
