@@ -21,13 +21,13 @@ public interface IValSerializer<Material : Any> {
      *
      * Example usage:
      * ```kotlin
-     * val serializer: IValSerializer<String> = JsonValSerializer()
+     * val serializer: IValSerializer<ByteArray> = DftByteArraySerializerImpl
      * val serialized = serializer.serialize(value)
-     * println(serialized) // Outputs the JSON string representation of the value
+     * println(serialized) // Outputs the byte array representation of the value
      * ```
      *
      * @param value The [IValue] instance to serialize.
-     * @return The serialized material as an instance of [M].
+     * @return The serialized material as an instance of [Material].
      */
     public fun serialize(value: IValue): Material
 
@@ -39,8 +39,8 @@ public interface IValSerializer<Material : Any> {
      *
      * Example usage:
      * ```kotlin
-     * val serializer: IValSerializer<String> = JsonValSerializer()
-     * val value = serializer.deserialize(jsonString)
+     * val serializer: IValSerializer<ByteArray> = DftByteArraySerializerImpl
+     * val value = serializer.deserialize(bytes)
      * println(value) // Outputs the reconstructed IValue instance
      * ```
      *

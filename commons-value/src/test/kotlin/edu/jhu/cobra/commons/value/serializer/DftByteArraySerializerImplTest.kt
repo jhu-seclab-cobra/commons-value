@@ -13,6 +13,8 @@ import kotlin.test.assertTrue
  * - `should throw IllegalArgumentException when map key size is negative` — Negative length prefix rejected.
  * - `should throw IllegalArgumentException with context when list element size exceeds remaining` —
  *   Corrupt length prefix reported with context.
+ * - `should throw IllegalArgumentException when BOOL payload byte is corrupt` — BOOL payload outside 0..1 rejected
+ *   instead of decoding to false.
  */
 internal class DftByteArraySerializerImplTest : AbcSerializerImplUnitTest<ByteArray>() {
     override val testTarget: IValSerializer<ByteArray> get() = DftByteArraySerializerImpl
@@ -49,5 +51,15 @@ internal class DftByteArraySerializerImplTest : AbcSerializerImplUnitTest<ByteAr
                 DftByteArraySerializerImpl.deserialize(corruptBytes)
             }
         assertTrue("size" in exception.message.orEmpty())
+    }
+
+    @Test
+    fun `should throw IllegalArgumentException when BOOL payload byte is corrupt`() {
+        val corruptBytes = byteArrayOf(Type.BOOL.byte, 7)
+        val exception =
+            assertFailsWith<IllegalArgumentException> {
+                DftByteArraySerializerImpl.deserialize(corruptBytes)
+            }
+        assertTrue("7" in exception.message.orEmpty())
     }
 }

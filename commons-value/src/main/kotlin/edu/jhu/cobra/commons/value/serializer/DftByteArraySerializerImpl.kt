@@ -23,6 +23,16 @@ import java.nio.ByteBuffer
  * them into byte arrays and reconstruct them from those arrays.
  */
 public object DftByteArraySerializerImpl : IValSerializer<ByteArray> {
+    // A tagged long payload: one type byte followed by eight big-endian value bytes.
+    private const val TAGGED_LONG_BYTES = 9
+
+    // Size prefixes are encoded as big-endian Int values.
+    private const val SIZE_PREFIX_BYTES = 4
+
+    // Serialized RANGE layout: type byte, Int size prefix of the first bound, then two tagged longs.
+    private const val RANGE_FIRST_TAG_OFFSET = 1 + SIZE_PREFIX_BYTES
+    private const val RANGE_SECOND_TAG_OFFSET = RANGE_FIRST_TAG_OFFSET + TAGGED_LONG_BYTES
+
     /**
      * Serializes an [IValue] instance into a byte array.
      *
@@ -57,13 +67,13 @@ public object DftByteArraySerializerImpl : IValSerializer<ByteArray> {
             is FloatVal -> longToBytes(Type.FLOAT.byte, java.lang.Double.doubleToRawLongBits(value.core))
 
             is RangeVal -> {
-                val result = ByteArray(1 + 4 + 9 + 9)
+                val result = ByteArray(1 + SIZE_PREFIX_BYTES + 2 * TAGGED_LONG_BYTES)
                 result[0] = Type.RANGE.byte
-                intInto(result, 1, 9)
-                result[5] = Type.INT.byte
-                longInto(result, 6, value.start.core)
-                result[14] = Type.INT.byte
-                longInto(result, 15, value.endInclusive.core)
+                intInto(result, 1, TAGGED_LONG_BYTES)
+                result[RANGE_FIRST_TAG_OFFSET] = Type.INT.byte
+                longInto(result, RANGE_FIRST_TAG_OFFSET + 1, value.start.core)
+                result[RANGE_SECOND_TAG_OFFSET] = Type.INT.byte
+                longInto(result, RANGE_SECOND_TAG_OFFSET + 1, value.endInclusive.core)
                 result
             }
 
@@ -112,24 +122,15 @@ public object DftByteArraySerializerImpl : IValSerializer<ByteArray> {
                 }
                 result
             }
-
-            else -> throw IllegalArgumentException("Unknown value type: $value")
         }
 
     private fun longToBytes(
         type: Byte,
         v: Long,
     ): ByteArray {
-        val arr = ByteArray(9)
+        val arr = ByteArray(TAGGED_LONG_BYTES)
         arr[0] = type
-        arr[1] = (v shr 56).toByte()
-        arr[2] = (v shr 48).toByte()
-        arr[3] = (v shr 40).toByte()
-        arr[4] = (v shr 32).toByte()
-        arr[5] = (v shr 24).toByte()
-        arr[6] = (v shr 16).toByte()
-        arr[7] = (v shr 8).toByte()
-        arr[8] = v.toByte()
+        longInto(arr, 1, v)
         return arr
     }
 
@@ -184,7 +185,11 @@ public object DftByteArraySerializerImpl : IValSerializer<ByteArray> {
                 val bytes = ByteArray(buffer.remaining()).also { buffer.get(it) }
                 StrVal(bytes.decodeToString())
             }
-            Type.BOOL.byte -> BoolVal(buffer.get() == 1.toByte())
+            Type.BOOL.byte -> {
+                val payload = buffer.get()
+                require(payload in 0..1) { "Invalid BOOL payload: $payload" }
+                BoolVal(payload == 1.toByte())
+            }
             Type.UNSURE_ANY.byte -> Unsure.ANY
             Type.UNSURE_NUM.byte -> Unsure.NUM
             Type.UNSURE_STR.byte -> Unsure.STR

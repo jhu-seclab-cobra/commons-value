@@ -113,8 +113,6 @@ public object DftCharBufferSerializerImpl : IValSerializer<CharBuffer> {
                 } // key=value,...
                 charBuffer.typedPosition(charBuffer.position() - 1).put(':').typedFlip() // }
             }
-
-            else -> throw IllegalArgumentException("Unknown type: $value")
         }
 
     /**

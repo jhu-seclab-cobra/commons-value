@@ -107,8 +107,6 @@ public object DftByteBufferSerializerImpl : IValSerializer<ByteBuffer> {
                 elements.forEach { (k, v) -> buffer.putInt(k.size).put(k).put(v) }
                 buffer.typedFlip()
             }
-
-            else -> throw IllegalArgumentException("Unknown value type: $value")
         }
 
     /**
