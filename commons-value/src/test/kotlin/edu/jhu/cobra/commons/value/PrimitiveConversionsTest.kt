@@ -1,23 +1,5 @@
-package edu.jhu.cobra.commons.value.primitive
+package edu.jhu.cobra.commons.value
 
-import edu.jhu.cobra.commons.value.BoolVal
-import edu.jhu.cobra.commons.value.FloatVal
-import edu.jhu.cobra.commons.value.IntVal
-import edu.jhu.cobra.commons.value.NullVal
-import edu.jhu.cobra.commons.value.StrVal
-import edu.jhu.cobra.commons.value.Unsure
-import edu.jhu.cobra.commons.value.boolVal
-import edu.jhu.cobra.commons.value.compareTo
-import edu.jhu.cobra.commons.value.floatVal
-import edu.jhu.cobra.commons.value.intVal
-import edu.jhu.cobra.commons.value.isInByteRange
-import edu.jhu.cobra.commons.value.isInIntRange
-import edu.jhu.cobra.commons.value.isInLongRange
-import edu.jhu.cobra.commons.value.isInShortRange
-import edu.jhu.cobra.commons.value.primitiveVal
-import edu.jhu.cobra.commons.value.startsWith
-import edu.jhu.cobra.commons.value.strVal
-import edu.jhu.cobra.commons.value.toRegex
 import java.io.File
 import java.math.BigInteger
 import kotlin.io.path.Path
@@ -29,7 +11,7 @@ import kotlin.test.assertIs
 import kotlin.test.assertTrue
 
 /**
- * Black-box tests for PrimitiveUtils extension functions derived from the design doc.
+ * Black-box tests for the primitive conversion extension functions derived from the design doc.
  *
  * - `should wrap String as StrVal` — String.strVal
  * - `should wrap empty String as StrVal` — String.strVal boundary
@@ -76,6 +58,15 @@ import kotlin.test.assertTrue
  * - `should return true from isInIntRange for Int MIN_VALUE` — isInIntRange boundary
  * - `should return true from isInIntRange for zero` — isInIntRange representative
  * - `should return false from isInIntRange for Long MAX_VALUE` — isInIntRange out
+ * - `should return false from isInLongRange for NaN` — isInLongRange non-finite
+ * - `should return false from isInIntRange for NaN` — isInIntRange non-finite
+ * - `should return false from isInShortRange for NaN` — isInShortRange non-finite
+ * - `should return false from isInByteRange for NaN` — isInByteRange non-finite
+ * - `should return false from isInIntRange for positive infinity` — isInIntRange non-finite
+ * - `should return false from isInIntRange for negative infinity` — isInIntRange non-finite
+ * - `should return true from isInIntRange for fractional value inside range` — isInIntRange fractional in
+ * - `should return false from isInIntRange for fractional value beyond Int MAX` — isInIntRange fractional out
+ * - `should return false from isInShortRange for double beyond Long precision` — isInShortRange exact magnitude
  * - `should return true from isInShortRange for Short MAX_VALUE` — isInShortRange boundary
  * - `should return true from isInShortRange for Short MIN_VALUE` — isInShortRange boundary
  * - `should return true from isInShortRange for zero` — isInShortRange representative
@@ -124,7 +115,7 @@ import kotlin.test.assertTrue
  * - `should compare IntVal less than FloatVal cross-type` — compareTo IntVal vs FloatVal
  * - `should compare FloatVal greater than IntVal cross-type` — compareTo FloatVal vs IntVal
  */
-internal class PrimitiveUtilsTest {
+internal class PrimitiveConversionsTest {
     // --- String.strVal / Char.strVal / Path.strVal / File.strVal ---
 
     @Test
@@ -397,6 +388,53 @@ internal class PrimitiveUtilsTest {
     @Test
     fun `should return false from isInIntRange for Long MAX_VALUE`() {
         assertFalse(Long.MAX_VALUE.isInIntRange)
+    }
+
+    // --- non-finite and fractional inputs (BigDecimal-exact path) ---
+
+    @Test
+    fun `should return false from isInLongRange for NaN`() {
+        assertFalse(Double.NaN.isInLongRange)
+    }
+
+    @Test
+    fun `should return false from isInIntRange for NaN`() {
+        assertFalse(Double.NaN.isInIntRange)
+    }
+
+    @Test
+    fun `should return false from isInShortRange for NaN`() {
+        assertFalse(Double.NaN.isInShortRange)
+    }
+
+    @Test
+    fun `should return false from isInByteRange for NaN`() {
+        assertFalse(Double.NaN.isInByteRange)
+    }
+
+    @Test
+    fun `should return false from isInIntRange for positive infinity`() {
+        assertFalse(Double.POSITIVE_INFINITY.isInIntRange)
+    }
+
+    @Test
+    fun `should return false from isInIntRange for negative infinity`() {
+        assertFalse(Double.NEGATIVE_INFINITY.isInIntRange)
+    }
+
+    @Test
+    fun `should return true from isInIntRange for fractional value inside range`() {
+        assertTrue(2.5.isInIntRange)
+    }
+
+    @Test
+    fun `should return false from isInIntRange for fractional value beyond Int MAX`() {
+        assertFalse((Int.MAX_VALUE.toDouble() + 0.5).isInIntRange)
+    }
+
+    @Test
+    fun `should return false from isInShortRange for double beyond Long precision`() {
+        assertFalse(1.0E19.isInShortRange)
     }
 
     // --- Number.isInShortRange ---
