@@ -15,7 +15,7 @@ package edu.jhu.cobra.commons.value
  *
  * @property core Always `null`, representing the null value.
  */
-data object NullVal : IPrimitiveVal {
+public data object NullVal : IPrimitiveVal {
     /**
      * The core value of this instance, which is always `null`.
      *
@@ -25,7 +25,7 @@ data object NullVal : IPrimitiveVal {
      * ```
      */
 
-    override val core = null
+    override val core: Nothing? = null
 
     /**
      * Provides a string representation of this null value.
@@ -39,7 +39,7 @@ data object NullVal : IPrimitiveVal {
      */
     override fun toString(): String = "NullVal"
 
-    infix fun isNull(value: IValue): Boolean = value is NullVal
+    public infix fun isNull(value: IValue): Boolean = value is NullVal
 
-    infix fun isNotNull(value: IValue): Boolean = value !is NullVal
+    public infix fun isNotNull(value: IValue): Boolean = value !is NullVal
 }

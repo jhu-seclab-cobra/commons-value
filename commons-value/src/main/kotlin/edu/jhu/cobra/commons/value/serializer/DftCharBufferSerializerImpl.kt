@@ -22,7 +22,7 @@ import java.nio.CharBuffer
  * and content in a structured textual format. The deserialization process reconstructs [IValue]
  * instances from their serialized representation.
  */
-object DftCharBufferSerializerImpl : IValSerializer<CharBuffer> {
+public object DftCharBufferSerializerImpl : IValSerializer<CharBuffer> {
     /**
      * Serializes an [IValue] instance into a [CharBuffer].
      *

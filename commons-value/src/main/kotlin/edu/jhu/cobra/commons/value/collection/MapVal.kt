@@ -16,7 +16,7 @@ import kotlin.math.ceil
  * println(mapVal.size) // Outputs: 3
  * ```
  */
-class MapVal(
+public class MapVal(
     override val core: HashMap<String, IValue> = HashMap(),
 ) : ICollectionVal {
     override fun equals(other: Any?): Boolean = this === other || (other is MapVal && core == other.core)
@@ -28,23 +28,23 @@ class MapVal(
      *
      * @return The number of key-value pairs in the map.
      */
-    val size: Int get() = core.size
+    public val size: Int get() = core.size
 
-    constructor(size: Int) : this(HashMap(ceil(size / 0.75).toInt()))
+    public constructor(size: Int) : this(HashMap(ceil(size / 0.75).toInt()))
 
     /**
      * Constructs a [MapVal] from an existing map of string keys and [IValue] values.
      *
      * @param value The map to initialize the [MapVal] with.
      */
-    constructor(value: Map<String, IValue>) : this(HashMap(value))
+    public constructor(value: Map<String, IValue>) : this(HashMap(value))
 
     /**
      * Constructs a [MapVal] from vararg key-value pairs.
      *
      * @param value Vararg key-value pairs to initialize the map with.
      */
-    constructor(
+    public constructor(
         vararg value: Pair<String, IValue>,
     ) : this(HashMap<String, IValue>(ceil(value.size / 0.75).toInt()).apply { value.forEach { (k, v) -> put(k, v) } })
 
@@ -53,14 +53,14 @@ class MapVal(
      *
      * @param values The sequence to initialize the map with.
      */
-    constructor(values: Sequence<Pair<String, IValue>>) : this(values.toMap())
+    public constructor(values: Sequence<Pair<String, IValue>>) : this(values.toMap())
 
     /**
      * Constructs a [MapVal] from a list of key-value pairs.
      *
      * @param values The list to initialize the map with.
      */
-    constructor(values: List<Pair<String, IValue>>) : this(values.toMap())
+    public constructor(values: List<Pair<String, IValue>>) : this(values.toMap())
 
     /**
      * Retrieves the value associated with the specified key.
@@ -68,7 +68,7 @@ class MapVal(
      * @param key The key to lookup.
      * @return The value associated with the key, or `null` if the key is not present.
      */
-    operator fun get(key: String): IValue? = core[key]
+    public operator fun get(key: String): IValue? = core[key]
 
     /**
      * Updates or adds a new key-value pair in the map.
@@ -76,7 +76,7 @@ class MapVal(
      * @param key The key to update or add.
      * @param value The value associated with the key.
      */
-    operator fun set(
+    public operator fun set(
         key: String,
         value: IValue,
     ) {
@@ -89,10 +89,10 @@ class MapVal(
      * @param key The key to add.
      * @param value The value to associate with the key.
      */
-    fun add(
+    public fun add(
         key: String,
         value: IValue,
-    ) = core.put(key, value)
+    ): IValue? = core.put(key, value)
 
     /**
      * Returns a new [MapVal] containing the entries of this map plus the given pair.
@@ -100,14 +100,14 @@ class MapVal(
      * @param pair The key-value pair to add.
      * @return A new [MapVal] with the pair added; this map is unchanged.
      */
-    operator fun plus(pair: Pair<String, IValue>): MapVal = MapVal(core + pair)
+    public operator fun plus(pair: Pair<String, IValue>): MapVal = MapVal(core + pair)
 
     /**
      * Adds a key-value pair to this map in place.
      *
      * @param pair The key-value pair to add.
      */
-    operator fun plusAssign(pair: Pair<String, IValue>) {
+    public operator fun plusAssign(pair: Pair<String, IValue>) {
         core[pair.first] = pair.second
     }
 
@@ -117,14 +117,14 @@ class MapVal(
      * @param key The key to remove.
      * @return A new [MapVal] without the key; this map is unchanged.
      */
-    operator fun minus(key: String): MapVal = MapVal(core - key)
+    public operator fun minus(key: String): MapVal = MapVal(core - key)
 
     /**
      * Removes the specified key from this map in place.
      *
      * @param key The key to remove.
      */
-    operator fun minusAssign(key: String) {
+    public operator fun minusAssign(key: String) {
         core.remove(key)
     }
 
@@ -134,23 +134,23 @@ class MapVal(
      * @param key The key to remove.
      * @return The removed value, or `null` if the key was not present.
      */
-    fun remove(key: String) = core.remove(key)
+    public fun remove(key: String): IValue? = core.remove(key)
 
     /**
      * Returns all keys in the map.
      *
      * @return A set containing all keys in the map.
      */
-    fun keys(): Set<String> = core.keys
+    public fun keys(): Set<String> = core.keys
 
     /**
      * Returns all values in the map.
      *
      * @return A collection of all values in the map.
      */
-    fun values(): Collection<IValue> = core.values
+    public fun values(): Collection<IValue> = core.values
 
-    fun forEach(action: (Map.Entry<String, IValue>) -> Unit) = core.forEach(action)
+    public fun forEach(action: (Map.Entry<String, IValue>) -> Unit): Unit = core.forEach(action)
 
     /**
      * Applies the given behavior function to each entry in the map.
@@ -158,22 +158,22 @@ class MapVal(
      * @param behavior The function to apply to each map entry.
      * @return A list of results produced by the behavior function.
      */
-    fun <R> map(behavior: (Map.Entry<String, IValue>) -> R): List<R> = core.map(behavior)
+    public fun <R> map(behavior: (Map.Entry<String, IValue>) -> R): List<R> = core.map(behavior)
 
-    fun <R> mapValues(behavior: (Map.Entry<String, IValue>) -> R) = core.mapValues { behavior(it) }
+    public fun <R> mapValues(behavior: (Map.Entry<String, IValue>) -> R): Map<String, R> = core.mapValues { behavior(it) }
 
-    fun <R> flatMap(behavior: (Map.Entry<String, IValue>) -> Iterable<R>): List<R> = core.flatMap(behavior)
+    public fun <R> flatMap(behavior: (Map.Entry<String, IValue>) -> Iterable<R>): List<R> = core.flatMap(behavior)
 
-    fun isEmpty() = core.isEmpty()
+    public fun isEmpty(): Boolean = core.isEmpty()
 
-    operator fun contains(key: String): Boolean = core.containsKey(key)
+    public operator fun contains(key: String): Boolean = core.containsKey(key)
 
     /**
      * Converts the map to an array of key-value pairs.
      *
      * @return An array of key-value pairs.
      */
-    fun toTypeArray(): Array<Pair<String, IValue>> {
+    public fun toTypeArray(): Array<Pair<String, IValue>> {
         val pairIterator = core.iterator() // get the iterator
         return Array(core.size) { pairIterator.next().toPair() }
     }
@@ -183,7 +183,7 @@ class MapVal(
      *
      * @return A list of key-value pairs.
      */
-    fun toList(): List<Pair<String, IValue>> = core.toList()
+    public fun toList(): List<Pair<String, IValue>> = core.toList()
 
     override fun toString(): String = core.map { (k, v) -> "$k=$v" }.joinToString(prefix = "{", postfix = "}")
 }

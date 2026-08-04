@@ -22,7 +22,7 @@ import java.nio.ByteBuffer
  * This serializer is designed to handle all supported [IValue] subtypes, providing methods to serialize
  * them into byte arrays and reconstruct them from those arrays.
  */
-object DftByteArraySerializerImpl : IValSerializer<ByteArray> {
+public object DftByteArraySerializerImpl : IValSerializer<ByteArray> {
     /**
      * Serializes an [IValue] instance into a byte array.
      *

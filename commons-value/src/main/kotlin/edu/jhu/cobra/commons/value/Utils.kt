@@ -7,7 +7,7 @@ package edu.jhu.cobra.commons.value
  * @return The [IValue] representing the current value.
  * @throws IllegalArgumentException If the value cannot be converted to an [IValue].
  */
-val Any?.toVal: IValue
+public val Any?.toVal: IValue
     get() =
         when (this) {
             null -> NullVal

@@ -12,7 +12,7 @@ import edu.jhu.cobra.commons.value.IValue
  *          This type parameter allows for implementations that work with various data representations,
  *          such as JSON, XML, binary formats, or even more domain-specific material types.
  */
-interface IValSerializer<Material : Any> {
+public interface IValSerializer<Material : Any> {
     /**
      * Serializes an [IValue] instance into the specified material format.
      *
@@ -29,7 +29,7 @@ interface IValSerializer<Material : Any> {
      * @param value The [IValue] instance to serialize.
      * @return The serialized material as an instance of [M].
      */
-    fun serialize(value: IValue): Material
+    public fun serialize(value: IValue): Material
 
     /**
      * Deserializes material of type [Material] into an [IValue] instance.
@@ -47,5 +47,5 @@ interface IValSerializer<Material : Any> {
      * @param material The material from which the value is to be deserialized.
      * @return The deserialized [IValue] instance.
      */
-    fun deserialize(material: Material): IValue
+    public fun deserialize(material: Material): IValue
 }

@@ -17,7 +17,7 @@ package edu.jhu.cobra.commons.value
  * println(uncertainNum) // Outputs: Unsure{__NumVal__}
  * ```
  */
-enum class Unsure(
+public enum class Unsure(
     override val core: String,
 ) : IPrimitiveVal {
     /**
@@ -41,7 +41,7 @@ enum class Unsure(
     BOOL("__BoolVal__"),
     ;
 
-    companion object {
+    public companion object {
         private val stringValues = entries.map { it.core }.toSet()
 
         /**
@@ -51,7 +51,7 @@ enum class Unsure(
          * @param core The string representing the uncertain type.
          * @return The corresponding [Unsure] instance or `null` if no match is found.
          */
-        fun new(core: String): Unsure? =
+        public fun new(core: String): Unsure? =
             when (core) {
                 STR.core -> STR
                 NUM.core -> NUM
@@ -74,7 +74,7 @@ enum class Unsure(
          * @param example The [IPrimitiveVal] example used to determine the uncertain type.
          * @return The corresponding [Unsure] instance: [STR], [NUM], [BOOL], or [ANY].
          */
-        fun new(example: IPrimitiveVal): Unsure =
+        public fun new(example: IPrimitiveVal): Unsure =
             when (example) {
                 is StrVal -> STR
                 is IntVal -> NUM
@@ -90,7 +90,7 @@ enum class Unsure(
          *
          * @return The corresponding [Unsure] instance: [STR], [NUM], [BOOL], or [ANY].
          */
-        inline fun <reified T : IPrimitiveVal> new(): Unsure =
+        public inline fun <reified T : IPrimitiveVal> new(): Unsure =
             when (T::class) {
                 StrVal::class -> STR
                 IntVal::class -> NUM
@@ -105,7 +105,7 @@ enum class Unsure(
          * @param string The string to check for containment.
          * @return `true` if the string is contained in the predefined values; otherwise, `false`.
          */
-        operator fun contains(string: String): Boolean = string in stringValues
+        public operator fun contains(string: String): Boolean = string in stringValues
     }
 
     override fun toString(): String = "Unsure{$core}"

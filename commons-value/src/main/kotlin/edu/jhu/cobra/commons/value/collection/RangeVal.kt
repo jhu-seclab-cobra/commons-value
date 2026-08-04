@@ -6,7 +6,7 @@ package edu.jhu.cobra.commons.value
  * @property start The starting value of the range.
  * @property endInclusive The ending value of the range, inclusive.
  */
-data class RangeVal(
+public data class RangeVal(
     val start: IntVal,
     val endInclusive: IntVal,
 ) : ICollectionVal {
@@ -28,7 +28,7 @@ data class RangeVal(
      * @param start The starting value of the range.
      * @param endInclusive The ending value of the range, inclusive.
      */
-    constructor(start: Long, endInclusive: Long) : this(IntVal(start), IntVal(endInclusive))
+    public constructor(start: Long, endInclusive: Long) : this(IntVal(start), IntVal(endInclusive))
 
     /**
      * Constructs a [RangeVal] from two [Number] values representing the start and end.
@@ -36,7 +36,7 @@ data class RangeVal(
      * @param start The starting value of the range.
      * @param endInclude The ending value of the range, inclusive.
      */
-    constructor(start: Number, endInclude: Number) : this(start.toLong(), endInclude.toLong())
+    public constructor(start: Number, endInclude: Number) : this(start.toLong(), endInclude.toLong())
 
     /**
      * Checks if the specified number is within the range.
@@ -44,7 +44,7 @@ data class RangeVal(
      * @param num The number to check.
      * @return `true` if the number is within the range, `false` otherwise.
      */
-    operator fun contains(num: Number): Boolean = first.toDouble() <= num.toDouble() && num.toDouble() <= last.toDouble()
+    public operator fun contains(num: Number): Boolean = first.toDouble() <= num.toDouble() && num.toDouble() <= last.toDouble()
 
     /**
      * Checks if the specified [IntVal] is within the range.
@@ -52,7 +52,7 @@ data class RangeVal(
      * @param num The [IntVal] to check.
      * @return `true` if the [IntVal] is within the range, `false` otherwise.
      */
-    operator fun contains(num: IntVal): Boolean = first <= num.core && num.core <= last
+    public operator fun contains(num: IntVal): Boolean = first <= num.core && num.core <= last
 
     /**
      * Checks if the specified [RangeVal] is fully within this range.
@@ -60,7 +60,7 @@ data class RangeVal(
      * @param range The [RangeVal] to check.
      * @return `true` if the range is within this range, `false` otherwise.
      */
-    operator fun contains(range: RangeVal): Boolean = range.first in this && range.last in this
+    public operator fun contains(range: RangeVal): Boolean = range.first in this && range.last in this
 
     /**
      * Checks if the specified [Long] is within the range.
@@ -68,7 +68,7 @@ data class RangeVal(
      * @param num The [Long] to check.
      * @return `true` if the value is within the range, `false` otherwise.
      */
-    operator fun contains(num: Long): Boolean = first <= num && num <= last
+    public operator fun contains(num: Long): Boolean = first <= num && num <= last
 
     /**
      * Determines if this range ends before another range starts.
@@ -76,7 +76,7 @@ data class RangeVal(
      * @param range The range to compare.
      * @return `true` if this range ends before the other starts, `false` otherwise.
      */
-    infix fun before(range: RangeVal): Boolean = this.last <= range.first
+    public infix fun before(range: RangeVal): Boolean = this.last <= range.first
 
     /**
      * Determines if this range starts after another range ends.
@@ -84,7 +84,7 @@ data class RangeVal(
      * @param range The range to compare.
      * @return `true` if this range starts after the other ends, `false` otherwise.
      */
-    infix fun after(range: RangeVal): Boolean = this.first >= range.last
+    public infix fun after(range: RangeVal): Boolean = this.first >= range.last
 
     /**
      * Combines two ranges into a new one, covering the smallest start to the largest end.
@@ -92,7 +92,7 @@ data class RangeVal(
      * @param range The other range to combine with.
      * @return A new [RangeVal] representing the combined range.
      */
-    operator fun plus(range: RangeVal): RangeVal {
+    public operator fun plus(range: RangeVal): RangeVal {
         val newStart = if (this.first <= range.first) this.start else range.start
         val newEnd = if (this.last >= range.last) this.endInclusive else range.endInclusive
         return RangeVal(newStart, newEnd)
@@ -104,7 +104,7 @@ data class RangeVal(
      * @param transform The transformation function to apply.
      * @return A list of two transformed values (start and end).
      */
-    fun <R> map(transform: (IntVal) -> R): List<R> = listOf(transform(start), transform(endInclusive))
+    public fun <R> map(transform: (IntVal) -> R): List<R> = listOf(transform(start), transform(endInclusive))
 
     override fun toString(): String = "$first:$last"
 }

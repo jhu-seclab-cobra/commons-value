@@ -25,7 +25,7 @@ import java.nio.ByteBuffer
  * This serializer ensures compatibility with all supported [IValue] subtypes and provides robust
  * handling of both basic and complex data structures.
  */
-object DftByteBufferSerializerImpl : IValSerializer<ByteBuffer> {
+public object DftByteBufferSerializerImpl : IValSerializer<ByteBuffer> {
     /**
      * Serializes an [IValue] instance into a [ByteBuffer].
      *

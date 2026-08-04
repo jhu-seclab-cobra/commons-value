@@ -26,7 +26,7 @@ private val BIG_LONG_MIN_VALUE = BigDecimal.valueOf(Long.MIN_VALUE)
  *
  * @return `true` if the number can be represented as a [Long], `false` otherwise
  */
-val Number.isInLongRange: Boolean
+public val Number.isInLongRange: Boolean
     get() =
         when (this) {
             is Byte, is Short, is Int, is Long -> true
@@ -50,7 +50,7 @@ val Number.isInLongRange: Boolean
  *
  * @return `true` if the number can be represented as an [Int], `false` otherwise
  */
-val Number.isInIntRange: Boolean
+public val Number.isInIntRange: Boolean
     get() = toLong().let { it >= Int.MIN_VALUE && it <= Int.MAX_VALUE }
 
 /**
@@ -70,7 +70,7 @@ val Number.isInIntRange: Boolean
  *
  * @return `true` if the number can be represented as a [Short], `false` otherwise
  */
-val Number.isInShortRange: Boolean
+public val Number.isInShortRange: Boolean
     get() = toLong().let { it >= Short.MIN_VALUE && it <= Short.MAX_VALUE }
 
 /**
@@ -90,7 +90,7 @@ val Number.isInShortRange: Boolean
  *
  * @return `true` if the number can be represented as a [Byte], `false` otherwise
  */
-val Number.isInByteRange: Boolean
+public val Number.isInByteRange: Boolean
     get() = toLong().let { it >= Byte.MIN_VALUE && it <= Byte.MAX_VALUE }
 
 /**
@@ -98,42 +98,42 @@ val Number.isInByteRange: Boolean
  *
  * @return An [IntVal] containing this value
  */
-val Long.intVal: IntVal get() = IntVal(this)
+public val Long.intVal: IntVal get() = IntVal(this)
 
 /**
  * Converts this [Int] to an [IntVal] representation.
  *
  * @return An [IntVal] containing this value widened to [Long]
  */
-val Int.intVal: IntVal get() = IntVal(this.toLong())
+public val Int.intVal: IntVal get() = IntVal(this.toLong())
 
 /**
  * Converts this [Short] to an [IntVal] representation.
  *
  * @return An [IntVal] containing this value widened to [Long]
  */
-val Short.intVal: IntVal get() = IntVal(this.toLong())
+public val Short.intVal: IntVal get() = IntVal(this.toLong())
 
 /**
  * Converts this [Byte] to an [IntVal] representation.
  *
  * @return An [IntVal] containing this value widened to [Long]
  */
-val Byte.intVal: IntVal get() = IntVal(this.toLong())
+public val Byte.intVal: IntVal get() = IntVal(this.toLong())
 
 /**
  * Converts this [Double] to a [FloatVal] representation.
  *
  * @return A [FloatVal] containing this value
  */
-val Double.floatVal: FloatVal get() = FloatVal(this)
+public val Double.floatVal: FloatVal get() = FloatVal(this)
 
 /**
  * Converts this [Float] to a [FloatVal] representation.
  *
  * @return A [FloatVal] containing this value widened to [Double]
  */
-val Float.floatVal: FloatVal get() = FloatVal(this.toDouble())
+public val Float.floatVal: FloatVal get() = FloatVal(this.toDouble())
 
 /**
  * Parses this string as an integer and converts it to an [IntVal].
@@ -141,7 +141,7 @@ val Float.floatVal: FloatVal get() = FloatVal(this.toDouble())
  * @return An [IntVal] containing the parsed value
  * @throws ParseException if the string cannot be parsed as an integer
  */
-val String.intVal: IntVal
+public val String.intVal: IntVal
     get() {
         val longNum = toLongOrNull() ?: throw ParseException("Cannot parse '$this' as integer", 0)
         return IntVal(longNum)
@@ -153,7 +153,7 @@ val String.intVal: IntVal
  * @return A [FloatVal] containing the parsed value
  * @throws ParseException if the string cannot be parsed as a float
  */
-val String.floatVal: FloatVal
+public val String.floatVal: FloatVal
     get() {
         val doubleNum = toDoubleOrNull() ?: throw ParseException("Cannot parse '$this' as float", 0)
         return FloatVal(doubleNum)
@@ -173,7 +173,7 @@ val String.floatVal: FloatVal
  *
  * @return A [StrVal] containing this string
  */
-val String.strVal: StrVal get() = StrVal(this)
+public val String.strVal: StrVal get() = StrVal(this)
 
 /**
  * Converts this character to a [StrVal] representation.
@@ -189,7 +189,7 @@ val String.strVal: StrVal get() = StrVal(this)
  *
  * @return A [StrVal] containing this character as a string
  */
-val Char.strVal: StrVal get() = StrVal(this.toString())
+public val Char.strVal: StrVal get() = StrVal(this.toString())
 
 /**
  * Converts this file path to a [StrVal] representation.
@@ -205,7 +205,7 @@ val Char.strVal: StrVal get() = StrVal(this.toString())
  *
  * @return A [StrVal] containing the string representation of this path
  */
-val Path.strVal: StrVal get() = StrVal(this.pathString)
+public val Path.strVal: StrVal get() = StrVal(this.pathString)
 
 /**
  * Converts this file to a [StrVal] representation.
@@ -220,7 +220,7 @@ val Path.strVal: StrVal get() = StrVal(this.pathString)
  *
  * @return A [StrVal] containing the path of this file
  */
-val File.strVal: StrVal get() = StrVal(this.path)
+public val File.strVal: StrVal get() = StrVal(this.path)
 
 /**
  * Checks if this string starts with the string contained in the specified [StrVal].
@@ -237,7 +237,7 @@ val File.strVal: StrVal get() = StrVal(this.path)
  * @param other The [StrVal] to check against
  * @return `true` if this string starts with the content of [other], `false` otherwise
  */
-fun String.startsWith(other: StrVal): Boolean = startsWith(other.core)
+public fun String.startsWith(other: StrVal): Boolean = startsWith(other.core)
 
 /**
  * Converts this [StrVal] to a [Regex] pattern, with special character escaping and pattern substitution.
@@ -262,7 +262,7 @@ fun String.startsWith(other: StrVal): Boolean = startsWith(other.core)
  * @param doCaseIgnore Whether to make the regex case-insensitive
  * @return A [Regex] object based on this [StrVal]'s content
  */
-fun StrVal.toRegex(doCaseIgnore: Boolean = false): Regex {
+public fun StrVal.toRegex(doCaseIgnore: Boolean = false): Regex {
     val tarChars = ".^$*+?-()[]{}\\|".toSet()
     val sBuilder = StringBuilder()
     core.forEach { sBuilder.append(if (it in tarChars) "\\$it" else "$it") }
@@ -288,7 +288,7 @@ fun StrVal.toRegex(doCaseIgnore: Boolean = false): Regex {
  *
  * @return A string containing the regular expression pattern corresponding to the current [Unsure] type.
  */
-fun Unsure.toRegex(doCaseIgnore: Boolean = false) =
+public fun Unsure.toRegex(doCaseIgnore: Boolean = false): Regex =
     when (this) {
         Unsure.ANY -> ".*"
         Unsure.STR -> ".*"
@@ -310,7 +310,7 @@ fun Unsure.toRegex(doCaseIgnore: Boolean = false) =
  *
  * @return [BoolVal.T] if this boolean is `true`, [BoolVal.F] if `false`
  */
-val Boolean.boolVal: BoolVal get() = if (this) BoolVal.T else BoolVal.F
+public val Boolean.boolVal: BoolVal get() = if (this) BoolVal.T else BoolVal.F
 
 /**
  * Converts any value to its corresponding [IPrimitiveVal] representation.
@@ -326,7 +326,7 @@ val Boolean.boolVal: BoolVal get() = if (this) BoolVal.T else BoolVal.F
  * @return An [IPrimitiveVal] representing this value
  * @throws IllegalArgumentException if the value cannot be converted to an [IPrimitiveVal]
  */
-val Any?.primitiveVal: IPrimitiveVal
+public val Any?.primitiveVal: IPrimitiveVal
     get() =
         when (this) {
             null -> NullVal
@@ -358,7 +358,7 @@ val Any?.primitiveVal: IPrimitiveVal
  *         a positive number if this value is greater than [other]
  * @throws IllegalArgumentException if comparing incompatible types
  */
-operator fun IPrimitiveVal.compareTo(other: IPrimitiveVal): Int =
+public operator fun IPrimitiveVal.compareTo(other: IPrimitiveVal): Int =
     when {
         this is StrVal && other is StrVal -> core.compareTo(other.core)
         this is BoolVal && other is BoolVal -> core.compareTo(other.core)

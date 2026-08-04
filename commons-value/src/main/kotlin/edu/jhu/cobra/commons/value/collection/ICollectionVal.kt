@@ -21,4 +21,4 @@ package edu.jhu.cobra.commons.value
  * val rangeVal: ICollectionVal = RangeVal(IntVal(1), IntVal(10))
  * ```
  */
-sealed interface ICollectionVal : IValue
+public sealed interface ICollectionVal : IValue

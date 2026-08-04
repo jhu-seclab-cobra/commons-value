@@ -14,4 +14,4 @@ package edu.jhu.cobra.commons.value
  *
  * @property core Holds the actual value of the primitive type.
  */
-sealed interface IPrimitiveVal : IValue
+public sealed interface IPrimitiveVal : IValue

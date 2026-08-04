@@ -17,7 +17,7 @@ package edu.jhu.cobra.commons.value
  *
  * @property core The internal list of [IValue] elements.
  */
-class ListVal(
+public class ListVal(
     override val core: ArrayList<IValue> = ArrayList(5),
 ) : ICollectionVal {
     override fun equals(other: Any?): Boolean = this === other || (other is ListVal && core == other.core)
@@ -39,7 +39,7 @@ class ListVal(
      * @param size The initial capacity of the list. Must be a non-negative integer.
      * @throws IllegalArgumentException If the [size] is negative.
      */
-    constructor(size: Int) : this(ArrayList(size))
+    public constructor(size: Int) : this(ArrayList(size))
 
     /**
      * Constructs a [ListVal] from an existing list of [IValue] objects.
@@ -56,7 +56,7 @@ class ListVal(
      *
      * @param value The list to initialize the [ListVal] with. The input list is copied.
      */
-    constructor(value: List<IValue>) : this(ArrayList(value))
+    public constructor(value: List<IValue>) : this(ArrayList(value))
 
     /**
      * Constructs a [ListVal] from a variable number of [IValue] elements.
@@ -71,7 +71,7 @@ class ListVal(
      *
      * @param value Vararg elements to initialize the [ListVal] with.
      */
-    constructor(vararg value: IValue) : this(ArrayList<IValue>(value.size).apply { addAll(value) })
+    public constructor(vararg value: IValue) : this(ArrayList<IValue>(value.size).apply { addAll(value) })
 
     /**
      * Retrieves the element at the specified [index].
@@ -89,7 +89,7 @@ class ListVal(
      * @return The [IValue] at the specified index.
      * @throws IndexOutOfBoundsException If the [index] is out of the valid range.
      */
-    operator fun get(index: Int): IValue = core[index]
+    public operator fun get(index: Int): IValue = core[index]
 
     /**
      * Updates the element at the specified [index] with a new value.
@@ -109,7 +109,7 @@ class ListVal(
      * @param value The new [IValue] to set at the specified position.
      * @throws IndexOutOfBoundsException If [index] is out of the list's range.
      */
-    operator fun set(
+    public operator fun set(
         index: Int,
         value: IValue,
     ) {
@@ -130,7 +130,7 @@ class ListVal(
      *
      * @return The total number of elements in the list.
      */
-    val size: Int get() = core.size
+    public val size: Int get() = core.size
 
     /**
      * Determines whether the list contains the specified element.
@@ -147,7 +147,7 @@ class ListVal(
      * @param value The [IValue] element to check for.
      * @return `true` if the element exists in the list, `false` otherwise.
      */
-    fun contains(value: IValue): Boolean = core.contains(value)
+    public fun contains(value: IValue): Boolean = core.contains(value)
 
     /**
      * Determines whether the list contains all elements from the specified collection.
@@ -167,7 +167,7 @@ class ListVal(
      * @param values A collection of [IValue] elements to check for.
      * @return `true` if all elements in the collection are found in the list, `false` otherwise.
      */
-    fun containsAll(values: Collection<IValue>): Boolean = core.containsAll(values)
+    public fun containsAll(values: Collection<IValue>): Boolean = core.containsAll(values)
 
     /**
      * Retrieves the index of the first occurrence of the specified element in the list.
@@ -185,7 +185,7 @@ class ListVal(
      * @param value The [IValue] element to search for.
      * @return The zero-based index of the first occurrence of the [value], or `-1` if not found.
      */
-    fun indexOf(value: IValue): Int = core.indexOf(value)
+    public fun indexOf(value: IValue): Int = core.indexOf(value)
 
     /**
      * Retrieves the index of the last occurrence of the specified element in the list.
@@ -203,7 +203,7 @@ class ListVal(
      * @param value The [IValue] element to search for.
      * @return The zero-based index of the last occurrence of the [value], or `-1` if not found.
      */
-    fun lastIndexOf(value: IValue): Int = core.lastIndexOf(value)
+    public fun lastIndexOf(value: IValue): Int = core.lastIndexOf(value)
 
     /**
      * Retrieves a sublist of elements from the current list within the specified range.
@@ -225,7 +225,7 @@ class ListVal(
      * @throws IndexOutOfBoundsException If [fromIndex] or [toIndex] is out of bounds.
      * @throws IllegalArgumentException If [fromIndex] is greater than [toIndex].
      */
-    fun subList(
+    public fun subList(
         fromIndex: Int,
         toIndex: Int,
     ): ListVal = ListVal(core.subList(fromIndex, toIndex))
@@ -247,7 +247,7 @@ class ListVal(
      * @param value The [IValue] to add to the list.
      * @return A new [ListVal] with the [value] appended.
      */
-    operator fun plus(value: IValue): ListVal = ListVal(core + value)
+    public operator fun plus(value: IValue): ListVal = ListVal(core + value)
 
     /**
      * Adds the specified [value] to the end of the current list.
@@ -263,7 +263,7 @@ class ListVal(
      *
      * @param value The [IValue] to add to the list.
      */
-    operator fun plusAssign(value: IValue) {
+    public operator fun plusAssign(value: IValue) {
         core.add(value)
     }
 
@@ -285,7 +285,7 @@ class ListVal(
      * @param value The [IValue] to remove from the list.
      * @return A new [ListVal] with the [value] removed.
      */
-    operator fun minus(value: IValue): ListVal = ListVal(core - value)
+    public operator fun minus(value: IValue): ListVal = ListVal(core - value)
 
     /**
      * Removes the specified [value] from the current list.
@@ -302,7 +302,7 @@ class ListVal(
      *
      * @param value The [IValue] to remove from the list.
      */
-    operator fun minusAssign(value: IValue) {
+    public operator fun minusAssign(value: IValue) {
         core.remove(value)
     }
 
@@ -311,14 +311,14 @@ class ListVal(
      *
      * @return `true` if the list is empty, `false` otherwise.
      */
-    fun isEmpty(): Boolean = core.isEmpty()
+    public fun isEmpty(): Boolean = core.isEmpty()
 
     /**
      * Checks if the list is not empty.
      *
      * @return `true` if the list is not empty, `false` otherwise.
      */
-    fun isNotEmpty(): Boolean = core.isNotEmpty()
+    public fun isNotEmpty(): Boolean = core.isNotEmpty()
 
     /**
      * Maps each element of the list to another value using the provided transformation function.
@@ -326,7 +326,7 @@ class ListVal(
      * @param transform The transformation function to apply.
      * @return A list containing the results of the transformation.
      */
-    fun <R> map(transform: (IValue) -> R): List<R> = core.map(transform)
+    public fun <R> map(transform: (IValue) -> R): List<R> = core.map(transform)
 
     /**
      * Flattens the list by applying a transformation function to each element that returns a list.
@@ -334,28 +334,28 @@ class ListVal(
      * @param transform The transformation function to apply.
      * @return A flattened list resulting from applying the transformation to each element.
      */
-    fun <R> flatMap(transform: (IValue) -> List<R>): List<R> = core.flatMap(transform)
+    public fun <R> flatMap(transform: (IValue) -> List<R>): List<R> = core.flatMap(transform)
 
     /**
      * Applies the given action to each element in the list.
      *
      * @param action The action to perform on each element.
      */
-    fun forEach(action: (IValue) -> Unit) = core.forEach(action)
+    public fun forEach(action: (IValue) -> Unit): Unit = core.forEach(action)
 
     /**
      * Returns a sequence of the elements in the list.
      *
      * @return A sequence of [IValue] elements.
      */
-    fun asSequence(): Sequence<IValue> = core.asSequence()
+    public fun asSequence(): Sequence<IValue> = core.asSequence()
 
     /**
      * Converts the list to a mutable set.
      *
      * @return A mutable set containing the elements of the list.
      */
-    fun toMutableSet() = linkedSetOf<IValue>().apply { addAll(core) }
+    public fun toMutableSet(): LinkedHashSet<IValue> = linkedSetOf<IValue>().apply { addAll(core) }
 
     override fun toString(): String = core.joinToString(prefix = "[", postfix = "]")
 }

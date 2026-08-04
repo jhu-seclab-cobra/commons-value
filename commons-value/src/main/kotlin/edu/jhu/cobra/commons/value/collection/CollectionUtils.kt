@@ -15,7 +15,7 @@ package edu.jhu.cobra.commons.value
  * @return A [ListVal] containing the converted elements
  * @throws IllegalArgumentException if any element cannot be converted to an [IValue]
  */
-val Collection<*>.listVal: ListVal get() = ListVal(map { it.toVal })
+public val Collection<*>.listVal: ListVal get() = ListVal(map { it.toVal })
 
 /**
  * Converts a collection of values into a [SetVal].
@@ -32,7 +32,7 @@ val Collection<*>.listVal: ListVal get() = ListVal(map { it.toVal })
  * @return A [SetVal] containing the unique converted elements
  * @throws IllegalArgumentException if any element cannot be converted to an [IValue]
  */
-val Collection<*>.setVal: SetVal get() = SetVal(map { it.toVal })
+public val Collection<*>.setVal: SetVal get() = SetVal(map { it.toVal })
 
 /**
  * Returns the current [ListVal] or an empty one if null.
@@ -49,7 +49,7 @@ val Collection<*>.setVal: SetVal get() = SetVal(map { it.toVal })
  *
  * @return The original [ListVal] if not null, otherwise a new empty [ListVal]
  */
-fun ListVal?.orEmpty(): ListVal = this ?: ListVal()
+public fun ListVal?.orEmpty(): ListVal = this ?: ListVal()
 
 /**
  * Converts a map to a [MapVal].
@@ -66,7 +66,7 @@ fun ListVal?.orEmpty(): ListVal = this ?: ListVal()
  * @return A [MapVal] containing the converted key-value pairs
  * @throws IllegalArgumentException if any value cannot be converted to an [IValue]
  */
-val Map<*, *>.mapVal: MapVal get() = MapVal(asSequence().map { it.key.toString() to it.value.toVal })
+public val Map<*, *>.mapVal: MapVal get() = MapVal(asSequence().map { it.key.toString() to it.value.toVal })
 
 /**
  * Returns the current [MapVal] or an empty one if null.
@@ -83,7 +83,7 @@ val Map<*, *>.mapVal: MapVal get() = MapVal(asSequence().map { it.key.toString()
  *
  * @return The original [MapVal] if not null, otherwise a new empty [MapVal]
  */
-fun MapVal?.orEmpty(): MapVal = this ?: MapVal()
+public fun MapVal?.orEmpty(): MapVal = this ?: MapVal()
 
 /**
  * Converts a set to a [SetVal].
@@ -100,7 +100,7 @@ fun MapVal?.orEmpty(): MapVal = this ?: MapVal()
  * @return A [SetVal] containing the converted elements
  * @throws IllegalArgumentException if any element cannot be converted to an [IValue]
  */
-val Set<*>.setVal: SetVal get() = SetVal(map { it.toVal })
+public val Set<*>.setVal: SetVal get() = SetVal(map { it.toVal })
 
 /**
  * Returns the current [SetVal] or an empty one if null.
@@ -117,7 +117,7 @@ val Set<*>.setVal: SetVal get() = SetVal(map { it.toVal })
  *
  * @return The original [SetVal] if not null, otherwise a new empty [SetVal]
  */
-fun SetVal?.orEmpty(): SetVal = this ?: SetVal()
+public fun SetVal?.orEmpty(): SetVal = this ?: SetVal()
 
 /**
  * Converts an [IntRange] to a [RangeVal].
@@ -133,4 +133,4 @@ fun SetVal?.orEmpty(): SetVal = this ?: SetVal()
  *
  * @return A [RangeVal] representing the same range of integers
  */
-val IntRange.rangeVal: RangeVal get() = RangeVal(first, last)
+public val IntRange.rangeVal: RangeVal get() = RangeVal(first, last)

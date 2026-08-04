@@ -15,9 +15,9 @@ import java.nio.CharBuffer
  * @property byte The byte representation of the type.
  * @property str The string label for the type.
  */
-enum class Type(
-    val byte: Byte,
-    val str: String,
+public enum class Type(
+    public val byte: Byte,
+    public val str: String,
 ) {
     NULL(10, "Null"),
     STR(20, "Str"),
@@ -46,7 +46,7 @@ enum class Type(
 /**
  * Converts a [Number] to [IntVal] if it is an integer type, or [FloatVal] otherwise.
  */
-fun Number.toIntOrFloatVal(): IPrimitiveVal =
+public fun Number.toIntOrFloatVal(): IPrimitiveVal =
     when (this) {
         is Byte, is Short, is Int, is Long -> IntVal(toLong())
         else -> FloatVal(toDouble())
@@ -60,7 +60,7 @@ fun Number.toIntOrFloatVal(): IPrimitiveVal =
  * @return The parsed [Number] instance
  * @throws NumberFormatException if the string cannot be parsed as a number
  */
-fun String.asNumber(): Number = NumberUtils.createNumber(this)
+public fun String.asNumber(): Number = NumberUtils.createNumber(this)
 
 /**
  * Converts a hexadecimal string into an integer.
@@ -68,14 +68,14 @@ fun String.asNumber(): Number = NumberUtils.createNumber(this)
  * @return The decimal integer value of the hexadecimal string
  * @throws NumberFormatException if the string is not a valid hexadecimal number
  */
-fun String.asHexInt(): Int = Integer.parseInt(this, 16)
+public fun String.asHexInt(): Int = Integer.parseInt(this, 16)
 
 /**
  * Converts an integer into its hexadecimal string representation.
  *
  * @return The hexadecimal string representation of the integer
  */
-fun Int.asHexString(): String = Integer.toHexString(this)
+public fun Int.asHexString(): String = Integer.toHexString(this)
 
 /**
  * Validates a size or count prefix decoded from serialized material.
@@ -102,7 +102,7 @@ internal fun checkSizePrefix(
  * @return A byte array containing the read bytes
  * @throws IllegalArgumentException if [size] is negative or exceeds the remaining bytes
  */
-fun ByteBuffer.getArray(size: Int) = ByteArray(checkSizePrefix(size, remaining(), "byte array size")).also { get(it) }
+public fun ByteBuffer.getArray(size: Int): ByteArray = ByteArray(checkSizePrefix(size, remaining(), "byte array size")).also { get(it) }
 
 /**
  * Reads a string from the [ByteBuffer].
@@ -114,7 +114,7 @@ fun ByteBuffer.getArray(size: Int) = ByteArray(checkSizePrefix(size, remaining()
  * @return The decoded string from the buffer
  * @throws IllegalArgumentException if the size is negative or exceeds the remaining bytes
  */
-fun ByteBuffer.getString(size: Int? = null): String = getArray(size ?: getInt()).decodeToString()
+public fun ByteBuffer.getString(size: Int? = null): String = getArray(size ?: getInt()).decodeToString()
 
 /**
  * Creates a [ByteBuffer] from a variable number of byte elements.
@@ -122,7 +122,7 @@ fun ByteBuffer.getString(size: Int? = null): String = getArray(size ?: getInt())
  * @param elements The byte elements to wrap into a buffer
  * @return A [ByteBuffer] containing the provided elements
  */
-fun byteBufferOf(vararg elements: Byte): ByteBuffer = ByteBuffer.wrap(elements)
+public fun byteBufferOf(vararg elements: Byte): ByteBuffer = ByteBuffer.wrap(elements)
 
 /**
  * Puts a [Type] into the [ByteBuffer] by adding its byte representation.
@@ -131,14 +131,14 @@ fun byteBufferOf(vararg elements: Byte): ByteBuffer = ByteBuffer.wrap(elements)
  * @return The updated [ByteBuffer] for chaining
  * @throws BufferOverflowException if there is no space remaining
  */
-fun ByteBuffer.put(type: Type): ByteBuffer = put(type.byte)
+public fun ByteBuffer.put(type: Type): ByteBuffer = put(type.byte)
 
 /**
  * Converts a [String] into a [CharBuffer].
  *
  * @return A [CharBuffer] representing the string
  */
-fun String.asCharBuffer(): CharBuffer = CharBuffer.wrap(toCharArray())
+public fun String.asCharBuffer(): CharBuffer = CharBuffer.wrap(toCharArray())
 
 /**
  * JVM compatibility extension function for ByteBuffer.flip().
@@ -149,7 +149,7 @@ fun String.asCharBuffer(): CharBuffer = CharBuffer.wrap(toCharArray())
  *
  * @return The same [ByteBuffer] with its position set to zero and its limit set to the previous position
  */
-fun ByteBuffer.typedFlip(): ByteBuffer = apply { flip() }
+public fun ByteBuffer.typedFlip(): ByteBuffer = apply { flip() }
 
 /**
  * JVM compatibility extension function for CharBuffer.flip().
@@ -160,7 +160,7 @@ fun ByteBuffer.typedFlip(): ByteBuffer = apply { flip() }
  *
  * @return The same [CharBuffer] with its position set to zero and its limit set to the previous position
  */
-fun CharBuffer.typedFlip(): CharBuffer = apply { flip() }
+public fun CharBuffer.typedFlip(): CharBuffer = apply { flip() }
 
 /**
  * JVM compatibility extension function for CharBuffer.position().
@@ -173,7 +173,7 @@ fun CharBuffer.typedFlip(): CharBuffer = apply { flip() }
  * @return The same [CharBuffer] with its position set to the specified value
  * @throws IllegalArgumentException if pos is negative or larger than the buffer's limit
  */
-fun CharBuffer.typedPosition(pos: Int): CharBuffer = apply { position(pos) }
+public fun CharBuffer.typedPosition(pos: Int): CharBuffer = apply { position(pos) }
 
 /**
  * Removes characters from the buffer until a specified character is encountered.
@@ -182,7 +182,7 @@ fun CharBuffer.typedPosition(pos: Int): CharBuffer = apply { position(pos) }
  * @return true if the character was found, false otherwise
  * @throws BufferUnderflowException if the end of the buffer is reached before finding the character
  */
-fun CharBuffer.remove(until: Char): Boolean {
+public fun CharBuffer.remove(until: Char): Boolean {
     val (curPos, maxPos) = position() to limit()
     repeat(maxPos - curPos) {
         if (get() == until) return true
@@ -197,7 +197,7 @@ fun CharBuffer.remove(until: Char): Boolean {
  * @return A new [CharBuffer] containing the characters read
  * @throws BufferUnderflowException if the end of the buffer is reached before finding the character
  */
-fun CharBuffer.getBuffer(until: Char): CharBuffer {
+public fun CharBuffer.getBuffer(until: Char): CharBuffer {
     val (curPos, maxPos) = position() to limit()
     val searchRange = 0 until maxPos - curPos
     val length = searchRange.firstOrNull { get(it + curPos) == until }
@@ -214,7 +214,7 @@ fun CharBuffer.getBuffer(until: Char): CharBuffer {
  * @return A new [CharBuffer] containing the characters read
  * @throws IllegalArgumentException if [size] is negative or exceeds the remaining characters
  */
-fun CharBuffer.getBuffer(size: Int): CharBuffer {
+public fun CharBuffer.getBuffer(size: Int): CharBuffer {
     val newBuffer = CharBuffer.allocate(checkSizePrefix(size, remaining(), "buffer size"))
     repeat(newBuffer.limit()) { newBuffer.put(this.get()) }
     return newBuffer.typedFlip()
@@ -227,7 +227,7 @@ fun CharBuffer.getBuffer(size: Int): CharBuffer {
  * @return A string containing the characters read
  * @throws BufferUnderflowException if the end of the buffer is reached before finding the character
  */
-fun CharBuffer.getString(until: Char): String = getBuffer(until).toString()
+public fun CharBuffer.getString(until: Char): String = getBuffer(until).toString()
 
 /**
  * Reads a specified number of characters from the buffer into a string.
@@ -236,7 +236,7 @@ fun CharBuffer.getString(until: Char): String = getBuffer(until).toString()
  * @return A string containing the characters read
  * @throws IllegalArgumentException if [size] is negative or exceeds the remaining characters
  */
-fun CharBuffer.getString(size: Int): String = getBuffer(size).toString()
+public fun CharBuffer.getString(size: Int): String = getBuffer(size).toString()
 
 /**
  * Reads a byte array of a specified size from the [DataInput].
@@ -246,7 +246,7 @@ fun CharBuffer.getString(size: Int): String = getBuffer(size).toString()
  * @throws EOFException if the end of stream is reached before reading the specified size
  * @throws IOException if an I/O error occurs
  */
-fun DataInput.asByteArray(size: Int): ByteArray {
+public fun DataInput.asByteArray(size: Int): ByteArray {
     if (size == 0) return ByteArray(0)
     return if (size > 0) {
         ByteArray(size).also { readFully(it) }
@@ -266,7 +266,7 @@ fun DataInput.asByteArray(size: Int): ByteArray {
  * @throws EOFException if the end of stream is reached (when reading until EOF)
  * @throws IOException if an I/O error occurs
  */
-fun DataInput.asByteSequence(available: Int) =
+public fun DataInput.asByteSequence(available: Int): Sequence<Byte> =
     sequence {
         if (available == 0) return@sequence
         if (available > 0) {

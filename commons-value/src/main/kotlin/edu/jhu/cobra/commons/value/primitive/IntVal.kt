@@ -5,24 +5,24 @@ package edu.jhu.cobra.commons.value
  *
  * @property core The underlying [Long] value.
  */
-data class IntVal(
+public data class IntVal(
     override val core: Long,
 ) : IPrimitiveVal {
     /** Default constructor initializing the value to `0`. */
-    constructor() : this(0L)
+    public constructor() : this(0L)
 
     /** Converts this value to [Int], truncating if necessary. */
-    fun toInt(): Int = core.toInt()
+    public fun toInt(): Int = core.toInt()
 
     /** Converts this value to [Double]. */
-    fun toDouble(): Double = core.toDouble()
+    public fun toDouble(): Double = core.toDouble()
 
     /** Converts this value to [Float]. */
-    fun toFloat(): Float = core.toFloat()
+    public fun toFloat(): Float = core.toFloat()
 
-    operator fun compareTo(other: Int): Int = core.compareTo(other.toLong())
+    public operator fun compareTo(other: Int): Int = core.compareTo(other.toLong())
 
-    operator fun compareTo(other: Long): Int = core.compareTo(other)
+    public operator fun compareTo(other: Long): Int = core.compareTo(other)
 
     override fun toString(): String = "IntVal{$core}"
 }
