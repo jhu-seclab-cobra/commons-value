@@ -20,7 +20,6 @@ repositories {
 }
 
 dependencies {
-    implementation(libs.apache.commons.lang3)
     testImplementation(kotlin("test"))
     testImplementation(libs.junit.jupiter.api)
     testImplementation(libs.junit.jupiter.params)

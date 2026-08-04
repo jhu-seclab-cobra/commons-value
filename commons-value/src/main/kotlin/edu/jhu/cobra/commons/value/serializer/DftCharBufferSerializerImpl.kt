@@ -66,33 +66,9 @@ public object DftCharBufferSerializerImpl : IValSerializer<CharBuffer> {
             is FloatVal -> "${Type.FLOAT.str}:${value.core}:".asCharBuffer()
 
             is RangeVal -> "${Type.RANGE.str}:${value.first},${value.last}:".asCharBuffer()
-            is ListVal -> { // listType:cnt{element,element,...}
-                val elements = value.map { element -> serialize(element) }
-                val eleCount = value.size.asHexString() // the counter for ele
-                val eleLength = elements.sumOf { ele -> ele.length + 1 }
-                val charBuffer = CharBuffer.allocate(Type.LIST.str.length + 2 + eleCount.length + eleLength)
-                charBuffer
-                    .put(Type.LIST.str)
-                    .put(':')
-                    .put(eleCount)
-                    .put(':') // listType:cnt{
-                elements.forEach { element -> charBuffer.put(element).put(',') } // element,element,...
-                charBuffer.typedPosition(charBuffer.position() - 1).put(':').typedFlip() // }
-            }
+            is ListVal -> containerToBuffer(Type.LIST, value.map { element -> serialize(element) })
 
-            is SetVal -> { // setType:cnt_hex:element,element,...:
-                val elements = value.map { element -> serialize(element) }
-                val eleCount = value.size.asHexString() // the counter for ele
-                val eleLength = elements.sumOf { ele -> ele.length + 1 }
-                val charBuffer = CharBuffer.allocate(Type.SET.str.length + 2 + eleCount.length + eleLength)
-                charBuffer
-                    .put(Type.SET.str)
-                    .put(':')
-                    .put(eleCount)
-                    .put(':') // setType:cnt:
-                elements.forEach { element -> charBuffer.put(element).put(',') } // element,element,...
-                charBuffer.typedPosition(charBuffer.position() - 1).put(':').typedFlip() // }
-            }
+            is SetVal -> containerToBuffer(Type.SET, value.map { element -> serialize(element) })
 
             is MapVal -> { // mapType:cnt_hex{key=element, key=element, key=element}
                 val elements = value.map { (k, v) -> serialize(StrVal(k)) to serialize(v) }
@@ -114,6 +90,23 @@ public object DftCharBufferSerializerImpl : IValSerializer<CharBuffer> {
                 charBuffer.typedPosition(charBuffer.position() - 1).put(':').typedFlip() // }
             }
         }
+
+    // LIST and SET share one container layout: type:cnt_hex:element,element,...:
+    private fun containerToBuffer(
+        type: Type,
+        elements: List<CharBuffer>,
+    ): CharBuffer {
+        val eleCount = elements.size.asHexString()
+        val eleLength = elements.sumOf { ele -> ele.length + 1 }
+        val charBuffer = CharBuffer.allocate(type.str.length + 2 + eleCount.length + eleLength)
+        charBuffer
+            .put(type.str)
+            .put(':')
+            .put(eleCount)
+            .put(':') // type:cnt:
+        elements.forEach { element -> charBuffer.put(element).put(',') } // element,element,...
+        return charBuffer.typedPosition(charBuffer.position() - 1).put(':').typedFlip()
+    }
 
     /**
      * Deserializes a [CharBuffer] into an [IValue] instance.
@@ -140,13 +133,6 @@ public object DftCharBufferSerializerImpl : IValSerializer<CharBuffer> {
             Type.BOOL_FALSE.str -> BoolVal.F
             Type.INT.str -> IntVal(material.getString(':').toLong())
             Type.FLOAT.str -> FloatVal(material.getString(':').toDouble())
-            Type.NUM_BYTE.str -> IntVal(material.getString(':').toByte().toLong())
-            Type.NUM_SHORT.str -> IntVal(material.getString(':').toShort().toLong())
-            Type.NUM_INT.str -> IntVal(material.getString(':').toInt().toLong())
-            Type.NUM_LONG.str -> IntVal(material.getString(':').toLong())
-            Type.NUM_FLOAT.str -> FloatVal(material.getString(':').toFloat().toDouble())
-            Type.NUM_DOUBLE.str -> FloatVal(material.getString(':').toDouble())
-            Type.NUM_OTHERS.str -> material.getString(':').asNumber().toIntOrFloatVal()
             Type.UNSURE_NUM.str -> Unsure.NUM
             Type.UNSURE_STR.str -> Unsure.STR
             Type.UNSURE_BOOL.str -> Unsure.BOOL
@@ -158,23 +144,13 @@ public object DftCharBufferSerializerImpl : IValSerializer<CharBuffer> {
             }
 
             Type.LIST.str -> { // list_type:hex_cnt{element, element,...}
-                val eleCount = checkSizePrefix(material.getString(':').asHexInt(), material.remaining(), "element count")
-                val container = ListVal(size = eleCount) // the final container
-                repeat(eleCount) {
-                    container.plusAssign(deserialize(material))
-                    material.get() // remove the end delimiter
-                }
-                container // return the final container of the list out
+                val eleCount = readContainerCount(material)
+                ListVal(size = eleCount).also { list -> readContainerElements(material, eleCount) { list.plusAssign(it) } }
             }
 
             Type.SET.str -> { // set_type:hex_cnt{element, element,...}
-                val eleCount = checkSizePrefix(material.getString(':').asHexInt(), material.remaining(), "element count")
-                val container = SetVal(size = eleCount) // the final container
-                repeat(eleCount) {
-                    container.plusAssign(deserialize(material))
-                    material.get() // remove the end delimiter
-                }
-                container // return the final container of the set out
+                val eleCount = readContainerCount(material)
+                SetVal(size = eleCount).also { set -> readContainerElements(material, eleCount) { set.plusAssign(it) } }
             }
 
             Type.MAP.str -> { // mapType:hex_cnt{key=value,key=value,...}
@@ -192,4 +168,20 @@ public object DftCharBufferSerializerImpl : IValSerializer<CharBuffer> {
 
             else -> throw IllegalArgumentException("Unknown type: $type")
         }
+
+    // LIST and SET decode share one validated hex element-count prefix.
+    private fun readContainerCount(material: CharBuffer): Int =
+        checkSizePrefix(material.getString(':').asHexInt(), material.remaining(), "element count")
+
+    // LIST and SET decode share one delimiter-separated element loop.
+    private inline fun readContainerElements(
+        material: CharBuffer,
+        count: Int,
+        action: (IValue) -> Unit,
+    ) {
+        repeat(count) {
+            action(deserialize(material))
+            material.get() // remove the end delimiter
+        }
+    }
 }

@@ -1,66 +1,7 @@
 package edu.jhu.cobra.commons.value.serializer
 
-import edu.jhu.cobra.commons.value.FloatVal
-import edu.jhu.cobra.commons.value.IPrimitiveVal
-import edu.jhu.cobra.commons.value.IntVal
-import org.apache.commons.lang3.math.NumberUtils
-import java.io.DataInput
-import java.io.EOFException
 import java.nio.ByteBuffer
 import java.nio.CharBuffer
-
-/**
- * Enum class representing different data types with their associated byte values and string labels.
- *
- * @property byte The byte representation of the type.
- * @property str The string label for the type.
- */
-public enum class Type(
-    public val byte: Byte,
-    public val str: String,
-) {
-    NULL(10, "Null"),
-    STR(20, "Str"),
-    BOOL(30, "Bool"),
-    BOOL_TRUE(31, "True"),
-    BOOL_FALSE(32, "False"),
-    UNSURE_ANY(40, "UnANY"),
-    UNSURE_STR(41, "UnSTR"),
-    UNSURE_NUM(42, "UnNUM"),
-    UNSURE_BOOL(43, "UnBOOL"),
-    NUM_BYTE(50, "Byte"),
-    NUM_SHORT(51, "Short"),
-    NUM_INT(52, "Int"),
-    NUM_LONG(53, "Long"),
-    NUM_FLOAT(54, "Float"),
-    NUM_DOUBLE(55, "Double"),
-    NUM_OTHERS(56, "Num?"),
-    INT(57, "IntV"),
-    FLOAT(58, "FloatV"),
-    RANGE(60, "Range"),
-    LIST(70, "List"),
-    SET(71, "Set"),
-    MAP(80, "Map"),
-}
-
-/**
- * Converts a [Number] to [IntVal] if it is an integer type, or [FloatVal] otherwise.
- */
-public fun Number.toIntOrFloatVal(): IPrimitiveVal =
-    when (this) {
-        is Byte, is Short, is Int, is Long -> IntVal(toLong())
-        else -> FloatVal(toDouble())
-    }
-
-/**
- * Converts the string representation of a number into a [Number] object.
- *
- * This function uses Apache Commons Lang's NumberUtils to parse various number formats.
- *
- * @return The parsed [Number] instance
- * @throws NumberFormatException if the string cannot be parsed as a number
- */
-public fun String.asNumber(): Number = NumberUtils.createNumber(this)
 
 /**
  * Converts a hexadecimal string into an integer.
@@ -241,48 +182,3 @@ public fun CharBuffer.getString(until: Char): String = getBuffer(until).toString
  * @throws IllegalArgumentException if [size] is negative or exceeds the remaining characters
  */
 public fun CharBuffer.getString(size: Int): String = getBuffer(size).toString()
-
-/**
- * Reads a byte array of a specified size from the [DataInput].
- *
- * @param size The number of bytes to read. If zero, returns an empty array. If negative, reads until EOF.
- * @return A byte array containing the read bytes
- * @throws EOFException if the end of stream is reached before reading the specified size
- * @throws IOException if an I/O error occurs
- */
-public fun DataInput.asByteArray(size: Int): ByteArray {
-    if (size == 0) return ByteArray(0)
-    return if (size > 0) {
-        ByteArray(size).also { readFully(it) }
-    } else {
-        buildList {
-            try {
-                while (true) add(readByte())
-            } catch (_: EOFException) {
-                // End of stream terminates the read-until-EOF loop.
-            }
-        }.toByteArray()
-    }
-}
-
-/**
- * Creates a sequence of bytes from the [DataInput].
- *
- * @param available The number of bytes to read. If zero, returns empty sequence. If negative, reads until EOF.
- * @return A sequence of bytes read from the input
- * @throws EOFException if the end of stream is reached (when reading until EOF)
- * @throws IOException if an I/O error occurs
- */
-public fun DataInput.asByteSequence(available: Int): Sequence<Byte> =
-    sequence {
-        if (available == 0) return@sequence
-        if (available > 0) {
-            repeat(available) { yield(readByte()) }
-        } else {
-            try {
-                while (true) yield(readByte())
-            } catch (_: EOFException) {
-                // End of stream terminates the read-until-EOF loop.
-            }
-        }
-    }

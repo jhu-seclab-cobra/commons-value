@@ -84,21 +84,9 @@ public object DftByteBufferSerializerImpl : IValSerializer<ByteBuffer> {
                     .typedFlip()
             }
 
-            is ListVal -> { // 1 byte type | count | element1 | element2 | ...
-                val allElements = value.map { element -> serialize(element) }
-                val bufferSize = 1 + 4 + allElements.sumOf { array -> array.limit() }
-                val buffer = ByteBuffer.allocate(bufferSize).put(Type.LIST).putInt(allElements.size)
-                allElements.forEach { buffer.put(it) }
-                buffer.typedFlip()
-            }
+            is ListVal -> containerToBuffer(Type.LIST, value.map { element -> serialize(element) })
 
-            is SetVal -> { // 1 byte type | count | element1 | element2 | ...
-                val allElements = value.map { element -> serialize(element) }
-                val bufferSize = 1 + 4 + allElements.sumOf { array -> array.limit() }
-                val buffer = ByteBuffer.allocate(bufferSize).put(Type.SET).putInt(allElements.size)
-                allElements.forEach { buffer.put(it) }
-                buffer.typedFlip()
-            }
+            is SetVal -> containerToBuffer(Type.SET, value.map { element -> serialize(element) })
 
             is MapVal -> { // 1 byte type | count | size_keyN | keyN | size_valueN | valueN
                 val elements = value.map { (k, v) -> k.toByteArray() to serialize(v) }
@@ -108,6 +96,17 @@ public object DftByteBufferSerializerImpl : IValSerializer<ByteBuffer> {
                 buffer.typedFlip()
             }
         }
+
+    // LIST and SET share one container layout: 1 byte type | count | element1 | element2 | ...
+    private fun containerToBuffer(
+        type: Type,
+        elements: List<ByteBuffer>,
+    ): ByteBuffer {
+        val bufferSize = 1 + 4 + elements.sumOf { element -> element.limit() }
+        val buffer = ByteBuffer.allocate(bufferSize).put(type).putInt(elements.size)
+        elements.forEach { buffer.put(it) }
+        return buffer.typedFlip()
+    }
 
     /**
      * Deserializes a [ByteBuffer] into an [IValue] instance.
@@ -128,36 +127,19 @@ public object DftByteBufferSerializerImpl : IValSerializer<ByteBuffer> {
             Type.BOOL_FALSE.byte -> BoolVal.F
             Type.INT.byte -> IntVal(material.getLong())
             Type.FLOAT.byte -> FloatVal(material.getDouble())
-            Type.NUM_BYTE.byte -> IntVal(material.get().toLong())
-            Type.NUM_SHORT.byte -> IntVal(material.getShort().toLong())
-            Type.NUM_INT.byte -> IntVal(material.getInt().toLong())
-            Type.NUM_LONG.byte -> IntVal(material.getLong())
-            Type.NUM_FLOAT.byte -> FloatVal(material.getFloat().toDouble())
-            Type.NUM_DOUBLE.byte -> FloatVal(material.getDouble())
-            Type.NUM_OTHERS.byte -> material.getString().asNumber().toIntOrFloatVal()
             Type.UNSURE_ANY.byte -> Unsure.ANY
             Type.UNSURE_NUM.byte -> Unsure.NUM
             Type.UNSURE_STR.byte -> Unsure.STR
             Type.UNSURE_BOOL.byte -> Unsure.BOOL
             Type.RANGE.byte -> RangeVal(start = deserialize(material) as IntVal, endInclusive = deserialize(material) as IntVal)
             Type.LIST.byte -> { // count | element1 | element2 | ...
-                val listDataCount = checkSizePrefix(material.getInt(), material.remaining(), "element count")
-                val container = ListVal(size = listDataCount)
-                repeat(listDataCount) {
-                    val element = deserialize(material)
-                    container.plusAssign(value = element)
-                }
-                container
+                val count = readContainerCount(material)
+                ListVal(size = count).also { list -> repeat(count) { list.plusAssign(deserialize(material)) } }
             }
 
             Type.SET.byte -> { // count | element1 | element2 | ...
-                val setDataCount = checkSizePrefix(material.getInt(), material.remaining(), "element count")
-                val container = SetVal(size = setDataCount)
-                repeat(setDataCount) {
-                    val element = deserialize(material)
-                    container.plusAssign(value = element)
-                }
-                container // Return the container with all elements
+                val count = readContainerCount(material)
+                SetVal(size = count).also { set -> repeat(count) { set.plusAssign(deserialize(material)) } }
             }
 
             Type.MAP.byte -> { // cnt | keyN | valueN
@@ -173,4 +155,7 @@ public object DftByteBufferSerializerImpl : IValSerializer<ByteBuffer> {
             else -> throw IllegalArgumentException("Unknown type: $type")
         }
     }
+
+    // LIST and SET decode share one validated element-count prefix.
+    private fun readContainerCount(material: ByteBuffer): Int = checkSizePrefix(material.getInt(), material.remaining(), "element count")
 }

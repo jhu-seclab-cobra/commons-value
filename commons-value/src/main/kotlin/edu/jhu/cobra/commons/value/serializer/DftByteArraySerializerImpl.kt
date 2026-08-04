@@ -11,7 +11,6 @@ import edu.jhu.cobra.commons.value.RangeVal
 import edu.jhu.cobra.commons.value.SetVal
 import edu.jhu.cobra.commons.value.StrVal
 import edu.jhu.cobra.commons.value.Unsure
-import org.apache.commons.lang3.math.NumberUtils
 import java.nio.ByteBuffer
 
 /**
@@ -77,33 +76,9 @@ public object DftByteArraySerializerImpl : IValSerializer<ByteArray> {
                 result
             }
 
-            is ListVal -> {
-                val listBytes = value.map { serialize(it) }
-                val result = ByteArray(1 + listBytes.sumOf { 4 + it.size })
-                result[0] = Type.LIST.byte
-                var offset = 1
-                listBytes.forEach { bytes ->
-                    intInto(result, offset, bytes.size)
-                    offset += 4
-                    bytes.copyInto(result, offset)
-                    offset += bytes.size
-                }
-                result
-            }
+            is ListVal -> containerToBytes(Type.LIST.byte, value.map { serialize(it) })
 
-            is SetVal -> {
-                val listBytes = value.map { serialize(it) }
-                val result = ByteArray(1 + listBytes.sumOf { 4 + it.size })
-                result[0] = Type.SET.byte
-                var offset = 1
-                listBytes.forEach { bytes ->
-                    intInto(result, offset, bytes.size)
-                    offset += 4
-                    bytes.copyInto(result, offset)
-                    offset += bytes.size
-                }
-                result
-            }
+            is SetVal -> containerToBytes(Type.SET.byte, value.map { serialize(it) })
 
             is MapVal -> {
                 val mapEntriesBytes = value.map { (k, v) -> k.toByteArray() to serialize(v) }
@@ -123,6 +98,23 @@ public object DftByteArraySerializerImpl : IValSerializer<ByteArray> {
                 result
             }
         }
+
+    // LIST and SET share one container layout: a type byte, then size-prefixed element blocks.
+    private fun containerToBytes(
+        typeByte: Byte,
+        elements: List<ByteArray>,
+    ): ByteArray {
+        val result = ByteArray(1 + elements.sumOf { SIZE_PREFIX_BYTES + it.size })
+        result[0] = typeByte
+        var offset = 1
+        elements.forEach { bytes ->
+            intInto(result, offset, bytes.size)
+            offset += SIZE_PREFIX_BYTES
+            bytes.copyInto(result, offset)
+            offset += bytes.size
+        }
+        return result
+    }
 
     private fun longToBytes(
         type: Byte,
@@ -196,16 +188,6 @@ public object DftByteArraySerializerImpl : IValSerializer<ByteArray> {
             Type.UNSURE_BOOL.byte -> Unsure.BOOL
             Type.INT.byte -> IntVal(buffer.long)
             Type.FLOAT.byte -> FloatVal(buffer.double)
-            Type.NUM_BYTE.byte -> IntVal(buffer.get().toLong())
-            Type.NUM_SHORT.byte -> IntVal(buffer.short.toLong())
-            Type.NUM_INT.byte -> IntVal(buffer.int.toLong())
-            Type.NUM_LONG.byte -> IntVal(buffer.long)
-            Type.NUM_FLOAT.byte -> FloatVal(buffer.float.toDouble())
-            Type.NUM_DOUBLE.byte -> FloatVal(buffer.double)
-            Type.NUM_OTHERS.byte -> {
-                val bytes = ByteArray(buffer.remaining()).also { buffer.get(it) }
-                NumberUtils.createNumber(bytes.decodeToString()).toIntOrFloatVal()
-            }
             Type.RANGE.byte -> {
                 val firstSize = checkSizePrefix(buffer.getInt(), buffer.remaining(), "range bound size")
                 val savedLimit = buffer.limit()
@@ -215,28 +197,8 @@ public object DftByteArraySerializerImpl : IValSerializer<ByteArray> {
                 val second = deserializeFrom(buffer) as IntVal
                 RangeVal(first, second)
             }
-            Type.LIST.byte -> {
-                val list = ListVal()
-                while (buffer.hasRemaining()) {
-                    val elementSize = checkSizePrefix(buffer.getInt(), buffer.remaining(), "element size")
-                    val savedLimit = buffer.limit()
-                    buffer.limit(buffer.position() + elementSize)
-                    list.plusAssign(deserializeFrom(buffer))
-                    buffer.limit(savedLimit)
-                }
-                list
-            }
-            Type.SET.byte -> {
-                val set = SetVal()
-                while (buffer.hasRemaining()) {
-                    val elementSize = checkSizePrefix(buffer.getInt(), buffer.remaining(), "element size")
-                    val savedLimit = buffer.limit()
-                    buffer.limit(buffer.position() + elementSize)
-                    set.plusAssign(deserializeFrom(buffer))
-                    buffer.limit(savedLimit)
-                }
-                set
-            }
+            Type.LIST.byte -> ListVal().also { list -> forEachContainerElement(buffer) { list.plusAssign(it) } }
+            Type.SET.byte -> SetVal().also { set -> forEachContainerElement(buffer) { set.plusAssign(it) } }
             Type.MAP.byte -> {
                 val map = MapVal()
                 while (buffer.hasRemaining()) {
@@ -253,4 +215,18 @@ public object DftByteArraySerializerImpl : IValSerializer<ByteArray> {
             }
             else -> throw IllegalArgumentException("Unknown value type: ${buffer.get(buffer.position() - 1)}")
         }
+
+    // LIST and SET share one container layout: size-prefixed element blocks read via limit windowing.
+    private inline fun forEachContainerElement(
+        buffer: ByteBuffer,
+        action: (IValue) -> Unit,
+    ) {
+        while (buffer.hasRemaining()) {
+            val elementSize = checkSizePrefix(buffer.getInt(), buffer.remaining(), "element size")
+            val savedLimit = buffer.limit()
+            buffer.limit(buffer.position() + elementSize)
+            action(deserializeFrom(buffer))
+            buffer.limit(savedLimit)
+        }
+    }
 }
