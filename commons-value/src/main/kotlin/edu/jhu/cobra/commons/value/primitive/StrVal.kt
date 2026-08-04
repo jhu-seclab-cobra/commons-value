@@ -104,7 +104,7 @@ public data class StrVal(
      *
      * @return The number of characters in the string.
      */
-    val length: Int get() = core.length
+    public val length: Int get() = core.length
 
     /**
      * Retrieves the character at the specified [index].

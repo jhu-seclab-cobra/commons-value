@@ -24,7 +24,6 @@ public data object NullVal : IPrimitiveVal {
      * println(NullVal.core) // Outputs: null
      * ```
      */
-
     override val core: Nothing? = null
 
     /**

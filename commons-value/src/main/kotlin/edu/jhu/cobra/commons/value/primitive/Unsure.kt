@@ -51,14 +51,7 @@ public enum class Unsure(
          * @param core The string representing the uncertain type.
          * @return The corresponding [Unsure] instance or `null` if no match is found.
          */
-        public fun new(core: String): Unsure? =
-            when (core) {
-                STR.core -> STR
-                NUM.core -> NUM
-                BOOL.core -> BOOL
-                ANY.core -> ANY
-                else -> null
-            }
+        public fun new(core: String): Unsure? = entries.firstOrNull { it.core == core }
 
         /**
          * Creates an [Unsure] object based on the type of the given example value.

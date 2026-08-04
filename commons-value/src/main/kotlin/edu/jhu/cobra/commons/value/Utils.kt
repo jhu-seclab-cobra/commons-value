@@ -10,19 +10,10 @@ package edu.jhu.cobra.commons.value
 public val Any?.toVal: IValue
     get() =
         when (this) {
-            null -> NullVal
-            is Long -> intVal
-            is Int -> intVal
-            is Short -> intVal
-            is Byte -> intVal
-            is Double -> floatVal
-            is Float -> floatVal
-            is String -> strVal
-            is Boolean -> boolVal
             is List<*> -> listVal
             is Map<*, *> -> mapVal
             is IntRange -> rangeVal
             is Set<*> -> setVal
             is IValue -> this
-            else -> throw IllegalArgumentException("Cannot convert $this to IValue")
+            else -> primitiveVal
         }
