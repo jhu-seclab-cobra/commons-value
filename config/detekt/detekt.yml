@@ -1,0 +1,87 @@
+build:
+  maxIssues: 0
+
+complexity:
+  LongMethod:
+    threshold: 30
+    excludes:
+      - "**/*Test.kt"
+      - "**/*Tests.kt"
+      # Exhaustive per-type dispatch; restructured by the planned
+      # serializer container-codec dedup (docs/extern/todo.md Stage D).
+      - "**/serializer/Dft*SerializerImpl.kt"
+  LargeClass:
+    threshold: 600
+    excludes:
+      - "**/*Test.kt"
+      - "**/*Tests.kt"
+  LongParameterList:
+    functionThreshold: 8
+    constructorThreshold: 8
+  ComplexCondition:
+    threshold: 4
+  CyclomaticComplexMethod:
+    threshold: 15
+    excludes:
+      # Exhaustive per-type dispatch; restructured by the planned
+      # serializer container-codec dedup (docs/extern/todo.md Stage D).
+      - "**/serializer/Dft*SerializerImpl.kt"
+  TooManyFunctions:
+    thresholdInFiles: 20
+    thresholdInClasses: 25
+    thresholdInInterfaces: 20
+    excludes:
+      - "**/*Test.kt"
+      - "**/*Tests.kt"
+      # Split by the planned Utils file reorganization
+      # (docs/extern/todo.md Stage D).
+      - "**/serializer/SerializerUtils.kt"
+
+style:
+  MagicNumber:
+    active: false
+  MaxLineLength:
+    maxLineLength: 140
+  WildcardImport:
+    active: false
+  ReturnCount:
+    max: 8
+  UnusedPrivateMember:
+    active: true
+
+naming:
+  FunctionNaming:
+    excludes:
+      - "**/*Test.kt"
+      - "**/*Tests.kt"
+  # Package declarations do not mirror the collection/, primitive/, serializer/
+  # directories; fixed by the planned package-dir mirroring
+  # (docs/extern/todo.md Stage D).
+  InvalidPackageDeclaration:
+    active: false
+  MatchingDeclarationName:
+    excludes:
+      # Type enum co-located with serializer utilities; split by the planned
+      # Utils file reorganization (docs/extern/todo.md Stage D).
+      - "**/serializer/SerializerUtils.kt"
+  ConstructorParameterNaming:
+    active: true
+  TopLevelPropertyNaming:
+    constantPattern: "[A-Z][_A-Z0-9]*"
+
+exceptions:
+  TooGenericExceptionCaught:
+    active: true
+    exceptionNames:
+      - "Exception"
+      - "RuntimeException"
+      - "Throwable"
+  SwallowedException:
+    active: true
+    excludes:
+      - "**/*Test.kt"
+      - "**/*Tests.kt"
+
+performance:
+  SpreadOperator:
+    active: false
