@@ -111,7 +111,7 @@ object DftCharBufferSerializerImpl : IValSerializer<CharBuffer> {
             Type.NULL.str -> NullVal
             // strType:cnt{}
             Type.STR.str -> {
-                val strLength = material.getString(until = ':').asHexInt()
+                val strLength = checkSizePrefix(material.getString(until = ':').asHexInt(), material.remaining(), "string size")
                 val stringCore = material.getString(size = strLength)
                 StrVal(core = stringCore)
             }
@@ -138,7 +138,7 @@ object DftCharBufferSerializerImpl : IValSerializer<CharBuffer> {
             }
 
             Type.LIST.str -> { // list_type:hex_cnt{element, element,...}
-                val eleCount = material.getString(':').asHexInt()
+                val eleCount = checkSizePrefix(material.getString(':').asHexInt(), material.remaining(), "element count")
                 val container = ListVal(size = eleCount) // the final container
                 repeat(eleCount) {
                     container.plusAssign(deserialize(material))
@@ -148,7 +148,7 @@ object DftCharBufferSerializerImpl : IValSerializer<CharBuffer> {
             }
 
             Type.SET.str -> { // set_type:hex_cnt{element, element,...}
-                val eleCount = material.getString(':').asHexInt()
+                val eleCount = checkSizePrefix(material.getString(':').asHexInt(), material.remaining(), "element count")
                 val container = SetVal(size = eleCount) // the final container
                 repeat(eleCount) {
                     container.plusAssign(deserialize(material))
@@ -158,7 +158,7 @@ object DftCharBufferSerializerImpl : IValSerializer<CharBuffer> {
             }
 
             Type.MAP.str -> { // mapType:hex_cnt{key=value,key=value,...}
-                val eleCount = material.getString(':').asHexInt()
+                val eleCount = checkSizePrefix(material.getString(':').asHexInt(), material.remaining(), "entry count")
                 val container = MapVal(size = eleCount)
                 repeat(eleCount) {
                     val key = deserialize(material) as StrVal

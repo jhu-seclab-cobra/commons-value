@@ -124,7 +124,7 @@ object DftByteBufferSerializerImpl : IValSerializer<ByteBuffer> {
             Type.UNSURE_BOOL.byte -> Unsure.BOOL
             Type.RANGE.byte -> RangeVal(start = deserialize(material) as IntVal, endInclusive = deserialize(material) as IntVal)
             Type.LIST.byte -> { // count | element1 | element2 | ...
-                val listDataCount = material.getInt()
+                val listDataCount = checkSizePrefix(material.getInt(), material.remaining(), "element count")
                 val container = ListVal(size = listDataCount)
                 repeat(listDataCount) {
                     val element = deserialize(material)
@@ -134,7 +134,7 @@ object DftByteBufferSerializerImpl : IValSerializer<ByteBuffer> {
             }
 
             Type.SET.byte -> { // count | element1 | element2 | ...
-                val setDataCount = material.getInt()
+                val setDataCount = checkSizePrefix(material.getInt(), material.remaining(), "element count")
                 val container = SetVal(size = setDataCount)
                 repeat(setDataCount) {
                     val element = deserialize(material)
@@ -144,7 +144,7 @@ object DftByteBufferSerializerImpl : IValSerializer<ByteBuffer> {
             }
 
             Type.MAP.byte -> { // cnt | keyN | valueN
-                val mapElementsCount = material.getInt()
+                val mapElementsCount = checkSizePrefix(material.getInt(), material.remaining(), "entry count")
                 val container = MapVal(mapElementsCount)
                 repeat(mapElementsCount) {
                     val keyString = material.getString()

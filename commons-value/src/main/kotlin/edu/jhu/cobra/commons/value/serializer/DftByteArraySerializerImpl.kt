@@ -200,7 +200,7 @@ object DftByteArraySerializerImpl : IValSerializer<ByteArray> {
             NumberUtils.createNumber(bytes.decodeToString()).toIntOrFloatVal()
         }
         Type.RANGE.byte -> {
-            val firstSize = buffer.getInt()
+            val firstSize = checkSizePrefix(buffer.getInt(), buffer.remaining(), "range bound size")
             val savedLimit = buffer.limit()
             buffer.limit(buffer.position() + firstSize)
             val first = deserializeFrom(buffer) as IntVal
@@ -211,7 +211,7 @@ object DftByteArraySerializerImpl : IValSerializer<ByteArray> {
         Type.LIST.byte -> {
             val list = ListVal()
             while (buffer.hasRemaining()) {
-                val elementSize = buffer.getInt()
+                val elementSize = checkSizePrefix(buffer.getInt(), buffer.remaining(), "element size")
                 val savedLimit = buffer.limit()
                 buffer.limit(buffer.position() + elementSize)
                 list.plusAssign(deserializeFrom(buffer))
@@ -222,7 +222,7 @@ object DftByteArraySerializerImpl : IValSerializer<ByteArray> {
         Type.SET.byte -> {
             val set = SetVal()
             while (buffer.hasRemaining()) {
-                val elementSize = buffer.getInt()
+                val elementSize = checkSizePrefix(buffer.getInt(), buffer.remaining(), "element size")
                 val savedLimit = buffer.limit()
                 buffer.limit(buffer.position() + elementSize)
                 set.plusAssign(deserializeFrom(buffer))
@@ -233,10 +233,10 @@ object DftByteArraySerializerImpl : IValSerializer<ByteArray> {
         Type.MAP.byte -> {
             val map = MapVal()
             while (buffer.hasRemaining()) {
-                val keySize = buffer.getInt()
+                val keySize = checkSizePrefix(buffer.getInt(), buffer.remaining(), "key size")
                 val keyBytes = ByteArray(keySize).also { buffer.get(it) }
                 val key = keyBytes.decodeToString()
-                val valueSize = buffer.getInt()
+                val valueSize = checkSizePrefix(buffer.getInt(), buffer.remaining(), "value size")
                 val savedLimit = buffer.limit()
                 buffer.limit(buffer.position() + valueSize)
                 map[key] = deserializeFrom(buffer)

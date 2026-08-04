@@ -74,14 +74,28 @@ fun String.asHexInt(): Int = Integer.parseInt(this, 16)
 fun Int.asHexString(): String = Integer.toHexString(this)
 
 /**
+ * Validates a size or count prefix decoded from serialized material.
+ *
+ * @param size The decoded size or count value
+ * @param remaining The number of units remaining in the material
+ * @param context The name of the prefixed quantity, included in the error message
+ * @return The validated size
+ * @throws IllegalArgumentException if [size] is negative or exceeds [remaining]
+ */
+internal fun checkSizePrefix(size: Int, remaining: Int, context: String): Int {
+    require(size in 0..remaining) { "Invalid $context $size: expected 0..$remaining" }
+    return size
+}
+
+/**
  * Reads a byte array of the specified size from the [ByteBuffer].
  *
  * @param size The number of bytes to read
  * @return A byte array containing the read bytes
- * @throws BufferUnderflowException if there are fewer bytes remaining than [size]
+ * @throws IllegalArgumentException if [size] is negative or exceeds the remaining bytes
  */
 fun ByteBuffer.getArray(size: Int) =
-    ByteArray(size).also { get(it) }
+    ByteArray(checkSizePrefix(size, remaining(), "byte array size")).also { get(it) }
 
 /**
  * Reads a string from the [ByteBuffer].
@@ -91,7 +105,7 @@ fun ByteBuffer.getArray(size: Int) =
  *
  * @param size The size of the string to read, or null to use the integer prefix
  * @return The decoded string from the buffer
- * @throws BufferUnderflowException if there are not enough bytes remaining
+ * @throws IllegalArgumentException if the size is negative or exceeds the remaining bytes
  */
 fun ByteBuffer.getString(size: Int? = null): String =
     getArray(size ?: getInt()).decodeToString()
@@ -193,10 +207,10 @@ fun CharBuffer.getBuffer(until: Char): CharBuffer {
  *
  * @param size The number of characters to read
  * @return A new [CharBuffer] containing the characters read
- * @throws BufferUnderflowException if there are fewer characters remaining than size
+ * @throws IllegalArgumentException if [size] is negative or exceeds the remaining characters
  */
 fun CharBuffer.getBuffer(size: Int): CharBuffer {
-    val newBuffer = CharBuffer.allocate(size)
+    val newBuffer = CharBuffer.allocate(checkSizePrefix(size, remaining(), "buffer size"))
     repeat(newBuffer.limit()) { newBuffer.put(this.get()) }
     return newBuffer.typedFlip()
 }
@@ -215,7 +229,7 @@ fun CharBuffer.getString(until: Char): String = getBuffer(until).toString()
  *
  * @param size The number of characters to read
  * @return A string containing the characters read
- * @throws BufferUnderflowException if there are fewer characters remaining than size
+ * @throws IllegalArgumentException if [size] is negative or exceeds the remaining characters
  */
 fun CharBuffer.getString(size: Int): String = getBuffer(size).toString()
 
