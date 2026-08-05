@@ -7,6 +7,6 @@
 | design-primitive.md | StrVal, IntVal, FloatVal, BoolVal, NullVal, Unsure type and function specifications |
 | design-collection.md | ListVal, SetVal, MapVal, RangeVal type and function specifications |
 | design-serializer.md | IValSerializer interface and three binary/text serializer implementations |
-| design-utils.md | Extension functions, type conversion utilities, and exception types |
+| design-conversions.md | Conversion extension functions, range checks, and exception types |
 | impl.md | Apache Commons Lang3 API reference and developer instructions |
 | performance.md | Serialization benchmarks, completed optimizations, and optimization candidates |

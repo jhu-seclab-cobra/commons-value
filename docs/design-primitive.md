@@ -5,7 +5,7 @@ IR value type system for the Cobra static analysis engine.
 Related design documents:
 - [Collection types](design-collection.md)
 - [Serializers](design-serializer.md)
-- [Extensions and exceptions](design-utils.md)
+- [Extensions and exceptions](design-conversions.md)
 
 ## Design Overview
 

@@ -6,7 +6,7 @@ Part of [commons-value design](design-primitive.md). Specifies extension functio
 
 ## Function Specifications
 
-### PrimitiveConversions (extension functions)
+### NumericConversions (extension properties)
 
 **`Long.intVal: IntVal`** -- Wraps Long as IntVal.
 
@@ -15,6 +15,18 @@ Part of [commons-value design](design-primitive.md). Specifies extension functio
 **`String.intVal: IntVal`** -- Parses string to integer, returns IntVal. Uses `toLongOrNull()`. Throws `NumberFormatException` on invalid input.
 
 **`String.floatVal: FloatVal`** -- Parses string to decimal, returns FloatVal. Uses `toDoubleOrNull()`. Throws `NumberFormatException` on invalid input.
+
+### NumericRangeChecks (extension properties)
+
+**`Number.isInLongRange / isInIntRange / isInShortRange / isInByteRange: Boolean`** -- Whether the number's exact numeric value lies within the target type's range. Compares via `BigDecimal`, so fractional values are judged by numeric value (2.5 is in Int range; Int.MAX_VALUE + 0.5 is not). Non-finite doubles and floats (NaN, infinities) are `false`. Exact-width integer inputs short-circuit to `true`.
+
+### PatternConversions (extension functions)
+
+**`StrVal.toRegex(doCaseIgnore: Boolean = false): Regex`** -- Escapes special regex chars, replaces Unsure placeholders with regex patterns (ANY/STR -> `.*`, NUM -> `\d+`, BOOL -> `(true|false)`).
+
+**`Unsure.toRegex(doCaseIgnore: Boolean = false): Regex`** -- Returns regex pattern corresponding to Unsure type.
+
+### PrimitiveConversions (extension functions)
 
 **`String.strVal: StrVal`** -- Wraps String as StrVal.
 
@@ -30,13 +42,7 @@ Part of [commons-value design](design-primitive.md). Specifies extension functio
 
 **`IPrimitiveVal.compareTo(other: IPrimitiveVal): Int`** -- Compares two primitives of same type. IntVal by Long, FloatVal by Double, StrVal by String, BoolVal by Boolean, NullVal always equal. Throws `IllegalArgumentException` for cross-type comparison.
 
-**`StrVal.toRegex(doCaseIgnore: Boolean = false): Regex`** -- Escapes special regex chars, replaces Unsure placeholders with regex patterns (ANY/STR -> `.*`, NUM -> `\d+`, BOOL -> `(true|false)`).
-
-**`Unsure.toRegex(doCaseIgnore: Boolean = false): Regex`** -- Returns regex pattern corresponding to Unsure type.
-
 **`String.startsWith(other: StrVal): Boolean`** -- Checks if string starts with StrVal's content.
-
-**`Number.isInLongRange / isInIntRange / isInShortRange / isInByteRange: Boolean`** -- Whether the number's exact numeric value lies within the target type's range. Compares via `BigDecimal`, so fractional values are judged by numeric value (2.5 is in Int range; Int.MAX_VALUE + 0.5 is not). Non-finite doubles and floats (NaN, infinities) are `false`. Exact-width integer inputs short-circuit to `true`.
 
 ### CollectionConversions (extension properties)
 

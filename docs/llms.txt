@@ -26,9 +26,9 @@ Package root: `edu.jhu.cobra.commons.value`. Serializers: `edu.jhu.cobra.commons
 
 - [Serializers](llms/serializers.md): Three `IValSerializer` implementations for `ByteArray`, `ByteBuffer`, and `CharBuffer`.
 
-## Extension Utilities
+## Conversion Extensions
 
-- [Utils](llms/utils.md): Kotlin extension properties and functions for native-to-IR conversion, comparison, and regex.
+- [Conversions](llms/conversions.md): Kotlin extension properties and functions for native-to-IR conversion, comparison, and regex.
 
 ## Optional
 
