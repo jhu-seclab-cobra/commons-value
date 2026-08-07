@@ -5,14 +5,6 @@ package edu.jhu.cobra.commons.value
  * It behaves similarly to Kotlin's [Set] interface, allowing common set operations.
  *
  * @property core The internal set of [IValue] elements.
- *
- * Example usage:
- * ```
- * val setVal = SetVal(StrVal("Item1"), IntVal(42))
- * println(setVal.size) // Outputs: 2
- * setVal.add(BoolVal(true))
- * println(setVal.contains(StrVal("Item1"))) // Outputs: true
- * ```
  */
 public class SetVal(
     override val core: LinkedHashSet<IValue> = LinkedHashSet(),
@@ -28,6 +20,11 @@ public class SetVal(
      */
     public val size: Int get() = core.size
 
+    /**
+     * Constructs an empty [SetVal] sized to hold [size] elements without rehashing.
+     *
+     * @param size The expected number of elements.
+     */
     public constructor(size: Int) : this(LinkedHashSet(hashCapacityFor(size)))
 
     /**
@@ -75,6 +72,11 @@ public class SetVal(
      */
     public operator fun plus(new: IValue): SetVal = SetVal(core + new)
 
+    /**
+     * Adds the specified value to the set in place.
+     *
+     * @param value The value to add.
+     */
     public operator fun plusAssign(value: IValue) {
         core.add(value)
     }
@@ -87,6 +89,11 @@ public class SetVal(
      */
     public operator fun minus(prev: IValue): SetVal = SetVal(core - prev)
 
+    /**
+     * Removes the specified value from the set in place.
+     *
+     * @param prev The value to remove.
+     */
     public operator fun minusAssign(prev: IValue) {
         core.remove(prev)
     }
@@ -111,7 +118,7 @@ public class SetVal(
      * Maps each element of the set to another value using the provided transformation function.
      *
      * @param transform The transformation function to apply.
-     * @return A new [SetVal] with the transformed elements.
+     * @return A list containing the transformed elements.
      */
     public fun <R> map(transform: (IValue) -> R): List<R> = core.map(transform)
 

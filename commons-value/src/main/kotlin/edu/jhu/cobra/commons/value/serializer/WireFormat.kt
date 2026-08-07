@@ -143,11 +143,12 @@ public fun CharBuffer.typedFlip(): CharBuffer = apply { flip() }
 public fun CharBuffer.typedPosition(pos: Int): CharBuffer = apply { position(pos) }
 
 /**
- * Removes characters from the buffer until a specified character is encountered.
+ * Consumes characters from the buffer up to and including the first occurrence of [until].
  *
- * @param until The character to remove until
+ * If the character is absent, all remaining characters are consumed.
+ *
+ * @param until The character to stop consuming at
  * @return true if the character was found, false otherwise
- * @throws BufferUnderflowException if the end of the buffer is reached before finding the character
  */
 public fun CharBuffer.remove(until: Char): Boolean {
     val (curPos, maxPos) = position() to limit()

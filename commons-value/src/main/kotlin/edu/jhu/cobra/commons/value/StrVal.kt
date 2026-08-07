@@ -4,15 +4,7 @@ package edu.jhu.cobra.commons.value
  * Represents a string value in the storage system.
  *
  * Provides utility methods for string manipulation and comparison.
- *
- * Example usage:
- * ```kotlin
- * val strVal = StrVal("Hello World")
- * println(strVal.uppercase()) // Outputs: StrVal{HELLO WORLD}
- * println(strVal.length) // Outputs: 11
- * ```
  * @property core The actual string value.
- *
  */
 public data class StrVal(
     override val core: String,

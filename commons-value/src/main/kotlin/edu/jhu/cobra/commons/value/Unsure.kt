@@ -7,15 +7,6 @@ package edu.jhu.cobra.commons.value
  * It provides predefined constants for each supported uncertain type.
  *
  * @property core The string representing the uncertain or undefined type.
- *
- * Example usage:
- * ```kotlin
- * val uncertainStr = Unsure.STR
- * println(uncertainStr) // Outputs: Unsure{__StrVal__}
- *
- * val uncertainNum = Unsure.NUM
- * println(uncertainNum) // Outputs: Unsure{__NumVal__}
- * ```
  */
 public enum class Unsure(
     override val core: String,
@@ -56,13 +47,6 @@ public enum class Unsure(
         /**
          * Creates an [Unsure] object based on the type of the given example value.
          * This method returns the predefined type that corresponds to the example value.
-         *
-         * Example usage:
-         * ```kotlin
-         * val example = StrVal("example")
-         * val uncertain = Unsure.new(example)
-         * println(uncertain) // Outputs: Unsure{__StrVal__}
-         * ```
          *
          * @param example The [IPrimitiveVal] example used to determine the uncertain type.
          * @return The corresponding [Unsure] instance: [STR], [NUM], [BOOL], or [ANY].

@@ -20,8 +20,10 @@ public data class IntVal(
     /** Converts this value to [Float]. */
     public fun toFloat(): Float = core.toFloat()
 
+    /** Compares this value with [other], returning a negative, zero, or positive result. */
     public operator fun compareTo(other: Int): Int = core.compareTo(other.toLong())
 
+    /** Compares this value with [other], returning a negative, zero, or positive result. */
     public operator fun compareTo(other: Long): Int = core.compareTo(other)
 
     override fun toString(): String = "IntVal{$core}"

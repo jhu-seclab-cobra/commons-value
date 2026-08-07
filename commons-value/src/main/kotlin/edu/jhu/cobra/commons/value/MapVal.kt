@@ -5,14 +5,6 @@ package edu.jhu.cobra.commons.value
  * It behaves similarly to Kotlin's [Map] interface, allowing common map operations.
  *
  * @property core The internal map of key-value pairs.
- *
- * Example usage:
- * ```
- * val mapVal = MapVal("key1" to StrVal("value1"), "key2" to IntVal(42))
- * println(mapVal["key1"]) // Outputs: StrVal{value1}
- * mapVal["key3"] = BoolVal(true)
- * println(mapVal.size) // Outputs: 3
- * ```
  */
 public class MapVal(
     override val core: HashMap<String, IValue> = HashMap(),
@@ -28,6 +20,11 @@ public class MapVal(
      */
     public val size: Int get() = core.size
 
+    /**
+     * Constructs an empty [MapVal] sized to hold [size] entries without rehashing.
+     *
+     * @param size The expected number of entries.
+     */
     public constructor(size: Int) : this(HashMap(hashCapacityFor(size)))
 
     /**
@@ -148,6 +145,11 @@ public class MapVal(
      */
     public fun values(): Collection<IValue> = core.values
 
+    /**
+     * Applies the given action to each entry in the map.
+     *
+     * @param action The action to perform on each entry.
+     */
     public fun forEach(action: (Map.Entry<String, IValue>) -> Unit): Unit = core.forEach(action)
 
     /**
@@ -158,12 +160,35 @@ public class MapVal(
      */
     public fun <R> map(behavior: (Map.Entry<String, IValue>) -> R): List<R> = core.map(behavior)
 
+    /**
+     * Transforms the value of each entry using the given behavior function, keeping the keys.
+     *
+     * @param behavior The function producing the new value for each entry.
+     * @return A map with the same keys and the transformed values.
+     */
     public fun <R> mapValues(behavior: (Map.Entry<String, IValue>) -> R): Map<String, R> = core.mapValues(behavior)
 
+    /**
+     * Flattens the results of applying the behavior function to each entry in the map.
+     *
+     * @param behavior The function producing an iterable of results for each entry.
+     * @return A list of all results produced by the behavior function.
+     */
     public fun <R> flatMap(behavior: (Map.Entry<String, IValue>) -> Iterable<R>): List<R> = core.flatMap(behavior)
 
+    /**
+     * Checks if the map is empty.
+     *
+     * @return `true` if the map contains no entries, `false` otherwise.
+     */
     public fun isEmpty(): Boolean = core.isEmpty()
 
+    /**
+     * Checks if the map contains the specified key.
+     *
+     * @param key The key to check for.
+     * @return `true` if the key is present, `false` otherwise.
+     */
     public operator fun contains(key: String): Boolean = core.containsKey(key)
 
     /**

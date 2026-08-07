@@ -10,16 +10,6 @@ private const val DEFAULT_INITIAL_CAPACITY = 5
  * such as addition, removal, indexing, mapping, and filtering.
  *
  * @property core The internal list of [IValue] elements.
- *
- * Example usage:
- * ```
- * val listVal = ListVal(StrVal("Item1"), StrVal("Item2"))
- * println(listVal[0]) // Outputs: StrVal{Item1}
- * listVal += IntVal(42)
- * println(listVal.size) // Outputs: 3
- * ```
- *
- * @property core The internal list of [IValue] elements.
  */
 public class ListVal(
     override val core: ArrayList<IValue> = ArrayList(DEFAULT_INITIAL_CAPACITY),
@@ -34,12 +24,6 @@ public class ListVal(
      * This constructor allows pre-allocating space for a given number of elements,
      * improving performance when the expected size of the list is known.
      *
-     * Example usage:
-     * ```
-     * val listVal = ListVal(10)
-     * println(listVal.size) // Outputs: 0
-     * ```
-     *
      * @param size The initial capacity of the list. Must be a non-negative integer.
      * @throws IllegalArgumentException If the [size] is negative.
      */
@@ -51,13 +35,6 @@ public class ListVal(
      * This constructor allows initializing the [ListVal] with a pre-existing collection
      * of elements, creating an independent copy of the provided list.
      *
-     * Example usage:
-     * ```
-     * val initialList = listOf(StrVal("Item1"), IntVal(42))
-     * val listVal = ListVal(initialList)
-     * println(listVal) // Outputs: [StrVal{Item1}, IntVal{42}]
-     * ```
-     *
      * @param value The list to initialize the [ListVal] with. The input list is copied.
      */
     public constructor(value: List<IValue>) : this(ArrayList(value))
@@ -66,12 +43,6 @@ public class ListVal(
      * Constructs a [ListVal] from a variable number of [IValue] elements.
      *
      * This constructor allows directly creating a [ListVal] with the provided elements.
-     *
-     * Example usage:
-     * ```
-     * val listVal = ListVal(StrVal("Item1"), IntVal(42), BoolVal.T)
-     * println(listVal) // Outputs: [StrVal{Item1}, IntVal{42}, BoolVal{true}]
-     * ```
      *
      * @param value Vararg elements to initialize the [ListVal] with.
      */
@@ -82,12 +53,6 @@ public class ListVal(
      *
      * This function provides access to elements in the list using zero-based indexing.
      * If the index is out of bounds, an [IndexOutOfBoundsException] is thrown.
-     *
-     * Example usage:
-     * ```
-     * val listVal = ListVal(StrVal("Item1"), StrVal("Item2"))
-     * println(listVal[1]) // Outputs: StrVal{Item2}
-     * ```
      *
      * @param index The position of the element to retrieve. Must be within the range `[0, size)`.
      * @return The [IValue] at the specified index.
@@ -101,13 +66,6 @@ public class ListVal(
      * This function replaces the element at the given [index] in the list
      * with the provided [value]. The [index] must be within the valid range
      * of the list, otherwise an exception will be thrown.
-     *
-     * Example usage:
-     * ```
-     * val listVal = ListVal(StrVal("Item1"), StrVal("Item2"))
-     * listVal[1] = IntVal(42)
-     * println(listVal) // Outputs: [StrVal{Item1}, IntVal{42}]
-     * ```
      *
      * @param index The position of the element to update. Must be within the range `0..size-1`.
      * @param value The new [IValue] to set at the specified position.
@@ -126,12 +84,6 @@ public class ListVal(
      * This property provides the total count of elements currently stored in the list.
      * It can be used to determine the list's size at any point in time.
      *
-     * Example usage:
-     * ```
-     * val listVal = ListVal(StrVal("Item1"), StrVal("Item2"))
-     * println(listVal.size) // Outputs: 2
-     * ```
-     *
      * @return The total number of elements in the list.
      */
     public val size: Int get() = core.size
@@ -140,13 +92,6 @@ public class ListVal(
      * Determines whether the list contains the specified element.
      *
      * This method checks if the given [value] is present in the list.
-     *
-     * Example usage:
-     * ```
-     * val listVal = ListVal(StrVal("Item1"), IntVal(42))
-     * println(listVal.contains(StrVal("Item1"))) // Outputs: true
-     * println(listVal.contains(IntVal(100))) // Outputs: false
-     * ```
      *
      * @param value The [IValue] element to check for.
      * @return `true` if the element exists in the list, `false` otherwise.
@@ -157,16 +102,6 @@ public class ListVal(
      * Determines whether the list contains all elements from the specified collection.
      *
      * This method checks if every element in the provided [values] collection is present in the list.
-     *
-     * Example usage:
-     * ```
-     * val listVal = ListVal(StrVal("Item1"), IntVal(42))
-     * val itemsToCheck = listOf(StrVal("Item1"), IntVal(42))
-     * println(listVal.containsAll(itemsToCheck)) // Outputs: true
-     *
-     * val missingItems = listOf(StrVal("Item2"))
-     * println(listVal.containsAll(missingItems)) // Outputs: false
-     * ```
      *
      * @param values A collection of [IValue] elements to check for.
      * @return `true` if all elements in the collection are found in the list, `false` otherwise.
@@ -179,13 +114,6 @@ public class ListVal(
      * This method searches the list from the beginning and returns the zero-based index of the
      * first occurrence of the given [value]. If the [value] is not found, it returns `-1`.
      *
-     * Example usage:
-     * ```
-     * val listVal = ListVal(StrVal("Item1"), IntVal(42), StrVal("Item1"))
-     * println(listVal.indexOf(StrVal("Item1"))) // Outputs: 0
-     * println(listVal.indexOf(IntVal(100))) // Outputs: -1
-     * ```
-     *
      * @param value The [IValue] element to search for.
      * @return The zero-based index of the first occurrence of the [value], or `-1` if not found.
      */
@@ -196,13 +124,6 @@ public class ListVal(
      *
      * This method searches the list from the end and returns the zero-based index of the
      * last occurrence of the given [value]. If the [value] is not found, it returns `-1`.
-     *
-     * Example usage:
-     * ```
-     * val listVal = ListVal(StrVal("Item1"), IntVal(42), StrVal("Item1"))
-     * println(listVal.lastIndexOf(StrVal("Item1"))) // Outputs: 2
-     * println(listVal.lastIndexOf(IntVal(100))) // Outputs: -1
-     * ```
      *
      * @param value The [IValue] element to search for.
      * @return The zero-based index of the last occurrence of the [value], or `-1` if not found.
@@ -215,13 +136,6 @@ public class ListVal(
      * This method returns a new [ListVal] containing elements starting from [fromIndex] (inclusive)
      * to [toIndex] (exclusive). If [fromIndex] equals [toIndex], the returned sublist is empty.
      * The indices must be within the bounds of the list, or an [IndexOutOfBoundsException] is thrown.
-     *
-     * Example usage:
-     * ```
-     * val listVal = ListVal(StrVal("A"), StrVal("B"), StrVal("C"), StrVal("D"))
-     * val sublist = listVal.subList(1, 3)
-     * println(sublist) // Outputs: [StrVal{B}, StrVal{C}]
-     * ```
      *
      * @param fromIndex The starting index of the range, inclusive.
      * @param toIndex The ending index of the range, exclusive.
@@ -240,14 +154,6 @@ public class ListVal(
      *
      * This function does not modify the original list; instead, it creates and returns a new [ListVal].
      *
-     * Example usage:
-     * ```
-     * val originalList = ListVal(StrVal("A"), StrVal("B"))
-     * val newList = originalList + StrVal("C")
-     * println(originalList) // Outputs: [StrVal{A}, StrVal{B}]
-     * println(newList)      // Outputs: [StrVal{A}, StrVal{B}, StrVal{C}]
-     * ```
-     *
      * @param value The [IValue] to add to the list.
      * @return A new [ListVal] with the [value] appended.
      */
@@ -257,13 +163,6 @@ public class ListVal(
      * Adds the specified [value] to the end of the current list.
      *
      * Unlike the `+` operator, this function directly modifies the original list by appending the [value].
-     *
-     * Example usage:
-     * ```
-     * val list = ListVal(StrVal("A"), StrVal("B"))
-     * list += StrVal("C")
-     * println(list) // Outputs: [StrVal{A}, StrVal{B}, StrVal{C}]
-     * ```
      *
      * @param value The [IValue] to add to the list.
      */
@@ -278,14 +177,6 @@ public class ListVal(
      * This function does not modify the original list; instead, it creates and returns a new [ListVal].
      * If the [value] does not exist in the list, the original list remains unchanged.
      *
-     * Example usage:
-     * ```
-     * val originalList = ListVal(StrVal("A"), StrVal("B"), StrVal("C"))
-     * val newList = originalList - StrVal("B")
-     * println(originalList) // Outputs: [StrVal{A}, StrVal{B}, StrVal{C}]
-     * println(newList)      // Outputs: [StrVal{A}, StrVal{C}]
-     * ```
-     *
      * @param value The [IValue] to remove from the list.
      * @return A new [ListVal] with the [value] removed.
      */
@@ -296,13 +187,6 @@ public class ListVal(
      *
      * Unlike the `-` operator, this function directly modifies the original list by removing the [value].
      * If the [value] does not exist in the list, the function has no effect.
-     *
-     * Example usage:
-     * ```
-     * val list = ListVal(StrVal("A"), StrVal("B"), StrVal("C"))
-     * list -= StrVal("B")
-     * println(list) // Outputs: [StrVal{A}, StrVal{C}]
-     * ```
      *
      * @param value The [IValue] to remove from the list.
      */

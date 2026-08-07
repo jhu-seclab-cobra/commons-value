@@ -19,13 +19,6 @@ public interface IValSerializer<Material : Any> {
      * This method converts a structured value into a format suitable for storage, transmission, or processing
      * outside the immediate system.
      *
-     * Example usage:
-     * ```kotlin
-     * val serializer: IValSerializer<ByteArray> = DftByteArraySerializerImpl
-     * val serialized = serializer.serialize(value)
-     * println(serialized) // Outputs the byte array representation of the value
-     * ```
-     *
      * @param value The [IValue] instance to serialize.
      * @return The serialized material as an instance of [Material].
      */
@@ -36,13 +29,6 @@ public interface IValSerializer<Material : Any> {
      *
      * This method reconstructs an [IValue] from a material format, enabling the system to regain a
      * structured representation of the value for internal processing or manipulation.
-     *
-     * Example usage:
-     * ```kotlin
-     * val serializer: IValSerializer<ByteArray> = DftByteArraySerializerImpl
-     * val value = serializer.deserialize(bytes)
-     * println(value) // Outputs the reconstructed IValue instance
-     * ```
      *
      * @param material The material from which the value is to be deserialized.
      * @return The deserialized [IValue] instance.

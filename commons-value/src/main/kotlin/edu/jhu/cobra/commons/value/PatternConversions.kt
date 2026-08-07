@@ -34,15 +34,6 @@ private val Unsure.regexPattern: String
  *    - `Unsure.NUM` → `\d+`
  *    - `Unsure.BOOL` → `(true|false)`
  *
- * Example:
- * ```kotlin
- * val strVal = StrVal("Hello.*")
- * val regex = strVal.toRegex() // Creates Regex("Hello\\.\\*")
- *
- * val pattern = Unsure.ANY.strVal
- * val numRegex = pattern.toRegex() // Creates Regex(".*")
- * ```
- *
  * @param doCaseIgnore Whether to make the regex case-insensitive
  * @return A [Regex] object based on this [StrVal]'s content
  */
@@ -59,13 +50,14 @@ public fun StrVal.toRegex(doCaseIgnore: Boolean = false): Regex {
 }
 
 /**
- * Converts the current [Unsure] instance to its corresponding regular expression pattern as a string.
+ * Converts the current [Unsure] instance to its corresponding regular expression.
  *
  * - [Unsure.ANY] and [Unsure.STR] are represented as `.*`, allowing matching of any string.
  * - [Unsure.NUM] is represented as `\\d+`, allowing matching of one or more numeric digits.
  * - [Unsure.BOOL] is represented as `(true|false)`, allowing matching of boolean values `true` or `false`.
  *
- * @return A string containing the regular expression pattern corresponding to the current [Unsure] type.
+ * @param doCaseIgnore Whether to make the regex case-insensitive
+ * @return A [Regex] matching the values the current [Unsure] type stands for
  */
 public fun Unsure.toRegex(doCaseIgnore: Boolean = false): Regex =
     regexPattern.toRegex(if (doCaseIgnore) setOf(RegexOption.IGNORE_CASE) else setOf())

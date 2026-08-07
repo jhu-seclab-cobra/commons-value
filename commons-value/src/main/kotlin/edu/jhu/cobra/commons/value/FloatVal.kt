@@ -23,6 +23,7 @@ public data class FloatVal(
     /** Converts this value to [IntVal], truncating the fractional part. */
     public fun toIntVal(): IntVal = IntVal(core.toLong())
 
+    /** Compares this value with [other], returning a negative, zero, or positive result. */
     public operator fun compareTo(other: Double): Int = core.compareTo(other)
 
     override fun toString(): String = "FloatVal{$core}"
