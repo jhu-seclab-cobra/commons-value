@@ -202,7 +202,7 @@ val list = listOf(1, 2).listVal  // ListVal(IntVal(1L), IntVal(2L))
 
 ### Comparison
 
-- **`IPrimitiveVal.compareTo(other: IPrimitiveVal): Int`** -- Compares same-type primitives. `IntVal` compares as `Long`; `FloatVal` compares as `Double`; `StrVal` compares lexicographically; `BoolVal` compares `false < true`; `NullVal` equals `NullVal`. Raises `IllegalArgumentException` on cross-type comparison.
+- **`IPrimitiveVal.compareTo(other: IPrimitiveVal): Int`** -- Compares primitives. `IntVal` and `FloatVal` compare numerically, including mixed `IntVal`/`FloatVal` pairs; `StrVal` compares lexicographically; `BoolVal` compares `false < true`; `NullVal` equals `NullVal`. Raises `IllegalArgumentException` on any other cross-type comparison.
 
 ### Regex
 
@@ -224,7 +224,7 @@ val list = listOf(1, 2).listVal  // ListVal(IntVal(1L), IntVal(2L))
 
 - `Any?.toVal` delegates to type-specific extensions. Unsupported types raise `IllegalArgumentException`.
 - `Map<*, *>.mapVal` calls `toString()` on keys -- non-string keys lose type information.
-- `IPrimitiveVal.compareTo` does not support cross-type comparison (e.g., `IntVal` vs `StrVal`).
+- `IPrimitiveVal.compareTo` supports cross-type comparison only for numeric pairs (`IntVal` vs `FloatVal`); any other cross-type pair (e.g., `IntVal` vs `StrVal`) raises `IllegalArgumentException`.
 
 ---
 
