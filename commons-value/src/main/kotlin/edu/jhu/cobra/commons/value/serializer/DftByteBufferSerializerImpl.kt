@@ -119,7 +119,7 @@ public object DftByteBufferSerializerImpl : IValSerializer<ByteBuffer> {
      * @throws IllegalArgumentException If the material contains an unknown or unsupported type identifier.
      */
     override fun deserialize(material: ByteBuffer): IValue {
-        require(material.limit() > 0) { "Empty byte buffer" }
+        require(material.hasRemaining()) { "No remaining bytes in buffer" }
         return when (val type = material.get()) {
             Type.NULL.byte -> NullVal
             Type.STR.byte -> StrVal(material.getString())
