@@ -113,7 +113,7 @@ public class SetVal(
      * @param transform The transformation function to apply.
      * @return A new [SetVal] with the transformed elements.
      */
-    public fun <R> map(transform: (IValue) -> R): List<R> = core.map { transform(it) }
+    public fun <R> map(transform: (IValue) -> R): List<R> = core.map(transform)
 
     /**
      * Converts the set to a list.

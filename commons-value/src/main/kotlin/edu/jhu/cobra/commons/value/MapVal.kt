@@ -158,7 +158,7 @@ public class MapVal(
      */
     public fun <R> map(behavior: (Map.Entry<String, IValue>) -> R): List<R> = core.map(behavior)
 
-    public fun <R> mapValues(behavior: (Map.Entry<String, IValue>) -> R): Map<String, R> = core.mapValues { behavior(it) }
+    public fun <R> mapValues(behavior: (Map.Entry<String, IValue>) -> R): Map<String, R> = core.mapValues(behavior)
 
     public fun <R> flatMap(behavior: (Map.Entry<String, IValue>) -> Iterable<R>): List<R> = core.flatMap(behavior)
 
