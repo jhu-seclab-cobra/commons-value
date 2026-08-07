@@ -41,7 +41,7 @@ public object DftByteBufferSerializerImpl : IValSerializer<ByteBuffer> {
             is NullVal -> byteBufferOf(Type.NULL.byte)
             is StrVal -> {
                 val strCore = value.core.toByteArray()
-                val bufferLen = 1 + 4 + strCore.size
+                val bufferLen = TYPE_TAG_BYTES + SIZE_PREFIX_BYTES + strCore.size
                 ByteBuffer
                     .allocate(bufferLen)
                     .put(Type.STR.byte)
@@ -62,20 +62,20 @@ public object DftByteBufferSerializerImpl : IValSerializer<ByteBuffer> {
 
             is IntVal ->
                 ByteBuffer
-                    .allocate(9)
+                    .allocate(TAGGED_LONG_BYTES)
                     .put(Type.INT.byte)
                     .putLong(value.core)
                     .typedFlip()
             is FloatVal ->
                 ByteBuffer
-                    .allocate(9)
+                    .allocate(TAGGED_LONG_BYTES)
                     .put(Type.FLOAT.byte)
                     .putDouble(value.core)
                     .typedFlip()
 
             is RangeVal -> {
                 ByteBuffer
-                    .allocate(1 + 9 + 9)
+                    .allocate(TYPE_TAG_BYTES + 2 * TAGGED_LONG_BYTES)
                     .put(Type.RANGE.byte)
                     .put(Type.INT.byte)
                     .putLong(value.start.core)
@@ -90,7 +90,7 @@ public object DftByteBufferSerializerImpl : IValSerializer<ByteBuffer> {
 
             is MapVal -> { // 1 byte type | count | size_keyN | keyN | size_valueN | valueN
                 val elements = value.map { (k, v) -> k.toByteArray() to serialize(v) }
-                val bufferLength = 1 + 4 + elements.sumOf { (k, v) -> 4 + k.size + v.limit() }
+                val bufferLength = TYPE_TAG_BYTES + SIZE_PREFIX_BYTES + elements.sumOf { (k, v) -> SIZE_PREFIX_BYTES + k.size + v.limit() }
                 val buffer = ByteBuffer.allocate(bufferLength).put(Type.MAP).putInt(value.size)
                 elements.forEach { (k, v) -> buffer.putInt(k.size).put(k).put(v) }
                 buffer.typedFlip()
@@ -102,7 +102,7 @@ public object DftByteBufferSerializerImpl : IValSerializer<ByteBuffer> {
         type: Type,
         elements: List<ByteBuffer>,
     ): ByteBuffer {
-        val bufferSize = 1 + 4 + elements.sumOf { element -> element.limit() }
+        val bufferSize = TYPE_TAG_BYTES + SIZE_PREFIX_BYTES + elements.sumOf { element -> element.limit() }
         val buffer = ByteBuffer.allocate(bufferSize).put(type).putInt(elements.size)
         elements.forEach { buffer.put(it) }
         return buffer.typedFlip()

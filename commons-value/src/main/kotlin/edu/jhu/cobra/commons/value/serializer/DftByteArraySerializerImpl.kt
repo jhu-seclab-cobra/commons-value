@@ -22,14 +22,8 @@ import java.nio.ByteBuffer
  * them into byte arrays and reconstruct them from those arrays.
  */
 public object DftByteArraySerializerImpl : IValSerializer<ByteArray> {
-    // A tagged long payload: one type byte followed by eight big-endian value bytes.
-    private const val TAGGED_LONG_BYTES = 9
-
-    // Size prefixes are encoded as big-endian Int values.
-    private const val SIZE_PREFIX_BYTES = 4
-
     // Serialized RANGE layout: type byte, Int size prefix of the first bound, then two tagged longs.
-    private const val RANGE_FIRST_TAG_OFFSET = 1 + SIZE_PREFIX_BYTES
+    private const val RANGE_FIRST_TAG_OFFSET = TYPE_TAG_BYTES + SIZE_PREFIX_BYTES
     private const val RANGE_SECOND_TAG_OFFSET = RANGE_FIRST_TAG_OFFSET + TAGGED_LONG_BYTES
 
     /**
@@ -48,9 +42,9 @@ public object DftByteArraySerializerImpl : IValSerializer<ByteArray> {
             is NullVal -> byteArrayOf(Type.NULL.byte)
             is StrVal -> {
                 val bytes = value.core.toByteArray()
-                ByteArray(1 + bytes.size).also {
+                ByteArray(TYPE_TAG_BYTES + bytes.size).also {
                     it[0] = Type.STR.byte
-                    bytes.copyInto(it, 1)
+                    bytes.copyInto(it, TYPE_TAG_BYTES)
                 }
             }
             is BoolVal -> byteArrayOf(Type.BOOL.byte, if (value.core) 1 else 0)
@@ -66,13 +60,13 @@ public object DftByteArraySerializerImpl : IValSerializer<ByteArray> {
             is FloatVal -> longToBytes(Type.FLOAT.byte, java.lang.Double.doubleToRawLongBits(value.core))
 
             is RangeVal -> {
-                val result = ByteArray(1 + SIZE_PREFIX_BYTES + 2 * TAGGED_LONG_BYTES)
+                val result = ByteArray(TYPE_TAG_BYTES + SIZE_PREFIX_BYTES + 2 * TAGGED_LONG_BYTES)
                 result[0] = Type.RANGE.byte
-                intInto(result, 1, TAGGED_LONG_BYTES)
+                intInto(result, TYPE_TAG_BYTES, TAGGED_LONG_BYTES)
                 result[RANGE_FIRST_TAG_OFFSET] = Type.INT.byte
-                longInto(result, RANGE_FIRST_TAG_OFFSET + 1, value.start.core)
+                longInto(result, RANGE_FIRST_TAG_OFFSET + TYPE_TAG_BYTES, value.start.core)
                 result[RANGE_SECOND_TAG_OFFSET] = Type.INT.byte
-                longInto(result, RANGE_SECOND_TAG_OFFSET + 1, value.endInclusive.core)
+                longInto(result, RANGE_SECOND_TAG_OFFSET + TYPE_TAG_BYTES, value.endInclusive.core)
                 result
             }
 
@@ -82,16 +76,17 @@ public object DftByteArraySerializerImpl : IValSerializer<ByteArray> {
 
             is MapVal -> {
                 val mapEntriesBytes = value.map { (k, v) -> k.toByteArray() to serialize(v) }
-                val result = ByteArray(1 + mapEntriesBytes.sumOf { (k, v) -> 4 + k.size + 4 + v.size })
+                val entriesLength = mapEntriesBytes.sumOf { (k, v) -> SIZE_PREFIX_BYTES + k.size + SIZE_PREFIX_BYTES + v.size }
+                val result = ByteArray(TYPE_TAG_BYTES + entriesLength)
                 result[0] = Type.MAP.byte
-                var offset = 1
+                var offset = TYPE_TAG_BYTES
                 mapEntriesBytes.forEach { (keyBytes, valueBytes) ->
                     intInto(result, offset, keyBytes.size)
-                    offset += 4
+                    offset += SIZE_PREFIX_BYTES
                     keyBytes.copyInto(result, offset)
                     offset += keyBytes.size
                     intInto(result, offset, valueBytes.size)
-                    offset += 4
+                    offset += SIZE_PREFIX_BYTES
                     valueBytes.copyInto(result, offset)
                     offset += valueBytes.size
                 }
@@ -104,9 +99,9 @@ public object DftByteArraySerializerImpl : IValSerializer<ByteArray> {
         typeByte: Byte,
         elements: List<ByteArray>,
     ): ByteArray {
-        val result = ByteArray(1 + elements.sumOf { SIZE_PREFIX_BYTES + it.size })
+        val result = ByteArray(TYPE_TAG_BYTES + elements.sumOf { SIZE_PREFIX_BYTES + it.size })
         result[0] = typeByte
-        var offset = 1
+        var offset = TYPE_TAG_BYTES
         elements.forEach { bytes ->
             intInto(result, offset, bytes.size)
             offset += SIZE_PREFIX_BYTES
@@ -122,7 +117,7 @@ public object DftByteArraySerializerImpl : IValSerializer<ByteArray> {
     ): ByteArray {
         val arr = ByteArray(TAGGED_LONG_BYTES)
         arr[0] = type
-        longInto(arr, 1, v)
+        longInto(arr, TYPE_TAG_BYTES, v)
         return arr
     }
 

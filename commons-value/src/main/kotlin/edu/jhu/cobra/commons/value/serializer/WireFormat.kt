@@ -3,6 +3,15 @@ package edu.jhu.cobra.commons.value.serializer
 import java.nio.ByteBuffer
 import java.nio.CharBuffer
 
+// Every serialized value starts with one type identifier byte.
+internal const val TYPE_TAG_BYTES = 1
+
+// Size and count prefixes are encoded as big-endian Int values.
+internal const val SIZE_PREFIX_BYTES = 4
+
+// A tagged long payload: one type byte followed by eight big-endian value bytes.
+internal const val TAGGED_LONG_BYTES = TYPE_TAG_BYTES + Long.SIZE_BYTES
+
 /**
  * Converts a hexadecimal string into an integer.
  *
