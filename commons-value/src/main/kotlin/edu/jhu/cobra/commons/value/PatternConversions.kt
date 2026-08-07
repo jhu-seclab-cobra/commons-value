@@ -6,7 +6,10 @@ private val REGEX_METACHARACTERS = ".^$*+?-()[]{}\\|".toSet()
 // Escapes every regex metacharacter so the text matches itself literally inside a pattern.
 private fun escapeRegexChars(text: String): String =
     buildString(text.length) {
-        text.forEach { append(if (it in REGEX_METACHARACTERS) "\\$it" else "$it") }
+        text.forEach {
+            if (it in REGEX_METACHARACTERS) append('\\')
+            append(it)
+        }
     }
 
 // Regex fragment each Unsure placeholder stands for.
