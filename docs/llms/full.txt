@@ -39,7 +39,6 @@ Package root: `edu.jhu.cobra.commons.value`. Serializers: `edu.jhu.cobra.commons
 
 # Referenced Documents
 
-
 ## Source: llms/core.md
 
 # IR Value Types
@@ -81,9 +80,9 @@ when (val v: IValue = list[0]) {
 
 ### Primitive Types
 
-- **`StrVal(core: String)`** -- String IR value. Default constructor creates empty string. Methods: `startsWith(String)`, `substringAfter(String)`, `substringBefore(String)`, `contains(String)`, `uppercase()`, `lowercase()`, `trim()`, `equals(String, ignoreCase)`, `length`, `get(Int)`, `get(IntVal)`.
-- **`IntVal(core: Long)`** -- Integer IR value. Stores `Long` internally. Default constructor creates `0L`. Methods: `toInt()`, `toDouble()`, `compareTo(Int)`, `compareTo(Long)`. Extension constructors: `Int.intVal`, `Long.intVal`, `String.intVal`.
-- **`FloatVal(core: Double)`** -- Floating-point IR value. Stores `Double` internally. Default constructor creates `0.0`. Methods: `toIntVal()`, `toLong()`, `compareTo(Double)`. Extension constructors: `Double.floatVal`, `Float.floatVal`, `String.floatVal`.
+- **`StrVal(core: String)`** -- String IR value. Default constructor creates empty string. Methods: `startsWith(String)`, `substringAfter(String)`, `substringBefore(String)`, `contains(String)`, `uppercase()`, `lowercase()`, `trim()`, `equals(String, ignoreCase)`, `equals(IPrimitiveVal, ignoreCase)`, `length`, `get(Int)`, `get(IntVal)`.
+- **`IntVal(core: Long)`** -- Integer IR value. Stores `Long` internally. Default constructor creates `0L`. Methods: `toInt()`, `toDouble()`, `toFloat()`, `compareTo(Int)`, `compareTo(Long)`. Extension constructors: `Int.intVal`, `Long.intVal`, `Short.intVal`, `Byte.intVal`, `String.intVal`.
+- **`FloatVal(core: Double)`** -- Floating-point IR value. Stores `Double` internally. Default constructor creates `0.0`. Methods: `toIntVal()`, `toInt()`, `toLong()`, `toFloat()`, `compareTo(Double)`. Extension constructors: `Double.floatVal`, `Float.floatVal`, `String.floatVal`.
 - **`BoolVal`** -- Boolean IR value. Private constructor; obtain via `BoolVal(true)`, `BoolVal(false)`, `BoolVal.T`, `BoolVal.F`. Methods: `isTrue()`, `isFalse()`.
 - **`NullVal`** -- Singleton data object. `core` is always `null`.
 - **`Unsure`** -- Enum for unknown-but-typed values. Entries: `ANY`, `STR`, `NUM`, `BOOL`. Factory: `Unsure.new(String): Unsure?`, `Unsure.new(IPrimitiveVal): Unsure`, `Unsure.new<T>(): Unsure`. Operator: `String in Unsure`.
@@ -104,9 +103,7 @@ when (val v: IValue = list[0]) {
 - `Unsure.new(String)` returns `null` when the string does not match a known `Unsure.core` value.
 - `IntVal` stores `Long`, `FloatVal` stores `Double` -- no type ambiguity.
 
-
 ---
-
 
 ## Source: llms/serializers.md
 
@@ -149,9 +146,7 @@ val restored = serializer.deserialize(bytes) // IntVal(42L)
 - All three serializers are `object` singletons. No instantiation needed.
 - Serializers handle nested collections (e.g., `ListVal` containing `MapVal`).
 
-
 ---
-
 
 ## Source: llms/conversions.md
 
@@ -178,6 +173,8 @@ val list = listOf(1, 2).listVal  // ListVal(IntVal(1L), IntVal(2L))
 
 - **`Int.intVal: IntVal`** -- Converts `Int` to `IntVal` (widens to `Long`).
 - **`Long.intVal: IntVal`** -- Wraps `Long` in `IntVal`.
+- **`Short.intVal: IntVal`** -- Converts `Short` to `IntVal` (widens to `Long`).
+- **`Byte.intVal: IntVal`** -- Converts `Byte` to `IntVal` (widens to `Long`).
 - **`String.intVal: IntVal`** -- Parses string to `IntVal`. Raises `NumberFormatException` on invalid input.
 - **`Double.floatVal: FloatVal`** -- Wraps `Double` in `FloatVal`.
 - **`Float.floatVal: FloatVal`** -- Converts `Float` to `FloatVal` (widens to `Double`).
@@ -229,5 +226,5 @@ val list = listOf(1, 2).listVal  // ListVal(IntVal(1L), IntVal(2L))
 - `Map<*, *>.mapVal` calls `toString()` on keys -- non-string keys lose type information.
 - `IPrimitiveVal.compareTo` does not support cross-type comparison (e.g., `IntVal` vs `StrVal`).
 
-
 ---
+

@@ -81,15 +81,13 @@ Related design documents:
 
 **Methods:**
 
-| Method | Behavior | Input | Output |
-|--------|----------|-------|--------|
-| `toInt()` | Narrows to Int | -- | `Int` |
-| `toDouble()` | Widens to Double | -- | `Double` |
-| `toFloat()` | Narrows to Float | -- | `Float` |
-| `compareTo(other: Int)` | Compares with integer | `other: Int` | `Int` |
-| `compareTo(other: Long)` | Compares with long | `other: Long` | `Int` |
-
-No type introspection properties -- the type IS IntVal.
+| Method | Behavior | Input | Output | Errors |
+|--------|----------|-------|--------|--------|
+| `toInt()` | Narrows to Int | -- | `Int` | -- |
+| `toDouble()` | Widens to Double | -- | `Double` | -- |
+| `toFloat()` | Narrows to Float | -- | `Float` | -- |
+| `compareTo(other: Int)` | Compares with integer | `other: Int` | `Int` | -- |
+| `compareTo(other: Long)` | Compares with long | `other: Long` | `Int` | -- |
 
 ---
 
@@ -106,12 +104,13 @@ No type introspection properties -- the type IS IntVal.
 
 **Methods:**
 
-| Method | Behavior | Input | Output |
-|--------|----------|-------|--------|
-| `toInt()` | Truncates to Int | -- | `Int` |
-| `toLong()` | Truncates to Long | -- | `Long` |
-| `toIntVal()` | Truncates to IntVal | -- | `IntVal` |
-| `compareTo(other: Double)` | Compares with double | `other: Double` | `Int` |
+| Method | Behavior | Input | Output | Errors |
+|--------|----------|-------|--------|--------|
+| `toInt()` | Truncates to Int | -- | `Int` | -- |
+| `toLong()` | Truncates to Long | -- | `Long` | -- |
+| `toFloat()` | Narrows to Float | -- | `Float` | -- |
+| `toIntVal()` | Truncates to IntVal | -- | `IntVal` | -- |
+| `compareTo(other: Double)` | Compares with double | `other: Double` | `Int` | -- |
 
 ---
 
@@ -166,17 +165,4 @@ No type introspection properties -- the type IS IntVal.
 | `new<T>()` (companion, reified) | Creates Unsure from generic type | -- | `Unsure` | -- |
 | `contains(string: String)` (companion) | Checks if string is a valid Unsure identifier | `string: String` | `Boolean` | -- |
 
----
-
-## Validation Rules
-
-### Value Creation
-- IntVal accepts Long only. All shorter integer types (Byte, Short, Int) are widened to Long at construction.
-- FloatVal accepts Double only. Float is widened to Double at construction.
-- `ListVal` may contain any mix of `IValue` subtypes, including nested collections.
-- `MapVal` keys are `String` only; values are any `IValue`.
-
-### Serialization
-- Every serialized value starts with a type tag (byte or string).
-- Type tags are unique and non-overlapping across all value types.
-- Deserialization reconstructs the exact same `IValue` subtype as the original.
+Domain constraints on value construction and serialization: [model.md](model.md).

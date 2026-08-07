@@ -10,7 +10,15 @@ Part of [commons-value design](design-primitive.md). Specifies extension functio
 
 **`Long.intVal: IntVal`** -- Wraps Long as IntVal.
 
+**`Int.intVal: IntVal`** -- Widens Int to Long, wraps as IntVal.
+
+**`Short.intVal: IntVal`** -- Widens Short to Long, wraps as IntVal.
+
+**`Byte.intVal: IntVal`** -- Widens Byte to Long, wraps as IntVal.
+
 **`Double.floatVal: FloatVal`** -- Wraps Double as FloatVal.
+
+**`Float.floatVal: FloatVal`** -- Widens Float to Double, wraps as FloatVal.
 
 **`String.intVal: IntVal`** -- Parses string to integer, returns IntVal. Uses `toLongOrNull()`. Throws `NumberFormatException` on invalid input.
 
@@ -64,11 +72,7 @@ Part of [commons-value design](design-primitive.md). Specifies extension functio
 
 **`Any?.toVal: IValue`** -- Universal converter: null -> NullVal, Long/Int -> IntVal, Double/Float -> FloatVal, String -> StrVal, Boolean -> BoolVal, List -> ListVal, Map -> MapVal, IntRange -> RangeVal, Set -> SetVal, IValue -> identity. Throws `IllegalArgumentException` for unsupported types.
 
-### WireFormat (extension functions)
-
-**`String.asHexInt(): Int`** — Parses hex string to Int. Throws `NumberFormatException`.
-
-**`Int.asHexString(): String`** — Converts Int to hex string.
+Wire-format helper functions (`asHexInt`, buffer readers): [design-serializer.md](design-serializer.md).
 
 ---
 
@@ -76,7 +80,7 @@ Part of [commons-value design](design-primitive.md). Specifies extension functio
 
 | Exception | When Raised |
 |-----------|------------|
-| `IllegalArgumentException` | `Any?.toVal` / `Any?.primitiveVal` called on unsupported type; `IPrimitiveVal.compareTo` with incompatible types; serializer encounters unknown IValue subtype; deserializer encounters unknown type tag; empty ByteBuffer deserialization |
+| `IllegalArgumentException` | `Any?.toVal` / `Any?.primitiveVal` called on unsupported type; `IPrimitiveVal.compareTo` with incompatible types; serializer encounters unknown IValue subtype; deserializer encounters unknown type tag; empty ByteArray/ByteBuffer deserialization; size or count prefix negative or exceeding remaining material |
 | `IndexOutOfBoundsException` | `ListVal.get`/`set`/`subList` with out-of-range index; `StrVal.get` with out-of-range index |
 | `NumberFormatException` | `String.intVal` / `String.floatVal` / `String.asHexInt()` on invalid input |
 | `BufferUnderflowException` | ByteBuffer/CharBuffer read operations when insufficient data remains |

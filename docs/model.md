@@ -4,26 +4,31 @@
 
 | Entity | Definition |
 |--------|-----------|
-| Primitive Value | Atomic, indivisible data item. Six concrete forms: string, integer, floating-point, boolean, null, plus uncertain placeholder. |
-| Collection Value | Aggregate structure containing multiple values. Four forms: ordered list, unique set, string-keyed map, numeric range. |
+| Primitive Value | Atomic, indivisible data item. Six kinds: string, integer, floating-point, boolean, null, plus uncertain placeholder. |
+| Collection Value | Aggregate structure containing multiple values. Four kinds: ordered list, unique set, string-keyed map, numeric range. |
 | Uncertain Value | Typed placeholder for undetermined content. Four levels: any-primitive, any-string, any-number, any-boolean. |
-| Type Tag | Serialization discriminator identifying each value type for binary/text encoding. |
+| Type Tag | Serialization discriminator identifying each value kind for binary/text encoding. |
 
 ## Relations
 
-| Relation | Direction | Meaning |
-|----------|-----------|---------|
-| contains | Collection → Value | Collection holds values (recursive nesting allowed) |
-| converts-to | Platform type → IR Value | One-way mapping from JVM native types to IR values |
-| serializes-as | IR Value → Material | Value encodes to binary or text format via type tag |
+| Relation | Direction | Cardinality | Meaning |
+|----------|-----------|-------------|---------|
+| contains | Collection → Value | one-to-many | Collection holds values (recursive nesting allowed) |
+| converts-to | Platform type → IR Value | many-to-one | One-way mapping from platform-native types to IR values |
+| serializes-as | IR Value → Material | one-to-one | Value encodes to binary or text format via type tag |
 
 ## Invariants
 
-- Value hierarchy is sealed: every IValue is either IPrimitiveVal or ICollectionVal.
-- IPrimitiveVal hierarchy is sealed: exactly six subtypes (StrVal, IntVal, FloatVal, BoolVal, NullVal, Unsure).
-- ICollectionVal hierarchy is sealed: exactly four subtypes (ListVal, SetVal, MapVal, RangeVal).
-- BoolVal has exactly two instances (T, F). NullVal has exactly one instance.
-- IntVal stores Long (64-bit integer). FloatVal stores Double (IEEE 754 64-bit float). No other numeric representations.
-- MapVal keys are String only. Values are any IValue (recursive nesting).
-- Serialization round-trip preserves exact value type: serialize then deserialize yields a value equal to the original.
-- Two IntVal instances with the same Long value are equal. Two FloatVal instances with the same Double value are equal.
+- The value hierarchy is closed: every value is either a primitive value or a collection value.
+- The primitive family has exactly six kinds: string, integer, floating-point, boolean, null, uncertain.
+- The collection family has exactly four kinds: ordered list, unique set, string-keyed map, numeric range.
+- Boolean values have exactly two instances (true, false). The null value has exactly one instance.
+- Integer values are 64-bit signed integers. Floating-point values are 64-bit IEEE 754 floats. No other numeric widths exist.
+- Map keys are strings only. Map values are any value (recursive nesting).
+- Every serialized value begins with a type tag.
+- Type tags are unique: no two tags share a binary or text encoding.
+- Every type tag identifies exactly one value kind; a kind may own several tags (boolean encodings differ by material format).
+- Serialization round-trip preserves exact value kind: serialize then deserialize yields a value equal to the original.
+- Two integer values with equal content are equal. Two floating-point values with equal content are equal.
+
+Rationale: [concept.md](concept.md). Implementation mapping: [design-primitive.md](design-primitive.md).

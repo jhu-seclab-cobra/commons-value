@@ -1,4 +1,6 @@
-# commons-value Idea
+# commons-value Concept
+
+Domain semantics: [model.md](model.md). Software structure: [design-primitive.md](design-primitive.md).
 
 ## 1. Context
 
@@ -10,7 +12,7 @@ commons-value is the IR value type system for the Cobra static analysis engine, 
 
 **Data Flow**
 - **Inputs:** Language adapter outputs (mapped from source language types), raw platform types from internal modules
-- **Outputs:** IR value types (IValue and subtypes), serialized binary/text materials
+- **Outputs:** IR value types, serialized binary/text materials
 - **Connections:** Language adapters → commons-value IR → cross-module consumers (graph storage, constraint solvers, reporters) / storage layer / transport layer
 
 **Scope Boundaries**
@@ -23,8 +25,8 @@ commons-value is the IR value type system for the Cobra static analysis engine, 
 ```
 Source Language                  commons-value IR                    Cross-Module Consumers
 (PHP, Java, ...)               ┌──────────────────┐
-                               │     IValue        │
-  Language       ┌────────────►│  (sealed hierarchy)├──────────►  Graph property storage
+                               │      Value        │
+  Language       ┌────────────►│  (closed hierarchy)├──────────►  Graph property storage
   Adapter        │             │                    │              Constraint solvers
   Layer    ──────┘             │  Primitives:       │              Pattern matching
   (per module)                 │    Str, Int, Float, │              Serialization layer
@@ -37,14 +39,14 @@ Source Language                  commons-value IR                    Cross-Modul
                                         │
                                         ▼
                                    Serializers
-                               (ByteArray, ByteBuffer,
-                                CharBuffer)
+                               (binary and text
+                                  materials)
 ```
 
 **Core Concepts**
 
-- **Name:** Value (IValue)
-- **Definition:** Root sealed interface representing any data item in the IR. Splits into primitive and collection families, enabling compile-time exhaustive checking.
+- **Name:** Value
+- **Definition:** Root of the value family representing any data item in the IR. Splits into a closed set of primitive and collection families, enabling exhaustive case analysis.
 - **Scope:** All concrete value types. Excludes source language type semantics.
 - **Relationships:** Parent of Primitive Value and Collection Value. Input/output type for Serializer.
 
@@ -64,7 +66,7 @@ Source Language                  commons-value IR                    Cross-Modul
 - **Relationships:** Subtype of Primitive Value. Used by pattern matching consumers.
 
 - **Name:** Value Conversion
-- **Definition:** One-way mechanism from platform-native types to IR values via extension properties, plus a universal type-inferred converter.
+- **Definition:** One-way mapping from platform-native types to IR values, plus a universal type-inferred conversion.
 - **Scope:** Platform-to-IR conversions for supported types. Excludes source-language-specific coercion rules.
 - **Relationships:** Bridges platform types and Value.
 
@@ -74,9 +76,9 @@ Source Language                  commons-value IR                    Cross-Modul
 - **Relationships:** Consumes Value and Type Tag. Produces serialized materials.
 
 - **Name:** Type Tag
-- **Definition:** Enum identifying each value type during serialization. Each tag has a unique byte and string representation for exact type reconstruction.
-- **Scope:** Tags for all concrete value types. Excludes runtime type information beyond serialization.
-- **Relationships:** Used by Serializer for type discrimination. One-to-one with concrete Value subtypes.
+- **Definition:** Marker identifying each value kind during serialization. Each tag has a unique binary and text representation for exact type reconstruction.
+- **Scope:** Tags for all concrete value kinds. Excludes runtime type information beyond serialization.
+- **Relationships:** Used by Serializer for type discrimination. Each tag identifies one value kind.
 
 ## 3. Contracts & Flow
 
@@ -88,14 +90,14 @@ Source Language                  commons-value IR                    Cross-Modul
 
 **Internal Processing Flow**
 
-1. **Value Creation** — Wrap platform data into IR values via constructors or conversion extensions
+1. **Value Creation** — Wrap platform data into IR values through value creation or value conversion
 2. **Value Manipulation** — Read, modify, and compare values through type-specific operations
 3. **Value Serialization** — Serializer branches on sealed type, writing type tags and data
 4. **Value Deserialization** — Serializer reads type tags and reconstructs value instances
-5. **Value Extraction** — Restore platform types from IR values via internal representation property
+5. **Value Extraction** — Restore platform types from IR values by reading the value's content
 
 ## 4. Scenarios
 
 - **Typical:** An analysis module receives parsed source data, uses the language adapter to convert it into IR values, assembles a map value representing a data flow node, serializes it for graph property storage, and deserializes it when a downstream module queries the node.
-- **Boundary:** Null values represent missing or undefined analysis data. Numeric value truncation downcasts to the smallest integer type without precision loss. Empty collections maintain correct types through serialization round-trips.
+- **Boundary:** Null values represent missing or undefined analysis data. Integer and floating-point values are fixed-width; floating-point to integer conversion truncates the fractional part. Empty collections maintain correct types through serialization round-trips.
 - **Interaction:** A pattern matching module uses uncertain values as typed placeholders in analysis templates, converting them to regex patterns for matching against graph properties. Different language adapters map their respective integer types to the same IR numeric value, enabling shared analysis logic across languages.

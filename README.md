@@ -51,7 +51,7 @@ Full type specifications and method details in [docs/design-primitive.md](./docs
 
 ## Documentation
 
-- [docs/idea.md](./docs/idea.md) -- concepts, terminology, and system role
+- [docs/concept.md](./docs/concept.md) -- concepts, terminology, and system role
 - [docs/design-primitive.md](./docs/design-primitive.md) -- primitive type specifications (IntVal, FloatVal, StrVal, BoolVal, NullVal, Unsure)
 - [docs/design-collection.md](./docs/design-collection.md) -- collection type specifications (ListVal, SetVal, MapVal, RangeVal)
 - [docs/design-serializer.md](./docs/design-serializer.md) -- serializer interface and implementations

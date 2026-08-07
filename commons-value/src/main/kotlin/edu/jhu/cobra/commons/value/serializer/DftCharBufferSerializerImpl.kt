@@ -26,16 +26,17 @@ public object DftCharBufferSerializerImpl : IValSerializer<CharBuffer> {
     /**
      * Serializes an [IValue] instance into a [CharBuffer].
      *
-     * The serialization format is type-specific:
-     * - Null values: `NULL:`
-     * - Strings: `STR:<length>:<value>`
-     * - Booleans: `BOOL_TRUE:` or `BOOL_FALSE:`
-     * - Numbers: `NUM_<type>:<value>:`
-     * - Ranges: `RANGE:<start>,<end>:`
-     * - Lists: `LIST:<count>:<element1>,<element2>,...:`
-     * - Sets: `SET:<count>:<element1>,<element2>,...:`
-     * - Maps: `MAP:<count>:<key1>=<value1>,<key2>=<value2>,...:`
-     * - Unsure types: `UNSURE_<type>:`
+     * The serialization format is type-specific; length and count prefixes are hexadecimal:
+     * - Null values: `Null:`
+     * - Strings: `Str:<hex length>:<value>`
+     * - Booleans: `True:` or `False:`
+     * - Integers: `IntV:<value>:`
+     * - Floats: `FloatV:<value>:`
+     * - Ranges: `Range:<start>,<end>:`
+     * - Lists: `List:<hex count>:<element1>,<element2>,...:`
+     * - Sets: `Set:<hex count>:<element1>,<element2>,...:`
+     * - Maps: `Map:<hex count>:<key1>=<value1>,<key2>=<value2>,...:`
+     * - Unsure types: `UnANY:`, `UnSTR:`, `UnNUM:`, or `UnBOOL:`
      *
      * @param value The [IValue] instance to serialize.
      * @return A [CharBuffer] containing the serialized representation of the value.

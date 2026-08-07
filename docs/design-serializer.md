@@ -56,3 +56,35 @@ Part of [commons-value design](design-primitive.md). Specifies the `IValSerializ
 `Type` owns the wire-format tag vocabulary: every tag a serializer emits or decodes is declared here, and no serializer defines tags of its own. Boolean tags are split by implementation: the byte-array serializer emits BOOL with a payload byte; the byte-buffer and char-buffer serializers emit the payload-free BOOL_TRUE / BOOL_FALSE tags.
 
 **Serialization notes:** IntVal serializes as 8-byte Long (tag INT). FloatVal serializes as 8-byte Double (tag FLOAT).
+
+---
+
+## Function Specifications
+
+### WireFormat (extension functions)
+
+Buffer and encoding helpers shared by the serializer implementations.
+
+**`String.asHexInt(): Int`** -- Parses a hexadecimal string to Int. Throws `NumberFormatException` on invalid input.
+
+**`Int.asHexString(): String`** -- Converts Int to its hexadecimal string form.
+
+**`ByteBuffer.getArray(size: Int): ByteArray`** -- Reads `size` bytes into a new array. Throws `IllegalArgumentException` when `size` is negative or exceeds remaining bytes.
+
+**`ByteBuffer.getString(size: Int? = null): String`** -- Reads a string of `size` bytes; when `size` is null, reads an Int length prefix first. Throws `IllegalArgumentException` on invalid size.
+
+**`byteBufferOf(vararg elements: Byte): ByteBuffer`** -- Wraps the given bytes in a ByteBuffer.
+
+**`ByteBuffer.put(type: Type): ByteBuffer`** -- Writes the type's tag byte; returns the buffer for chaining. Throws `BufferOverflowException` when no space remains.
+
+**`String.asCharBuffer(): CharBuffer`** -- Copies the string into a CharBuffer.
+
+**`ByteBuffer.typedFlip(): ByteBuffer` / `CharBuffer.typedFlip(): CharBuffer`** -- `flip()` preserving the receiver type (Java 8 `Buffer` return-type compatibility).
+
+**`CharBuffer.typedPosition(pos: Int): CharBuffer`** -- `position(pos)` preserving the receiver type. Throws `IllegalArgumentException` on out-of-bounds position.
+
+**`CharBuffer.remove(until: Char): Boolean`** -- Advances past characters up to and including `until`; returns whether the delimiter was found.
+
+**`CharBuffer.getBuffer(until: Char): CharBuffer` / `CharBuffer.getString(until: Char): String`** -- Reads characters up to `until` (delimiter consumed, excluded from result); reads all remaining characters when the delimiter is absent.
+
+**`CharBuffer.getBuffer(size: Int): CharBuffer` / `CharBuffer.getString(size: Int): String`** -- Reads exactly `size` characters. Throws `IllegalArgumentException` when `size` is negative or exceeds remaining characters.

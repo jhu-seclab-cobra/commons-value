@@ -21,6 +21,8 @@ val list = listOf(1, 2).listVal  // ListVal(IntVal(1L), IntVal(2L))
 
 - **`Int.intVal: IntVal`** -- Converts `Int` to `IntVal` (widens to `Long`).
 - **`Long.intVal: IntVal`** -- Wraps `Long` in `IntVal`.
+- **`Short.intVal: IntVal`** -- Converts `Short` to `IntVal` (widens to `Long`).
+- **`Byte.intVal: IntVal`** -- Converts `Byte` to `IntVal` (widens to `Long`).
 - **`String.intVal: IntVal`** -- Parses string to `IntVal`. Raises `NumberFormatException` on invalid input.
 - **`Double.floatVal: FloatVal`** -- Wraps `Double` in `FloatVal`.
 - **`Float.floatVal: FloatVal`** -- Converts `Float` to `FloatVal` (widens to `Double`).
