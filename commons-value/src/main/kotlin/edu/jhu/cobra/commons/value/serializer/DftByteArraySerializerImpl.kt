@@ -187,9 +187,9 @@ public object DftByteArraySerializerImpl : IValSerializer<ByteArray> {
                 val firstSize = checkSizePrefix(buffer.getInt(), buffer.remaining(), "range bound size")
                 val savedLimit = buffer.limit()
                 buffer.limit(buffer.position() + firstSize)
-                val first = deserializeFrom(buffer) as IntVal
+                val first = requireDecodedType<IntVal>(deserializeFrom(buffer), "range start")
                 buffer.limit(savedLimit)
-                val second = deserializeFrom(buffer) as IntVal
+                val second = requireDecodedType<IntVal>(deserializeFrom(buffer), "range end")
                 RangeVal(first, second)
             }
             Type.LIST.byte -> ListVal().also { list -> forEachContainerElement(buffer) { list.plusAssign(it) } }

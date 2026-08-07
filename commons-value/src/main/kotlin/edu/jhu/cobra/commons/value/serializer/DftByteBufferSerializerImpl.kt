@@ -131,7 +131,11 @@ public object DftByteBufferSerializerImpl : IValSerializer<ByteBuffer> {
             Type.UNSURE_NUM.byte -> Unsure.NUM
             Type.UNSURE_STR.byte -> Unsure.STR
             Type.UNSURE_BOOL.byte -> Unsure.BOOL
-            Type.RANGE.byte -> RangeVal(start = deserialize(material) as IntVal, endInclusive = deserialize(material) as IntVal)
+            Type.RANGE.byte ->
+                RangeVal(
+                    start = requireDecodedType<IntVal>(deserialize(material), "range start"),
+                    endInclusive = requireDecodedType<IntVal>(deserialize(material), "range end"),
+                )
             Type.LIST.byte -> { // count | element1 | element2 | ...
                 val count = readContainerCount(material)
                 ListVal(size = count).also { list -> repeat(count) { list.plusAssign(deserialize(material)) } }

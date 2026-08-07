@@ -13,6 +13,7 @@ import kotlin.test.assertTrue
  * - `should throw IllegalArgumentException when deserializing empty CharBuffer` — Empty buffer rejected.
  * - `should throw IllegalArgumentException when string length exceeds remaining chars` — Corrupt length prefix rejected.
  * - `should throw IllegalArgumentException with context when string length is negative` — Negative length prefix reported with context.
+ * - `should throw IllegalArgumentException when map key is not a StrVal` — Non-Str key inside MAP rejected.
  */
 internal class DftCharBufferSerializerImplTest : AbcSerializerImplUnitTest<CharBuffer>() {
     override val testTarget: IValSerializer<CharBuffer> get() = DftCharBufferSerializerImpl
@@ -49,5 +50,15 @@ internal class DftCharBufferSerializerImplTest : AbcSerializerImplUnitTest<CharB
                 DftCharBufferSerializerImpl.deserialize(corruptBuffer)
             }
         assertTrue("size" in exception.message.orEmpty())
+    }
+
+    @Test
+    fun `should throw IllegalArgumentException when map key is not a StrVal`() {
+        val corruptBuffer = "Map:1:IntV:5:=Null::".asCharBuffer()
+        val exception =
+            assertFailsWith<IllegalArgumentException> {
+                DftCharBufferSerializerImpl.deserialize(corruptBuffer)
+            }
+        assertTrue("map key" in exception.message.orEmpty())
     }
 }

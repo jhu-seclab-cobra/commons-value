@@ -1,5 +1,6 @@
 package edu.jhu.cobra.commons.value.serializer
 
+import edu.jhu.cobra.commons.value.IValue
 import java.nio.ByteBuffer
 import java.nio.CharBuffer
 
@@ -43,6 +44,22 @@ internal fun checkSizePrefix(
 ): Int {
     require(size in 0..remaining) { "Invalid $context $size: expected 0..$remaining" }
     return size
+}
+
+/**
+ * Validates that a value decoded from serialized material has the expected type.
+ *
+ * @param value The decoded value
+ * @param context The name of the decoded quantity, included in the error message
+ * @return The value as an instance of [T]
+ * @throws IllegalArgumentException if [value] is not an instance of [T]
+ */
+internal inline fun <reified T : IValue> requireDecodedType(
+    value: IValue,
+    context: String,
+): T {
+    require(value is T) { "Invalid $context: expected ${T::class.simpleName}, got $value" }
+    return value
 }
 
 /**

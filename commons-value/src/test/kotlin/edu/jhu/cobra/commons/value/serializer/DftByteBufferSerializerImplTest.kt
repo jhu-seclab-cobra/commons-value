@@ -14,6 +14,7 @@ import kotlin.test.assertTrue
  * - `should throw IllegalArgumentException when string length exceeds remaining bytes` — Corrupt length prefix rejected.
  * - `should throw IllegalArgumentException when string length is negative` — Negative length prefix rejected.
  * - `should throw IllegalArgumentException with context when list count is negative` — Negative element count reported with context.
+ * - `should throw IllegalArgumentException when range bound is not an IntVal` — Non-INT nested value inside RANGE rejected.
  */
 internal class DftByteBufferSerializerImplTest : AbcSerializerImplUnitTest<ByteBuffer>() {
     override val testTarget: IValSerializer<ByteBuffer> get() = DftByteBufferSerializerImpl
@@ -74,5 +75,20 @@ internal class DftByteBufferSerializerImplTest : AbcSerializerImplUnitTest<ByteB
                 DftByteBufferSerializerImpl.deserialize(buffer)
             }
         assertTrue("count" in exception.message.orEmpty())
+    }
+
+    @Test
+    fun `should throw IllegalArgumentException when range bound is not an IntVal`() {
+        val corruptBuffer =
+            ByteBuffer
+                .allocate(2)
+                .put(Type.RANGE.byte)
+                .put(Type.NULL.byte)
+                .typedFlip()
+        val exception =
+            assertFailsWith<IllegalArgumentException> {
+                DftByteBufferSerializerImpl.deserialize(corruptBuffer)
+            }
+        assertTrue("range start" in exception.message.orEmpty())
     }
 }

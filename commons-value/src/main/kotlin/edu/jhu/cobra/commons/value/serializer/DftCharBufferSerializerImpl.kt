@@ -167,7 +167,7 @@ public object DftCharBufferSerializerImpl : IValSerializer<CharBuffer> {
                 val eleCount = checkSizePrefix(material.getString(':').asHexInt(), material.remaining(), "entry count")
                 val container = MapVal(size = eleCount)
                 repeat(eleCount) {
-                    val key = deserialize(material) as StrVal
+                    val key = requireDecodedType<StrVal>(deserialize(material), "map key")
                     material.get() // remove the delimiter '='
                     val value = deserialize(material)
                     material.get() // remove the delimiter ',' or ':'
