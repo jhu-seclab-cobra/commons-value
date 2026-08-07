@@ -42,7 +42,7 @@ public enum class Unsure(
     ;
 
     public companion object {
-        private val stringValues = entries.map { it.core }.toSet()
+        private val entriesByCore = entries.associateBy { it.core }
 
         /**
          * Returns the appropriate [Unsure] instance based on the provided [core] string.
@@ -51,7 +51,7 @@ public enum class Unsure(
          * @param core The string representing the uncertain type.
          * @return The corresponding [Unsure] instance or `null` if no match is found.
          */
-        public fun new(core: String): Unsure? = entries.firstOrNull { it.core == core }
+        public fun new(core: String): Unsure? = entriesByCore[core]
 
         /**
          * Creates an [Unsure] object based on the type of the given example value.
@@ -98,7 +98,7 @@ public enum class Unsure(
          * @param string The string to check for containment.
          * @return `true` if the string is contained in the predefined values; otherwise, `false`.
          */
-        public operator fun contains(string: String): Boolean = string in stringValues
+        public operator fun contains(string: String): Boolean = string in entriesByCore
     }
 
     override fun toString(): String = "Unsure{$core}"
