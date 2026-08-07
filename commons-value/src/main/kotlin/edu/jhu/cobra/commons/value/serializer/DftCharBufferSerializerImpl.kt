@@ -23,6 +23,15 @@ import java.nio.CharBuffer
  * instances from their serialized representation.
  */
 public object DftCharBufferSerializerImpl : IValSerializer<CharBuffer> {
+    // The container header "type:count:" carries two ':' delimiter characters.
+    private const val HEADER_DELIMITER_CHARS = 2
+
+    // Each map entry "key=value," carries one '=' and one trailing ',' or ':' delimiter character.
+    private const val ENTRY_DELIMITER_CHARS = 2
+
+    // Each list or set element carries one trailing ',' or ':' delimiter character.
+    private const val ELEMENT_DELIMITER_CHARS = 1
+
     /**
      * Serializes an [IValue] instance into a [CharBuffer].
      *
@@ -74,8 +83,8 @@ public object DftCharBufferSerializerImpl : IValSerializer<CharBuffer> {
             is MapVal -> { // mapType:cnt_hex{key=element, key=element, key=element}
                 val elements = value.map { (k, v) -> serialize(StrVal(k)) to serialize(v) }
                 val eleCount = value.size.asHexString() // the counter for ele
-                val eleLength = elements.sumOf { (k, v) -> k.length + v.length + 2 }
-                val charBuffer = CharBuffer.allocate(Type.MAP.str.length + 2 + eleCount.length + eleLength)
+                val eleLength = elements.sumOf { (k, v) -> k.length + v.length + ENTRY_DELIMITER_CHARS }
+                val charBuffer = CharBuffer.allocate(Type.MAP.str.length + HEADER_DELIMITER_CHARS + eleCount.length + eleLength)
                 charBuffer
                     .put(Type.MAP.str)
                     .put(':')
@@ -98,8 +107,8 @@ public object DftCharBufferSerializerImpl : IValSerializer<CharBuffer> {
         elements: List<CharBuffer>,
     ): CharBuffer {
         val eleCount = elements.size.asHexString()
-        val eleLength = elements.sumOf { ele -> ele.length + 1 }
-        val charBuffer = CharBuffer.allocate(type.str.length + 2 + eleCount.length + eleLength)
+        val eleLength = elements.sumOf { ele -> ele.length + ELEMENT_DELIMITER_CHARS }
+        val charBuffer = CharBuffer.allocate(type.str.length + HEADER_DELIMITER_CHARS + eleCount.length + eleLength)
         charBuffer
             .put(type.str)
             .put(':')
