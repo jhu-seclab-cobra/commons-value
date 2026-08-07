@@ -57,7 +57,7 @@ public object DftByteArraySerializerImpl : IValSerializer<ByteArray> {
                 }
 
             is IntVal -> longToBytes(Type.INT.byte, value.core)
-            is FloatVal -> longToBytes(Type.FLOAT.byte, java.lang.Double.doubleToRawLongBits(value.core))
+            is FloatVal -> longToBytes(Type.FLOAT.byte, value.core.toRawBits())
 
             is RangeVal -> {
                 val result = ByteArray(TYPE_TAG_BYTES + SIZE_PREFIX_BYTES + 2 * TAGGED_LONG_BYTES)
