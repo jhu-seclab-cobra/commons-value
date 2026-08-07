@@ -41,10 +41,20 @@ public data class RangeVal(
     /**
      * Checks if the specified number is within the range.
      *
+     * Integral arguments are compared as [Long]. Floating-point arguments are compared exactly,
+     * without rounding the range bounds to [Double]. NaN and infinite values are never contained.
+     *
      * @param num The number to check.
      * @return `true` if the number is within the range, `false` otherwise.
      */
-    public operator fun contains(num: Number): Boolean = first.toDouble() <= num.toDouble() && num.toDouble() <= last.toDouble()
+    public operator fun contains(num: Number): Boolean =
+        when (num) {
+            is Long, is Int, is Short, is Byte -> num.toLong() in this
+            else -> containsExactly(num.toDouble())
+        }
+
+    // Long bounds above 2^53 are not exactly representable as Double; compare via BigDecimal.
+    private fun containsExactly(num: Double): Boolean = num.isFinite() && num.toBigDecimal() in first.toBigDecimal()..last.toBigDecimal()
 
     /**
      * Checks if the specified [IntVal] is within the range.

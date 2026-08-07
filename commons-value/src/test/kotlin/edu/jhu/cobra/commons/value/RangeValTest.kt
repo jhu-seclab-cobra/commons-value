@@ -23,6 +23,10 @@ import kotlin.test.assertTrue
  * - `should contain number within range`
  * - `should not contain number below start`
  * - `should not contain number above end`
+ * - `should contain fractional Double within range`
+ * - `should compare integral Number arguments without Double rounding`
+ * - `should compare floating Number arguments exactly at large bounds`
+ * - `should not contain non-finite Double`
  *
  * contains(IntVal):
  * - `should contain IntVal within range`
@@ -127,6 +131,38 @@ internal class RangeValTest {
     fun `should not contain number above end`() {
         val range = RangeVal(1, 5)
         assertFalse(6 in range)
+    }
+
+    @Test
+    fun `should contain fractional Double within range`() {
+        val range = RangeVal(1, 5)
+        assertTrue(2.5 in range)
+        assertFalse(0.5 in range)
+        assertFalse(5.5 in range)
+    }
+
+    @Test
+    fun `should compare integral Number arguments without Double rounding`() {
+        val range = RangeVal(Long.MAX_VALUE - 100, Long.MAX_VALUE)
+        val below: Number = Long.MAX_VALUE - 1024
+        val inside: Number = Long.MAX_VALUE - 50
+        assertFalse(below in range)
+        assertTrue(inside in range)
+    }
+
+    @Test
+    fun `should compare floating Number arguments exactly at large bounds`() {
+        val range = RangeVal(0, Long.MAX_VALUE)
+        val above: Number = Long.MAX_VALUE.toDouble()
+        assertFalse(above in range)
+    }
+
+    @Test
+    fun `should not contain non-finite Double`() {
+        val range = RangeVal(Long.MIN_VALUE, Long.MAX_VALUE)
+        assertFalse(Double.NaN in range)
+        assertFalse(Double.POSITIVE_INFINITY in range)
+        assertFalse(Double.NEGATIVE_INFINITY in range)
     }
 
     // -- contains(IntVal) --
