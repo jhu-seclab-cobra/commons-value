@@ -20,6 +20,7 @@ import kotlin.test.assertSame
  * - `should convert IntRange to RangeVal` — IntRange produces RangeVal with matching bounds.
  * - `should convert Set to SetVal` — Set input produces SetVal with converted elements.
  * - `should return IValue identity` — IValue input returned as same instance.
+ * - `should return collection value identity` — ListVal, SetVal, MapVal returned as same instance.
  * - `should throw IllegalArgumentException for unsupported type` — Unsupported type rejected.
  * - `should convert Int to IntVal via toVal` — Int dispatches to intVal.
  * - `should convert Long to IntVal via toVal` — Long dispatches to intVal.
@@ -104,6 +105,16 @@ internal class ValueConversionsTest {
         val intVal = IntVal(42L)
         val result = (intVal as Any?).toVal
         assertSame(intVal, result)
+    }
+
+    @Test
+    fun `should return collection value identity`() {
+        val listVal = ListVal(IntVal(1L))
+        val setVal = SetVal(IntVal(1L))
+        val mapVal = MapVal("k" to IntVal(1L))
+        assertSame(listVal, (listVal as Any?).toVal)
+        assertSame(setVal, (setVal as Any?).toVal)
+        assertSame(mapVal, (mapVal as Any?).toVal)
     }
 
     @Test
