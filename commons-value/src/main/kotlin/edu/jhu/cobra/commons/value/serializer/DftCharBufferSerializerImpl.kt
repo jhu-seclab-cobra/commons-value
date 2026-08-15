@@ -49,7 +49,8 @@ public object DftCharBufferSerializerImpl : IValSerializer<CharBuffer> {
      *
      * @param value The [IValue] instance to serialize.
      * @return A [CharBuffer] containing the serialized representation of the value.
-     * @throws IllegalArgumentException If value nesting exceeds the supported depth, including cyclic value graphs.
+     * @throws IllegalArgumentException If value nesting exceeds the supported depth (including cyclic
+     *   value graphs), or a string contains an unpaired UTF-16 surrogate.
      */
     override fun serialize(value: IValue): CharBuffer = encode(value, depth = 0)
 
@@ -70,7 +71,7 @@ public object DftCharBufferSerializerImpl : IValSerializer<CharBuffer> {
                 }
             is StrVal -> {
                 val hexCnt = value.length.asHexString()
-                val string = "${Type.STR.str}:$hexCnt:${value.core}"
+                val string = "${Type.STR.str}:$hexCnt:${value.core.requireWellFormedUtf16()}"
                 string.asCharBuffer()
             }
             is BoolVal ->

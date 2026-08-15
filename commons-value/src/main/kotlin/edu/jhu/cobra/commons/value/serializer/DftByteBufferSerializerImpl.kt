@@ -34,7 +34,8 @@ public object DftByteBufferSerializerImpl : IValSerializer<ByteBuffer> {
      *
      * @param value The [IValue] instance to serialize.
      * @return A [ByteBuffer] containing the serialized representation of the value.
-     * @throws IllegalArgumentException If value nesting exceeds the supported depth, including cyclic value graphs.
+     * @throws IllegalArgumentException If value nesting exceeds the supported depth (including cyclic
+     *   value graphs), or a string contains an unpaired UTF-16 surrogate.
      */
     override fun serialize(value: IValue): ByteBuffer = encode(value, depth = 0)
 
@@ -47,7 +48,7 @@ public object DftByteBufferSerializerImpl : IValSerializer<ByteBuffer> {
         return when (value) {
             is NullVal -> byteBufferOf(Type.NULL.byte)
             is StrVal -> {
-                val strCore = value.core.toByteArray()
+                val strCore = value.core.requireWellFormedUtf16().toByteArray()
                 val bufferLen = TYPE_TAG_BYTES + SIZE_PREFIX_BYTES + strCore.size
                 ByteBuffer
                     .allocate(bufferLen)
@@ -96,7 +97,7 @@ public object DftByteBufferSerializerImpl : IValSerializer<ByteBuffer> {
             is SetVal -> containerToBuffer(Type.SET, value.map { element -> encode(element, depth + 1) })
 
             is MapVal -> { // 1 byte type | count | size_keyN | keyN | size_valueN | valueN
-                val elements = value.map { (k, v) -> k.toByteArray() to encode(v, depth + 1) }
+                val elements = value.map { (k, v) -> k.requireWellFormedUtf16().toByteArray() to encode(v, depth + 1) }
                 val bufferLength = TYPE_TAG_BYTES + SIZE_PREFIX_BYTES + elements.sumOf { (k, v) -> SIZE_PREFIX_BYTES + k.size + v.limit() }
                 val buffer = ByteBuffer.allocate(bufferLength).put(Type.MAP).putInt(value.size)
                 elements.forEach { (k, v) -> buffer.putInt(k.size).put(k).put(v) }

@@ -35,7 +35,8 @@ public object DftByteArraySerializerImpl : IValSerializer<ByteArray> {
      *
      * @param value The [IValue] instance to serialize.
      * @return A byte array representing the serialized value.
-     * @throws IllegalArgumentException If value nesting exceeds the supported depth, including cyclic value graphs.
+     * @throws IllegalArgumentException If value nesting exceeds the supported depth (including cyclic
+     *   value graphs), or a string contains an unpaired UTF-16 surrogate.
      */
     override fun serialize(value: IValue): ByteArray = encode(value, depth = 0)
 
@@ -48,7 +49,7 @@ public object DftByteArraySerializerImpl : IValSerializer<ByteArray> {
         return when (value) {
             is NullVal -> byteArrayOf(Type.NULL.byte)
             is StrVal -> {
-                val bytes = value.core.toByteArray()
+                val bytes = value.core.requireWellFormedUtf16().toByteArray()
                 ByteArray(TYPE_TAG_BYTES + bytes.size).also {
                     it[0] = Type.STR.byte
                     bytes.copyInto(it, TYPE_TAG_BYTES)
@@ -82,7 +83,7 @@ public object DftByteArraySerializerImpl : IValSerializer<ByteArray> {
             is SetVal -> containerToBytes(Type.SET.byte, value.map { encode(it, depth + 1) })
 
             is MapVal -> {
-                val mapEntriesBytes = value.map { (k, v) -> k.toByteArray() to encode(v, depth + 1) }
+                val mapEntriesBytes = value.map { (k, v) -> k.requireWellFormedUtf16().toByteArray() to encode(v, depth + 1) }
                 val entriesLength = mapEntriesBytes.sumOf { (k, v) -> SIZE_PREFIX_BYTES + k.size + SIZE_PREFIX_BYTES + v.size }
                 val result = ByteArray(TYPE_TAG_BYTES + entriesLength)
                 result[0] = Type.MAP.byte

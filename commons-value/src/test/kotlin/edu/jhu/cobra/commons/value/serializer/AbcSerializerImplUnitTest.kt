@@ -56,6 +56,11 @@ import kotlin.test.assertTrue
  *   MAX_NESTING_DEPTH rejected at serialize.
  * - `should throw IllegalArgumentException when serializing cyclic value graph` — Self-referencing list
  *   rejected at serialize instead of overflowing the stack.
+ * - `should round-trip StrVal with surrogate pair` — Well-formed surrogate pair round-trips.
+ * - `should throw IllegalArgumentException when serializing unpaired surrogate in string` — Lone high
+ *   surrogate in StrVal rejected at serialize instead of corrupting silently.
+ * - `should throw IllegalArgumentException when serializing unpaired surrogate in map key` — Lone high
+ *   surrogate in a map key rejected at serialize instead of corrupting silently.
  * - `should round-trip IntVal zero` — IntVal(0L) round-trips.
  * - `should round-trip IntVal positive` — IntVal(42L) round-trips.
  * - `should round-trip IntVal negative` — IntVal(-1L) round-trips.
@@ -401,6 +406,27 @@ internal abstract class AbcSerializerImplUnitTest<M : Any> {
         cyclic.add(cyclic)
         assertFailsWith<IllegalArgumentException> {
             testTarget.serialize(cyclic)
+        }
+    }
+
+    // --- UTF-16 well-formedness ---
+
+    @Test
+    fun `should round-trip StrVal with surrogate pair`() {
+        assertRoundTrip(StrVal("emoji: 😀"))
+    }
+
+    @Test
+    fun `should throw IllegalArgumentException when serializing unpaired surrogate in string`() {
+        assertFailsWith<IllegalArgumentException> {
+            testTarget.serialize(StrVal("broken: \uD800"))
+        }
+    }
+
+    @Test
+    fun `should throw IllegalArgumentException when serializing unpaired surrogate in map key`() {
+        assertFailsWith<IllegalArgumentException> {
+            testTarget.serialize(MapVal("broken: \uD800" to NullVal))
         }
     }
 }
