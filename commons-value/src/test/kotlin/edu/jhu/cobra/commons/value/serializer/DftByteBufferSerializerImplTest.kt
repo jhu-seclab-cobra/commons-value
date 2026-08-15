@@ -16,6 +16,8 @@ import kotlin.test.assertTrue
  * - `should throw IllegalArgumentException with context when list count is negative` — Negative element count reported with context.
  * - `should throw IllegalArgumentException when range bound is not an IntVal` — Non-INT nested value inside RANGE rejected.
  * - `should throw IllegalArgumentException when buffer is fully consumed` — Re-reading an exhausted buffer rejected.
+ * - `should throw ValFormatException when long payload is truncated` — Truncated INT payload raises
+ *   ValFormatException instead of leaking BufferUnderflowException.
  */
 internal class DftByteBufferSerializerImplTest : AbcSerializerImplUnitTest<ByteBuffer>() {
     override val testTarget: IValSerializer<ByteBuffer> get() = DftByteBufferSerializerImpl
@@ -99,6 +101,19 @@ internal class DftByteBufferSerializerImplTest : AbcSerializerImplUnitTest<ByteB
         DftByteBufferSerializerImpl.deserialize(consumedBuffer)
         assertFailsWith<IllegalArgumentException> {
             DftByteBufferSerializerImpl.deserialize(consumedBuffer)
+        }
+    }
+
+    @Test
+    fun `should throw ValFormatException when long payload is truncated`() {
+        val truncatedBuffer =
+            ByteBuffer
+                .allocate(3)
+                .put(Type.INT.byte)
+                .putShort(0)
+                .typedFlip()
+        assertFailsWith<ValFormatException> {
+            DftByteBufferSerializerImpl.deserialize(truncatedBuffer)
         }
     }
 }

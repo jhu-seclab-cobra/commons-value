@@ -3,6 +3,22 @@ package edu.jhu.cobra.commons.value.serializer
 import edu.jhu.cobra.commons.value.IValue
 
 /**
+ * Signals that serialized material is malformed and cannot be deserialized into an [IValue].
+ *
+ * Raised by every [IValSerializer.deserialize] implementation for any defect in the material:
+ * unknown type tags, truncated payloads, invalid size or count prefixes, unparsable numbers,
+ * and empty or exhausted material. Extends [IllegalArgumentException] so existing callers
+ * catching that type continue to work.
+ *
+ * @param message Description of the format defect, including decoding context.
+ * @param cause The underlying decoding failure, when one exists.
+ */
+public class ValFormatException(
+    message: String,
+    cause: Throwable? = null,
+) : IllegalArgumentException(message, cause)
+
+/**
  * Defines a mechanism for serializing and deserializing [IValue] instances to and from a specific material format.
  *
  * This interface is generic, allowing implementations to specify the material type that they work with,
@@ -32,6 +48,7 @@ public interface IValSerializer<Material : Any> {
      *
      * @param material The material from which the value is to be deserialized.
      * @return The deserialized [IValue] instance.
+     * @throws ValFormatException If the material is malformed.
      */
     public fun deserialize(material: Material): IValue
 }

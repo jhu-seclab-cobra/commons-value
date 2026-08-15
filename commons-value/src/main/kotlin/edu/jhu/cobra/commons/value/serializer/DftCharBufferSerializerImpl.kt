@@ -126,9 +126,16 @@ public object DftCharBufferSerializerImpl : IValSerializer<CharBuffer> {
      *
      * @param material The [CharBuffer] containing the serialized representation of a value.
      * @return The deserialized [IValue] instance.
-     * @throws IllegalArgumentException If the material contains an unknown or unsupported type identifier.
+     * @throws ValFormatException If the material is malformed.
      */
     override fun deserialize(material: CharBuffer): IValue =
+        decodeMaterial {
+            require(material.hasRemaining()) { "No remaining chars in buffer" }
+            decode(material)
+        }
+
+    // Recursive decoding of one value; boundary validation and exception wrapping live in deserialize.
+    private fun decode(material: CharBuffer): IValue =
         when (val type = material.getString(':')) {
             // nullType:
             Type.NULL.str -> NullVal
@@ -167,16 +174,16 @@ public object DftCharBufferSerializerImpl : IValSerializer<CharBuffer> {
                 val eleCount = checkSizePrefix(material.getString(':').asHexInt(), material.remaining(), "entry count")
                 val container = MapVal(size = eleCount)
                 repeat(eleCount) {
-                    val key = requireDecodedType<StrVal>(deserialize(material), "map key")
+                    val key = requireDecodedType<StrVal>(decode(material), "map key")
                     material.get() // remove the delimiter '='
-                    val value = deserialize(material)
+                    val value = decode(material)
                     material.get() // remove the delimiter ',' or ':'
                     container[key.core] = value
                 }
                 container // return the final container of the map out
             }
 
-            else -> throw IllegalArgumentException("Unknown type: $type")
+            else -> throw ValFormatException("Unknown type: $type")
         }
 
     // LIST and SET decode share one validated hex element-count prefix.
@@ -190,7 +197,7 @@ public object DftCharBufferSerializerImpl : IValSerializer<CharBuffer> {
         action: (IValue) -> Unit,
     ) {
         repeat(count) {
-            action(deserialize(material))
+            action(decode(material))
             material.get() // remove the end delimiter
         }
     }

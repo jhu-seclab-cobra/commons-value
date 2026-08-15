@@ -14,6 +14,10 @@ import kotlin.test.assertTrue
  * - `should throw IllegalArgumentException when string length exceeds remaining chars` — Corrupt length prefix rejected.
  * - `should throw IllegalArgumentException with context when string length is negative` — Negative length prefix reported with context.
  * - `should throw IllegalArgumentException when map key is not a StrVal` — Non-Str key inside MAP rejected.
+ * - `should throw ValFormatException when int payload is not numeric` — Unparsable IntV payload raises
+ *   ValFormatException instead of leaking NumberFormatException.
+ * - `should throw ValFormatException when container count is not hexadecimal` — Unparsable List count raises
+ *   ValFormatException instead of leaking NumberFormatException.
  */
 internal class DftCharBufferSerializerImplTest : AbcSerializerImplUnitTest<CharBuffer>() {
     override val testTarget: IValSerializer<CharBuffer> get() = DftCharBufferSerializerImpl
@@ -60,5 +64,21 @@ internal class DftCharBufferSerializerImplTest : AbcSerializerImplUnitTest<CharB
                 DftCharBufferSerializerImpl.deserialize(corruptBuffer)
             }
         assertTrue("map key" in exception.message.orEmpty())
+    }
+
+    @Test
+    fun `should throw ValFormatException when int payload is not numeric`() {
+        val corruptBuffer = "IntV:abc:".asCharBuffer()
+        assertFailsWith<ValFormatException> {
+            DftCharBufferSerializerImpl.deserialize(corruptBuffer)
+        }
+    }
+
+    @Test
+    fun `should throw ValFormatException when container count is not hexadecimal`() {
+        val corruptBuffer = "List:zz:".asCharBuffer()
+        assertFailsWith<ValFormatException> {
+            DftCharBufferSerializerImpl.deserialize(corruptBuffer)
+        }
     }
 }

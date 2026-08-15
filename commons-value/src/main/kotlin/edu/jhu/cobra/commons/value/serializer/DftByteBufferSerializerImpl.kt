@@ -116,11 +116,17 @@ public object DftByteBufferSerializerImpl : IValSerializer<ByteBuffer> {
      *
      * @param material The [ByteBuffer] containing the serialized representation of a value.
      * @return The deserialized [IValue] instance.
-     * @throws IllegalArgumentException If the material contains an unknown or unsupported type identifier.
+     * @throws ValFormatException If the material is malformed.
      */
-    override fun deserialize(material: ByteBuffer): IValue {
-        require(material.hasRemaining()) { "No remaining bytes in buffer" }
-        return when (val type = material.get()) {
+    override fun deserialize(material: ByteBuffer): IValue =
+        decodeMaterial {
+            require(material.hasRemaining()) { "No remaining bytes in buffer" }
+            decode(material)
+        }
+
+    // Recursive decoding of one value; boundary validation and exception wrapping live in deserialize.
+    private fun decode(material: ByteBuffer): IValue =
+        when (val type = material.get()) {
             Type.NULL.byte -> NullVal
             Type.STR.byte -> StrVal(material.getString())
             Type.BOOL_TRUE.byte -> BoolVal.T
@@ -133,17 +139,17 @@ public object DftByteBufferSerializerImpl : IValSerializer<ByteBuffer> {
             Type.UNSURE_BOOL.byte -> Unsure.BOOL
             Type.RANGE.byte ->
                 RangeVal(
-                    start = requireDecodedType<IntVal>(deserialize(material), "range start"),
-                    endInclusive = requireDecodedType<IntVal>(deserialize(material), "range end"),
+                    start = requireDecodedType<IntVal>(decode(material), "range start"),
+                    endInclusive = requireDecodedType<IntVal>(decode(material), "range end"),
                 )
             Type.LIST.byte -> { // count | element1 | element2 | ...
                 val count = readContainerCount(material)
-                ListVal(size = count).also { list -> repeat(count) { list.plusAssign(deserialize(material)) } }
+                ListVal(size = count).also { list -> repeat(count) { list.plusAssign(decode(material)) } }
             }
 
             Type.SET.byte -> { // count | element1 | element2 | ...
                 val count = readContainerCount(material)
-                SetVal(size = count).also { set -> repeat(count) { set.plusAssign(deserialize(material)) } }
+                SetVal(size = count).also { set -> repeat(count) { set.plusAssign(decode(material)) } }
             }
 
             Type.MAP.byte -> { // cnt | keyN | valueN
@@ -151,14 +157,13 @@ public object DftByteBufferSerializerImpl : IValSerializer<ByteBuffer> {
                 val container = MapVal(mapElementsCount)
                 repeat(mapElementsCount) {
                     val keyString = material.getString()
-                    container[keyString] = deserialize(material)
+                    container[keyString] = decode(material)
                 }
                 container // Return the container with all elements
             }
 
-            else -> throw IllegalArgumentException("Unknown type: $type")
+            else -> throw ValFormatException("Unknown type: $type")
         }
-    }
 
     // LIST and SET decode share one validated element-count prefix.
     private fun readContainerCount(material: ByteBuffer): Int = checkSizePrefix(material.getInt(), material.remaining(), "element count")

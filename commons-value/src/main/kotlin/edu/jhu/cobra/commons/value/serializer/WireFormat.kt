@@ -1,6 +1,7 @@
 package edu.jhu.cobra.commons.value.serializer
 
 import edu.jhu.cobra.commons.value.IValue
+import java.nio.BufferUnderflowException
 import java.nio.ByteBuffer
 import java.nio.CharBuffer
 
@@ -27,6 +28,30 @@ public fun String.asHexInt(): Int = Integer.parseInt(this, 16)
  * @return The hexadecimal string representation of the integer
  */
 public fun Int.asHexString(): String = Integer.toHexString(this)
+
+/**
+ * Runs a deserialization body and normalizes every decoding failure to [ValFormatException].
+ *
+ * Truncated material surfaces as [BufferUnderflowException], unparsable numbers as
+ * [NumberFormatException], and validation failures as [IllegalArgumentException]; all three
+ * are rethrown as [ValFormatException] with the original failure as cause.
+ *
+ * @param block The deserialization body to run
+ * @return The value produced by [block]
+ * @throws ValFormatException if [block] fails with any decoding exception
+ */
+internal inline fun <T> decodeMaterial(block: () -> T): T =
+    try {
+        block()
+    } catch (e: ValFormatException) {
+        throw e
+    } catch (e: BufferUnderflowException) {
+        throw ValFormatException("Truncated material", e)
+    } catch (e: NumberFormatException) {
+        throw ValFormatException("Unparsable number in material", e)
+    } catch (e: IllegalArgumentException) {
+        throw ValFormatException(e.message ?: "Malformed material", e)
+    }
 
 /**
  * Validates a size or count prefix decoded from serialized material.

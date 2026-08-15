@@ -156,12 +156,13 @@ public object DftByteArraySerializerImpl : IValSerializer<ByteArray> {
      *
      * @param material The byte array to deserialize.
      * @return The deserialized [IValue] instance.
-     * @throws IllegalArgumentException If the material contains an unknown or unsupported type identifier.
+     * @throws ValFormatException If the material is malformed.
      */
-    override fun deserialize(material: ByteArray): IValue {
-        require(material.isNotEmpty()) { "Empty byte array" }
-        return deserializeFrom(ByteBuffer.wrap(material))
-    }
+    override fun deserialize(material: ByteArray): IValue =
+        decodeMaterial {
+            require(material.isNotEmpty()) { "Empty byte array" }
+            deserializeFrom(ByteBuffer.wrap(material))
+        }
 
     // Shared-buffer deserialization: reads directly from a ByteBuffer, avoiding per-value wrap allocations.
     // For collections, uses limit-based windowing instead of copying sub-arrays.
@@ -208,7 +209,7 @@ public object DftByteArraySerializerImpl : IValSerializer<ByteArray> {
                 }
                 map
             }
-            else -> throw IllegalArgumentException("Unknown value type: ${buffer.get(buffer.position() - 1)}")
+            else -> throw ValFormatException("Unknown value type: ${buffer.get(buffer.position() - 1)}")
         }
 
     // LIST and SET share one container layout: size-prefixed element blocks read via limit windowing.
