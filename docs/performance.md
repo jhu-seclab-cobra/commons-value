@@ -65,6 +65,26 @@ Measured via `Runtime.totalMemory() - freeMemory()` delta after forced GC. Appro
 
 ---
 
+## Hardening Overhead
+
+Captured 2026-08-15 for the serializer hardening (nesting depth bound, unpaired-surrogate
+scan at serialize, deserialize boundary validation with ValFormatException wrapping).
+
+| Scenario | Overhead vs pre-hardening HEAD |
+|----------|--------------------------------|
+| ByteArray primitive serialize | +4.9% |
+| CharBuffer primitive serialize | +0.4% |
+| ByteBuffer primitive serialize | Within noise |
+
+Under the 10% budget set at the design gate. The surrogate scan is a single mask-compare
+per char (`code and 0xF800 == 0xD800`) with a slow pairing path entered only when a
+surrogate exists. Rejected alternatives (micro-benchmarked with a result sink): naive
+`isSurrogate` char loop (~33% string-serialize overhead), ThreadLocal `CharsetEncoder`
+with `CodingErrorAction.REPORT` (~2x), `encodeToByteArray(throwOnInvalidSequence = true)`
+(+30-80%, loses to the intrinsified `toByteArray`).
+
+---
+
 ## Rejected Approaches
 
 | ID | Approach | Result | Reason |
@@ -94,6 +114,7 @@ No current candidates.
 - **ByteArray `serialize()` method body size.** The `serialize()` when-expression is large (~80 lines), which may prevent JIT inlining for primitive paths. Extracting collection cases was attempted (P4-1) but caused cross-class JIT deoptimization. ByteArray primitive serialize (44M) still trails ByteBuffer (84M).
 - **ByteBuffer collection per-element allocation.** Each child `serialize()` call allocates its own ByteBuffer. Skipped (P4-2) due to JIT sensitivity risk.
 - **Benchmark noise floor.** CharBuffer primitive serialize shows 3-4x variance between runs due to test execution order affecting JIT compilation. Current benchmark methodology cannot reliably detect < 5% changes.
+- **Dead-code elimination in serialize loops.** The benchmark serialize loops discard their results, so the JIT can eliminate the serialization work and inflate apparent throughput up to 5x. Any A/B comparison across commits requires patching a result sink (e.g. accumulate `hashCode()`) into both sides before measuring.
 
 ---
 
