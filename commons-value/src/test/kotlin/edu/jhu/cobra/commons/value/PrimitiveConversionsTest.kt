@@ -29,19 +29,6 @@ import kotlin.test.assertTrue
  * - `should convert Long to IntVal via primitiveVal` — primitiveVal Long dispatches to intVal
  * - `should convert Double to FloatVal via primitiveVal` — primitiveVal Double dispatches to floatVal
  * - `should convert Float to FloatVal via primitiveVal` — primitiveVal Float dispatches to floatVal
- * - `should compare StrVal lexicographically` — compareTo StrVal
- * - `should compare StrVal equal` — compareTo StrVal ==
- * - `should compare BoolVal F less than T` — compareTo BoolVal
- * - `should compare BoolVal T greater than F` — compareTo BoolVal
- * - `should compare BoolVal equal` — compareTo BoolVal ==
- * - `should compare NullVal equal to NullVal` — compareTo NullVal ==
- * - `should throw IllegalArgumentException for cross-type compareTo` — compareTo error
- * - `should compare IntVal less than IntVal` — compareTo IntVal <
- * - `should compare IntVal greater than IntVal` — compareTo IntVal >
- * - `should compare IntVal equal to IntVal` — compareTo IntVal ==
- * - `should compare FloatVal less than FloatVal` — compareTo FloatVal <
- * - `should compare IntVal less than FloatVal cross-type` — compareTo IntVal vs FloatVal
- * - `should compare FloatVal greater than IntVal cross-type` — compareTo FloatVal vs IntVal
  * - `should return true when String starts with StrVal content` — String.startsWith match
  * - `should return false when String does not start with StrVal content` — String.startsWith mismatch
  * - `should return true when String starts with empty StrVal` — String.startsWith boundary
@@ -150,75 +137,6 @@ internal class PrimitiveConversionsTest {
         val result = 3.14f.primitiveVal
         assertIs<FloatVal>(result)
         assertEquals(3.14f.toDouble(), result.core)
-    }
-
-    // --- compareTo ---
-
-    @Test
-    fun `should compare StrVal lexicographically`() {
-        assertTrue(StrVal("a").compareTo(StrVal("b")) < 0)
-    }
-
-    @Test
-    fun `should compare StrVal equal`() {
-        assertEquals(0, StrVal("a").compareTo(StrVal("a")))
-    }
-
-    @Test
-    fun `should compare BoolVal F less than T`() {
-        assertTrue(BoolVal.F.compareTo(BoolVal.T) < 0)
-    }
-
-    @Test
-    fun `should compare BoolVal T greater than F`() {
-        assertTrue(BoolVal.T.compareTo(BoolVal.F) > 0)
-    }
-
-    @Test
-    fun `should compare BoolVal equal`() {
-        assertEquals(0, BoolVal.T.compareTo(BoolVal.T))
-    }
-
-    @Test
-    fun `should compare NullVal equal to NullVal`() {
-        assertEquals(0, NullVal.compareTo(NullVal))
-    }
-
-    @Test
-    fun `should throw IllegalArgumentException for cross-type compareTo`() {
-        assertFailsWith<IllegalArgumentException> {
-            IntVal(1L).compareTo(StrVal("1"))
-        }
-    }
-
-    @Test
-    fun `should compare IntVal less than IntVal`() {
-        assertTrue(IntVal(1L).compareTo(IntVal(2L)) < 0)
-    }
-
-    @Test
-    fun `should compare IntVal greater than IntVal`() {
-        assertTrue(IntVal(2L).compareTo(IntVal(1L)) > 0)
-    }
-
-    @Test
-    fun `should compare IntVal equal to IntVal`() {
-        assertEquals(0, IntVal(1L).compareTo(IntVal(1L)))
-    }
-
-    @Test
-    fun `should compare FloatVal less than FloatVal`() {
-        assertTrue(FloatVal(1.0).compareTo(FloatVal(2.0)) < 0)
-    }
-
-    @Test
-    fun `should compare IntVal less than FloatVal cross-type`() {
-        assertTrue(IntVal(1L).compareTo(FloatVal(1.5)) < 0)
-    }
-
-    @Test
-    fun `should compare FloatVal greater than IntVal cross-type`() {
-        assertTrue(FloatVal(1.5).compareTo(IntVal(1L)) > 0)
     }
 
     // --- String.startsWith(StrVal) ---
