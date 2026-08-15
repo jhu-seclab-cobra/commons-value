@@ -1,5 +1,8 @@
 package edu.jhu.cobra.commons.value
 
+import java.math.BigDecimal
+import java.math.BigInteger
+import java.util.concurrent.atomic.AtomicLong
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -27,6 +30,9 @@ import kotlin.test.assertTrue
  * - `should compare integral Number arguments without Double rounding`
  * - `should compare floating Number arguments exactly at large bounds`
  * - `should not contain non-finite Double`
+ * - `should compare BigInteger argument exactly at large bounds`
+ * - `should compare BigDecimal argument exactly at boundary`
+ * - `should compare AtomicLong argument exactly at large bounds`
  *
  * contains(IntVal):
  * - `should contain IntVal within range`
@@ -163,6 +169,27 @@ internal class RangeValTest {
         assertFalse(Double.NaN in range)
         assertFalse(Double.POSITIVE_INFINITY in range)
         assertFalse(Double.NEGATIVE_INFINITY in range)
+    }
+
+    @Test
+    fun `should compare BigInteger argument exactly at large bounds`() {
+        val range = RangeVal(0, Long.MAX_VALUE)
+        val atEnd: Number = BigInteger.valueOf(Long.MAX_VALUE)
+        assertTrue(atEnd in range)
+    }
+
+    @Test
+    fun `should compare BigDecimal argument exactly at boundary`() {
+        val range = RangeVal(1, 10)
+        val justAbove: Number = BigDecimal("10.0000000000000000001")
+        assertFalse(justAbove in range)
+    }
+
+    @Test
+    fun `should compare AtomicLong argument exactly at large bounds`() {
+        val range = RangeVal(0, Long.MAX_VALUE)
+        val atEnd: Number = AtomicLong(Long.MAX_VALUE)
+        assertTrue(atEnd in range)
     }
 
     // -- contains(IntVal) --

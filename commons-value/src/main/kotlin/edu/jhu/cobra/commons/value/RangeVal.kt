@@ -1,5 +1,7 @@
 package edu.jhu.cobra.commons.value
 
+import java.math.BigDecimal
+
 /**
  * Represents a range of integer values defined by a start and end boundary.
  *
@@ -41,16 +43,19 @@ public data class RangeVal(
     /**
      * Checks if the specified number is within the range.
      *
-     * Integral arguments are compared as [Long]. Floating-point arguments are compared exactly,
-     * without rounding the range bounds to [Double]. NaN and infinite values are never contained.
+     * Every [Number] kind is compared by its exact numeric value: no argument is rounded through
+     * [Double], and the range bounds are never rounded. NaN and infinite values are never contained.
      *
      * @param num The number to check.
      * @return `true` if the number is within the range, `false` otherwise.
+     * @throws NumberFormatException if a non-JDK [Number] kind renders a non-numeric `toString`.
      */
     public operator fun contains(num: Number): Boolean =
         when (num) {
             is Long, is Int, is Short, is Byte -> num.toLong() in this
-            else -> containsExactly(num.toDouble())
+            is Double -> containsExactly(num)
+            is Float -> containsExactly(num.toDouble())
+            else -> BigDecimal(num.toString()) in first.toBigDecimal()..last.toBigDecimal()
         }
 
     // Long bounds above 2^53 are not exactly representable as Double; compare via BigDecimal.
