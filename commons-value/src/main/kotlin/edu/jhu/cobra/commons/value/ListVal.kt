@@ -39,6 +39,13 @@ public class ListVal(
      */
     public constructor(vararg value: IValue) : this(ArrayList<IValue>(value.size).apply { addAll(value) })
 
+    /**
+     * Returns a recursive structural copy of this list.
+     *
+     * @return A new [ListVal] whose elements are deep copies of this list's elements.
+     */
+    override fun deepCopy(): ListVal = ListVal(core.mapTo(ArrayList(core.size)) { it.deepCopy() })
+
     override fun equals(other: Any?): Boolean = this === other || (other is ListVal && core == other.core)
 
     override fun hashCode(): Int = core.hashCode()

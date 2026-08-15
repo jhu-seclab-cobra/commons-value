@@ -53,6 +53,9 @@ import kotlin.test.assertTrue
  * - `should flatten entries with flatMap`
  * - `should convert to pair list with toList`
  *
+ * deepCopy:
+ * - `should deep copy map values without sharing mutable state`
+ *
  * Boundary:
  * - `should handle empty map operations`
  * - `should enforce String keys only`
@@ -315,6 +318,18 @@ internal class MapValTest {
         assertEquals(2, list.size)
         assertTrue(list.any { it.first == "a" && it.second == StrVal("1") })
         assertTrue(list.any { it.first == "b" && it.second == StrVal("2") })
+    }
+
+    // -- deepCopy --
+
+    @Test
+    fun `should deep copy map values without sharing mutable state`() {
+        val inner = ListVal(IntVal(1L))
+        val map = MapVal("k" to inner)
+        val copy = map.deepCopy()
+        assertEquals(map, copy)
+        (copy["k"] as ListVal).add(IntVal(2L))
+        assertEquals(1, inner.size)
     }
 
     // -- Boundary --

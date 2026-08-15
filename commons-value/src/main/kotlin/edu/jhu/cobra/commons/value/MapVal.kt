@@ -50,6 +50,16 @@ public class MapVal(
      */
     public constructor(values: List<Pair<String, IValue>>) : this(values.toMap())
 
+    /**
+     * Returns a recursive structural copy of this map.
+     *
+     * @return A new [MapVal] whose values are deep copies of this map's values.
+     */
+    override fun deepCopy(): MapVal =
+        MapVal(
+            core.mapValuesTo(HashMap(hashCapacityFor(core.size))) { (_, value) -> value.deepCopy() },
+        )
+
     override fun equals(other: Any?): Boolean = this === other || (other is MapVal && core == other.core)
 
     override fun hashCode(): Int = core.hashCode()

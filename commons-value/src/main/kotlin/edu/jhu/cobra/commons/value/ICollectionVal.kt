@@ -21,4 +21,11 @@ internal fun hashCapacityFor(size: Int): Int = ceil(size / HASH_LOAD_FACTOR).toI
  * - [MapVal]: Represents a map of key-value pairs.
  * - [RangeVal]: Represents a range of numeric values.
  */
-public sealed interface ICollectionVal : IValue
+public sealed interface ICollectionVal : IValue {
+    /**
+     * Returns a structurally independent copy of this collection value.
+     *
+     * @return A collection value equal to this one that shares no mutable state with it.
+     */
+    override fun deepCopy(): ICollectionVal
+}

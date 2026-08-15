@@ -2,6 +2,7 @@ package edu.jhu.cobra.commons.value
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
 /**
@@ -39,6 +40,9 @@ import kotlin.test.assertTrue
  * - `should order negative zero equivalent to positive zero` -- -0.0 == 0.0 in order
  * - `should order Unsure entries by declaration order` -- Unsure ordinal ranking
  * - `should sort mixed primitives deterministically` -- sortedWith over full kind mix
+ *
+ * deepCopy:
+ * - `should return same instance from deepCopy for every primitive kind` -- immutable identity copy
  */
 internal class IPrimitiveValTest {
     @Test
@@ -218,5 +222,16 @@ internal class IPrimitiveValTest {
             listOf<IPrimitiveVal>(NullVal, BoolVal.T, FloatVal(0.5), IntVal(1L), StrVal("a"), Unsure.ANY),
             sorted,
         )
+    }
+
+    // --- deepCopy ---
+
+    @Test
+    fun `should return same instance from deepCopy for every primitive kind`() {
+        val primitives =
+            listOf<IPrimitiveVal>(StrVal("a"), IntVal(1L), FloatVal(0.5), BoolVal.T, NullVal, Unsure.ANY)
+        for (primitive in primitives) {
+            assertSame(primitive, primitive.deepCopy())
+        }
     }
 }

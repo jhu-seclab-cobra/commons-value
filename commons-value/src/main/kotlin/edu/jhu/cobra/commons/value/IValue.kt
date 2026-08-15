@@ -11,4 +11,14 @@ public sealed interface IValue {
      * This property holds the actual data represented by the value instance.
      */
     public val core: Any?
+
+    /**
+     * Returns a structurally independent copy of this value.
+     *
+     * Immutable values return themselves; mutable collections copy recursively, so no
+     * mutable state is shared between the original and the copy.
+     *
+     * @return A value equal to this one that shares no mutable state with it.
+     */
+    public fun deepCopy(): IValue
 }

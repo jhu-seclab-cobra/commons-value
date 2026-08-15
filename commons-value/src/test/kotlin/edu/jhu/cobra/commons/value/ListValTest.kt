@@ -67,6 +67,9 @@ import kotlin.test.assertTrue
  * - `should iterate all elements with forEach`
  * - `should return lazy sequence with asSequence`
  *
+ * deepCopy:
+ * - `should deep copy nested list without sharing mutable state`
+ *
  * Boundary:
  * - `should handle single element list`
  * - `should handle nested IValue elements`
@@ -382,5 +385,17 @@ internal class ListValTest {
         assertEquals(2, outer.size)
         assertTrue(outer[0] is ListVal)
         assertEquals(inner, outer[0])
+    }
+
+    // -- deepCopy --
+
+    @Test
+    fun `should deep copy nested list without sharing mutable state`() {
+        val inner = ListVal(IntVal(1L))
+        val outer = ListVal(inner, StrVal("x"))
+        val copy = outer.deepCopy()
+        assertEquals(outer, copy)
+        (copy[0] as ListVal).add(IntVal(2L))
+        assertEquals(1, inner.size)
     }
 }

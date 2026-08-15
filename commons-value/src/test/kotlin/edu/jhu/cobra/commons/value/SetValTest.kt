@@ -51,6 +51,9 @@ import kotlin.test.assertTrue
  * - `should return lazy sequence with asSequence`
  * - `should convert to list preserving elements with toList`
  *
+ * deepCopy:
+ * - `should deep copy set without sharing mutable state`
+ *
  * Boundary:
  * - `should preserve insertion order`
  * - `should handle empty set operations`
@@ -290,6 +293,18 @@ internal class SetValTest {
         assertEquals(StrVal("c"), list[0])
         assertEquals(StrVal("a"), list[1])
         assertEquals(StrVal("b"), list[2])
+    }
+
+    // -- deepCopy --
+
+    @Test
+    fun `should deep copy set without sharing mutable state`() {
+        val inner = ListVal(IntVal(1L))
+        val set = SetVal(StrVal("x"), inner)
+        val copy = set.deepCopy()
+        assertEquals(set, copy)
+        copy.filterIsInstance<ListVal>().single().add(IntVal(2L))
+        assertEquals(1, inner.size)
     }
 
     @Test

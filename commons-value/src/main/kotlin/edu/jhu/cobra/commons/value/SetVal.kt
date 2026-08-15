@@ -44,6 +44,13 @@ public class SetVal(
      */
     public constructor(values: Sequence<IValue>) : this(LinkedHashSet<IValue>().apply { addAll(values) })
 
+    /**
+     * Returns a recursive structural copy of this set.
+     *
+     * @return A new [SetVal] whose elements are deep copies of this set's elements.
+     */
+    override fun deepCopy(): SetVal = SetVal(core.mapTo(LinkedHashSet(hashCapacityFor(core.size))) { it.deepCopy() })
+
     override fun equals(other: Any?): Boolean = this === other || (other is SetVal && core == other.core)
 
     override fun hashCode(): Int = core.hashCode()

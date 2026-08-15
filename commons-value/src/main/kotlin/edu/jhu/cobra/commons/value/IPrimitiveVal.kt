@@ -20,6 +20,13 @@ public sealed interface IPrimitiveVal :
     IValue,
     Comparable<IPrimitiveVal> {
     /**
+     * Returns this value: every primitive is immutable, so it is its own deep copy.
+     *
+     * @return This instance.
+     */
+    override fun deepCopy(): IPrimitiveVal = this
+
+    /**
      * Compares primitives under a total order.
      *
      * Kinds rank `NullVal < BoolVal < numeric < StrVal < Unsure`. [IntVal] and [FloatVal] form one

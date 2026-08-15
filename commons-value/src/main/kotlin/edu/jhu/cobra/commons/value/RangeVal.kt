@@ -15,6 +15,13 @@ public data class RangeVal(
     override val core: List<IntVal> get() = listOf(start, endInclusive)
 
     /**
+     * Returns this value: a range is immutable, so it is its own deep copy.
+     *
+     * @return This instance.
+     */
+    override fun deepCopy(): RangeVal = this
+
+    /**
      * Returns the starting value of the range as a [Long].
      */
     public val first: Long get() = start.core

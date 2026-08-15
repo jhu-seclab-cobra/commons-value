@@ -6,6 +6,7 @@ import java.util.concurrent.atomic.AtomicLong
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
 /**
@@ -59,6 +60,9 @@ import kotlin.test.assertTrue
  *
  * map:
  * - `should transform start and end via map`
+ *
+ * deepCopy:
+ * - `should return same instance from deepCopy`
  *
  * Boundary:
  * - `should handle single-point range`
@@ -319,6 +323,14 @@ internal class RangeValTest {
         assertEquals(2, mapped.size)
         assertEquals(6, mapped[0])
         assertEquals(18, mapped[1])
+    }
+
+    // -- deepCopy --
+
+    @Test
+    fun `should return same instance from deepCopy`() {
+        val range = RangeVal(1L, 10L)
+        assertSame(range, range.deepCopy())
     }
 
     // -- Boundary --
