@@ -35,10 +35,17 @@ public object DftByteArraySerializerImpl : IValSerializer<ByteArray> {
      *
      * @param value The [IValue] instance to serialize.
      * @return A byte array representing the serialized value.
-     * @throws IllegalArgumentException If the value type is unknown or unsupported.
+     * @throws IllegalArgumentException If value nesting exceeds the supported depth, including cyclic value graphs.
      */
-    override fun serialize(value: IValue): ByteArray =
-        when (value) {
+    override fun serialize(value: IValue): ByteArray = encode(value, depth = 0)
+
+    // Recursive encoding of one value; nesting depth is validated at every level.
+    private fun encode(
+        value: IValue,
+        depth: Int,
+    ): ByteArray {
+        checkNestingDepth(depth)
+        return when (value) {
             is NullVal -> byteArrayOf(Type.NULL.byte)
             is StrVal -> {
                 val bytes = value.core.toByteArray()
@@ -70,12 +77,12 @@ public object DftByteArraySerializerImpl : IValSerializer<ByteArray> {
                 result
             }
 
-            is ListVal -> containerToBytes(Type.LIST.byte, value.map { serialize(it) })
+            is ListVal -> containerToBytes(Type.LIST.byte, value.map { encode(it, depth + 1) })
 
-            is SetVal -> containerToBytes(Type.SET.byte, value.map { serialize(it) })
+            is SetVal -> containerToBytes(Type.SET.byte, value.map { encode(it, depth + 1) })
 
             is MapVal -> {
-                val mapEntriesBytes = value.map { (k, v) -> k.toByteArray() to serialize(v) }
+                val mapEntriesBytes = value.map { (k, v) -> k.toByteArray() to encode(v, depth + 1) }
                 val entriesLength = mapEntriesBytes.sumOf { (k, v) -> SIZE_PREFIX_BYTES + k.size + SIZE_PREFIX_BYTES + v.size }
                 val result = ByteArray(TYPE_TAG_BYTES + entriesLength)
                 result[0] = Type.MAP.byte
@@ -93,6 +100,7 @@ public object DftByteArraySerializerImpl : IValSerializer<ByteArray> {
                 result
             }
         }
+    }
 
     // LIST and SET share one container layout: a type byte, then size-prefixed element blocks.
     private fun containerToBytes(
@@ -162,15 +170,19 @@ public object DftByteArraySerializerImpl : IValSerializer<ByteArray> {
         decodeMaterial {
             require(material.isNotEmpty()) { "Empty byte array" }
             val buffer = ByteBuffer.wrap(material)
-            val value = deserializeFrom(buffer)
+            val value = deserializeFrom(buffer, depth = 0)
             require(!buffer.hasRemaining()) { "Trailing material: ${buffer.remaining()} bytes after value" }
             value
         }
 
     // Shared-buffer deserialization: reads directly from a ByteBuffer, avoiding per-value wrap allocations.
     // For collections, uses limit-based windowing instead of copying sub-arrays.
-    private fun deserializeFrom(buffer: ByteBuffer): IValue =
-        when (buffer.get()) {
+    private fun deserializeFrom(
+        buffer: ByteBuffer,
+        depth: Int,
+    ): IValue {
+        checkNestingDepth(depth)
+        return when (buffer.get()) {
             Type.NULL.byte -> NullVal
             Type.STR.byte -> {
                 val bytes = ByteArray(buffer.remaining()).also { buffer.get(it) }
@@ -189,12 +201,13 @@ public object DftByteArraySerializerImpl : IValSerializer<ByteArray> {
             Type.FLOAT.byte -> FloatVal(buffer.double)
             Type.RANGE.byte -> {
                 val firstSize = checkSizePrefix(buffer.getInt(), buffer.remaining(), "range bound size")
-                val first = requireDecodedType<IntVal>(decodeWindow(buffer, firstSize, "range start"), "range start")
-                val second = requireDecodedType<IntVal>(deserializeFrom(buffer), "range end")
+                val start = decodeWindow(buffer, firstSize, "range start", depth + 1)
+                val first = requireDecodedType<IntVal>(start, "range start")
+                val second = requireDecodedType<IntVal>(deserializeFrom(buffer, depth + 1), "range end")
                 RangeVal(first, second)
             }
-            Type.LIST.byte -> ListVal().also { list -> forEachContainerElement(buffer) { list.plusAssign(it) } }
-            Type.SET.byte -> SetVal().also { set -> forEachContainerElement(buffer) { set.plusAssign(it) } }
+            Type.LIST.byte -> ListVal().also { list -> forEachContainerElement(buffer, depth + 1) { list.plusAssign(it) } }
+            Type.SET.byte -> SetVal().also { set -> forEachContainerElement(buffer, depth + 1) { set.plusAssign(it) } }
             Type.MAP.byte -> {
                 val map = MapVal()
                 while (buffer.hasRemaining()) {
@@ -202,21 +215,23 @@ public object DftByteArraySerializerImpl : IValSerializer<ByteArray> {
                     val keyBytes = ByteArray(keySize).also { buffer.get(it) }
                     val key = keyBytes.decodeToString()
                     val valueSize = checkSizePrefix(buffer.getInt(), buffer.remaining(), "value size")
-                    map[key] = decodeWindow(buffer, valueSize, "map value")
+                    map[key] = decodeWindow(buffer, valueSize, "map value", depth + 1)
                 }
                 map
             }
             else -> throw ValFormatException("Unknown value type: ${buffer.get(buffer.position() - 1)}")
         }
+    }
 
     // LIST and SET share one container layout: size-prefixed element blocks read via limit windowing.
     private inline fun forEachContainerElement(
         buffer: ByteBuffer,
+        depth: Int,
         action: (IValue) -> Unit,
     ) {
         while (buffer.hasRemaining()) {
             val elementSize = checkSizePrefix(buffer.getInt(), buffer.remaining(), "element size")
-            action(decodeWindow(buffer, elementSize, "container element"))
+            action(decodeWindow(buffer, elementSize, "container element", depth))
         }
     }
 
@@ -225,10 +240,11 @@ public object DftByteArraySerializerImpl : IValSerializer<ByteArray> {
         buffer: ByteBuffer,
         size: Int,
         context: String,
+        depth: Int,
     ): IValue {
         val savedLimit = buffer.limit()
         buffer.limit(buffer.position() + size)
-        val value = deserializeFrom(buffer)
+        val value = deserializeFrom(buffer, depth)
         require(!buffer.hasRemaining()) {
             "Nested $context consumed ${size - buffer.remaining()} of its declared $size bytes"
         }

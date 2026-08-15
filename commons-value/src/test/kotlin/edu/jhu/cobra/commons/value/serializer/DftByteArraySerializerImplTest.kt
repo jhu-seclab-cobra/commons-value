@@ -1,5 +1,6 @@
 package edu.jhu.cobra.commons.value.serializer
 
+import java.nio.ByteBuffer
 import kotlin.test.Test
 import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
@@ -22,6 +23,8 @@ import kotlin.test.assertTrue
  *   decoded top-level value rejected.
  * - `should throw ValFormatException when nested element does not consume its declared window` — Element
  *   size prefix larger than the element's encoding rejected instead of silently shifting the parse.
+ * - `should throw ValFormatException when deserialized nesting exceeds limit` — Material nested one past
+ *   MAX_NESTING_DEPTH rejected at deserialize.
  */
 internal class DftByteArraySerializerImplTest : AbcSerializerImplUnitTest<ByteArray>() {
     override val testTarget: IValSerializer<ByteArray> get() = DftByteArraySerializerImpl
@@ -103,6 +106,18 @@ internal class DftByteArraySerializerImplTest : AbcSerializerImplUnitTest<ByteAr
         val corruptBytes = byteArrayOf(Type.LIST.byte, 0, 0, 0, 2, Type.NULL.byte, 0, 0, 0, 1, Type.NULL.byte)
         assertFailsWith<ValFormatException> {
             DftByteArraySerializerImpl.deserialize(corruptBytes)
+        }
+    }
+
+    @Test
+    fun `should throw ValFormatException when deserialized nesting exceeds limit`() {
+        var material = byteArrayOf(Type.NULL.byte)
+        repeat(MAX_NESTING_DEPTH + 1) {
+            val sizePrefix = ByteBuffer.allocate(SIZE_PREFIX_BYTES).putInt(material.size).array()
+            material = byteArrayOf(Type.LIST.byte) + sizePrefix + material
+        }
+        assertFailsWith<ValFormatException> {
+            DftByteArraySerializerImpl.deserialize(material)
         }
     }
 }

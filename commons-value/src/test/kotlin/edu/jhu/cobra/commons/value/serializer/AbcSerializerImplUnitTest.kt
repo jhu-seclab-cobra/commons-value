@@ -13,6 +13,7 @@ import edu.jhu.cobra.commons.value.StrVal
 import edu.jhu.cobra.commons.value.Unsure
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
 /**
@@ -50,6 +51,11 @@ import kotlin.test.assertTrue
  * - `should round-trip RangeVal with negative bounds` — RangeVal(-100, 100) round-trips.
  * - `should round-trip mixed nested collection` — ListVal containing SetVal, MapVal, RangeVal round-trips.
  * - `should round-trip large random data set` — 10000 random IValues all round-trip.
+ * - `should round-trip list at max nesting depth` — List nested MAX_NESTING_DEPTH levels round-trips.
+ * - `should throw IllegalArgumentException when serialized nesting exceeds limit` — List nested one past
+ *   MAX_NESTING_DEPTH rejected at serialize.
+ * - `should throw IllegalArgumentException when serializing cyclic value graph` — Self-referencing list
+ *   rejected at serialize instead of overflowing the stack.
  * - `should round-trip IntVal zero` — IntVal(0L) round-trips.
  * - `should round-trip IntVal positive` — IntVal(42L) round-trips.
  * - `should round-trip IntVal negative` — IntVal(-1L) round-trips.
@@ -369,5 +375,32 @@ internal abstract class AbcSerializerImplUnitTest<M : Any> {
     fun `should round-trip large random data set`() {
         val dataSet = List(100) { randomIValue() }
         dataSet.forEach { assertRoundTrip(it) }
+    }
+
+    // --- Nesting depth ---
+
+    @Test
+    fun `should round-trip list at max nesting depth`() {
+        var value: IValue = NullVal
+        repeat(MAX_NESTING_DEPTH) { value = ListVal(value) }
+        assertRoundTrip(value)
+    }
+
+    @Test
+    fun `should throw IllegalArgumentException when serialized nesting exceeds limit`() {
+        var value: IValue = NullVal
+        repeat(MAX_NESTING_DEPTH + 1) { value = ListVal(value) }
+        assertFailsWith<IllegalArgumentException> {
+            testTarget.serialize(value)
+        }
+    }
+
+    @Test
+    fun `should throw IllegalArgumentException when serializing cyclic value graph`() {
+        val cyclic = ListVal()
+        cyclic.add(cyclic)
+        assertFailsWith<IllegalArgumentException> {
+            testTarget.serialize(cyclic)
+        }
     }
 }

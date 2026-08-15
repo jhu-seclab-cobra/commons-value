@@ -20,6 +20,8 @@ import kotlin.test.assertTrue
  *   ValFormatException instead of leaking NumberFormatException.
  * - `should throw ValFormatException when trailing chars follow value` — Material continuing past the
  *   decoded top-level value rejected.
+ * - `should throw ValFormatException when deserialized nesting exceeds limit` — Material nested one past
+ *   MAX_NESTING_DEPTH rejected at deserialize.
  */
 internal class DftCharBufferSerializerImplTest : AbcSerializerImplUnitTest<CharBuffer>() {
     override val testTarget: IValSerializer<CharBuffer> get() = DftCharBufferSerializerImpl
@@ -89,6 +91,15 @@ internal class DftCharBufferSerializerImplTest : AbcSerializerImplUnitTest<CharB
         val trailingBuffer = "Null:Null:".asCharBuffer()
         assertFailsWith<ValFormatException> {
             DftCharBufferSerializerImpl.deserialize(trailingBuffer)
+        }
+    }
+
+    @Test
+    fun `should throw ValFormatException when deserialized nesting exceeds limit`() {
+        val levels = MAX_NESTING_DEPTH + 1
+        val material = ("List:1:".repeat(levels) + "Null:" + ":".repeat(levels)).asCharBuffer()
+        assertFailsWith<ValFormatException> {
+            DftCharBufferSerializerImpl.deserialize(material)
         }
     }
 }

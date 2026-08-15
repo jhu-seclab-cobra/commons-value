@@ -20,6 +20,8 @@ import kotlin.test.assertTrue
  *   ValFormatException instead of leaking BufferUnderflowException.
  * - `should throw ValFormatException when trailing bytes follow value` — Material continuing past the
  *   decoded top-level value rejected.
+ * - `should throw ValFormatException when deserialized nesting exceeds limit` — Material nested one past
+ *   MAX_NESTING_DEPTH rejected at deserialize.
  */
 internal class DftByteBufferSerializerImplTest : AbcSerializerImplUnitTest<ByteBuffer>() {
     override val testTarget: IValSerializer<ByteBuffer> get() = DftByteBufferSerializerImpl
@@ -129,6 +131,17 @@ internal class DftByteBufferSerializerImplTest : AbcSerializerImplUnitTest<ByteB
                 .typedFlip()
         assertFailsWith<ValFormatException> {
             DftByteBufferSerializerImpl.deserialize(trailingBuffer)
+        }
+    }
+
+    @Test
+    fun `should throw ValFormatException when deserialized nesting exceeds limit`() {
+        val levels = MAX_NESTING_DEPTH + 1
+        val material = ByteBuffer.allocate(levels * (TYPE_TAG_BYTES + SIZE_PREFIX_BYTES) + TYPE_TAG_BYTES)
+        repeat(levels) { material.put(Type.LIST.byte).putInt(1) }
+        material.put(Type.NULL.byte).typedFlip()
+        assertFailsWith<ValFormatException> {
+            DftByteBufferSerializerImpl.deserialize(material)
         }
     }
 }

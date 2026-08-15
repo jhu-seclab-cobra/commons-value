@@ -49,10 +49,17 @@ public object DftCharBufferSerializerImpl : IValSerializer<CharBuffer> {
      *
      * @param value The [IValue] instance to serialize.
      * @return A [CharBuffer] containing the serialized representation of the value.
-     * @throws IllegalArgumentException If the value type is unknown or unsupported.
+     * @throws IllegalArgumentException If value nesting exceeds the supported depth, including cyclic value graphs.
      */
-    override fun serialize(value: IValue): CharBuffer =
-        when (value) {
+    override fun serialize(value: IValue): CharBuffer = encode(value, depth = 0)
+
+    // Recursive encoding of one value; nesting depth is validated at every level.
+    private fun encode(
+        value: IValue,
+        depth: Int,
+    ): CharBuffer {
+        checkNestingDepth(depth)
+        return when (value) {
             is NullVal -> "${Type.NULL.str}:".asCharBuffer()
             is Unsure ->
                 when (value) {
@@ -76,12 +83,12 @@ public object DftCharBufferSerializerImpl : IValSerializer<CharBuffer> {
             is FloatVal -> "${Type.FLOAT.str}:${value.core}:".asCharBuffer()
 
             is RangeVal -> "${Type.RANGE.str}:${value.first},${value.last}:".asCharBuffer()
-            is ListVal -> containerToBuffer(Type.LIST, value.map { element -> serialize(element) })
+            is ListVal -> containerToBuffer(Type.LIST, value.map { element -> encode(element, depth + 1) })
 
-            is SetVal -> containerToBuffer(Type.SET, value.map { element -> serialize(element) })
+            is SetVal -> containerToBuffer(Type.SET, value.map { element -> encode(element, depth + 1) })
 
             is MapVal -> { // mapType:cnt_hex{key=element, key=element, key=element}
-                val elements = value.map { (k, v) -> serialize(StrVal(k)) to serialize(v) }
+                val elements = value.map { (k, v) -> encode(StrVal(k), depth + 1) to encode(v, depth + 1) }
                 val eleCount = value.size.asHexString() // the counter for ele
                 val eleLength = elements.sumOf { (k, v) -> k.length + v.length + ENTRY_DELIMITER_CHARS }
                 val charBuffer = CharBuffer.allocate(Type.MAP.str.length + HEADER_DELIMITER_CHARS + eleCount.length + eleLength)
@@ -100,6 +107,7 @@ public object DftCharBufferSerializerImpl : IValSerializer<CharBuffer> {
                 charBuffer.typedPosition(charBuffer.position() - 1).put(':').typedFlip() // }
             }
         }
+    }
 
     // LIST and SET share one container layout: type:cnt_hex:element,element,...:
     private fun containerToBuffer(
@@ -131,14 +139,18 @@ public object DftCharBufferSerializerImpl : IValSerializer<CharBuffer> {
     override fun deserialize(material: CharBuffer): IValue =
         decodeMaterial {
             require(material.hasRemaining()) { "No remaining chars in buffer" }
-            val value = decode(material)
+            val value = decode(material, depth = 0)
             require(!material.hasRemaining()) { "Trailing material: ${material.remaining()} chars after value" }
             value
         }
 
     // Recursive decoding of one value; boundary validation and exception wrapping live in deserialize.
-    private fun decode(material: CharBuffer): IValue =
-        when (val type = material.getString(':')) {
+    private fun decode(
+        material: CharBuffer,
+        depth: Int,
+    ): IValue {
+        checkNestingDepth(depth)
+        return when (val type = material.getString(':')) {
             // nullType:
             Type.NULL.str -> NullVal
             // strType:cnt{}
@@ -164,21 +176,25 @@ public object DftCharBufferSerializerImpl : IValSerializer<CharBuffer> {
 
             Type.LIST.str -> { // list_type:hex_cnt{element, element,...}
                 val eleCount = readContainerCount(material)
-                ListVal(size = eleCount).also { list -> readContainerElements(material, eleCount) { list.plusAssign(it) } }
+                ListVal(size = eleCount).also { list ->
+                    readContainerElements(material, eleCount, depth + 1) { list.plusAssign(it) }
+                }
             }
 
             Type.SET.str -> { // set_type:hex_cnt{element, element,...}
                 val eleCount = readContainerCount(material)
-                SetVal(size = eleCount).also { set -> readContainerElements(material, eleCount) { set.plusAssign(it) } }
+                SetVal(size = eleCount).also { set ->
+                    readContainerElements(material, eleCount, depth + 1) { set.plusAssign(it) }
+                }
             }
 
             Type.MAP.str -> { // mapType:hex_cnt{key=value,key=value,...}
                 val eleCount = checkSizePrefix(material.getString(':').asHexInt(), material.remaining(), "entry count")
                 val container = MapVal(size = eleCount)
                 repeat(eleCount) {
-                    val key = requireDecodedType<StrVal>(decode(material), "map key")
+                    val key = requireDecodedType<StrVal>(decode(material, depth + 1), "map key")
                     material.get() // remove the delimiter '='
-                    val value = decode(material)
+                    val value = decode(material, depth + 1)
                     material.get() // remove the delimiter ',' or ':'
                     container[key.core] = value
                 }
@@ -187,6 +203,7 @@ public object DftCharBufferSerializerImpl : IValSerializer<CharBuffer> {
 
             else -> throw ValFormatException("Unknown type: $type")
         }
+    }
 
     // LIST and SET decode share one validated hex element-count prefix.
     private fun readContainerCount(material: CharBuffer): Int =
@@ -196,10 +213,11 @@ public object DftCharBufferSerializerImpl : IValSerializer<CharBuffer> {
     private inline fun readContainerElements(
         material: CharBuffer,
         count: Int,
+        depth: Int,
         action: (IValue) -> Unit,
     ) {
         repeat(count) {
-            action(decode(material))
+            action(decode(material, depth))
             material.get() // remove the end delimiter
         }
     }

@@ -14,6 +14,22 @@ internal const val SIZE_PREFIX_BYTES = 4
 // A tagged long payload: one type byte followed by eight big-endian value bytes.
 internal const val TAGGED_LONG_BYTES = TYPE_TAG_BYTES + Long.SIZE_BYTES
 
+// Bounds recursive nesting in serialize and deserialize: keeps stack use finite on adversarial
+// material and rejects cyclic value graphs at serialize.
+internal const val MAX_NESTING_DEPTH = 1000
+
+/**
+ * Validates a recursive value-nesting depth against [MAX_NESTING_DEPTH].
+ *
+ * @param depth The current nesting depth, zero for the top-level value
+ * @return The validated depth
+ * @throws IllegalArgumentException if [depth] exceeds [MAX_NESTING_DEPTH]
+ */
+internal fun checkNestingDepth(depth: Int): Int {
+    require(depth <= MAX_NESTING_DEPTH) { "Value nesting exceeds $MAX_NESTING_DEPTH levels" }
+    return depth
+}
+
 /**
  * Converts a hexadecimal string into an integer.
  *

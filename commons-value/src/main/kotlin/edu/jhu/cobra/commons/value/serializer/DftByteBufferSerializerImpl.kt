@@ -34,10 +34,17 @@ public object DftByteBufferSerializerImpl : IValSerializer<ByteBuffer> {
      *
      * @param value The [IValue] instance to serialize.
      * @return A [ByteBuffer] containing the serialized representation of the value.
-     * @throws IllegalArgumentException If the value type is unknown or unsupported.
+     * @throws IllegalArgumentException If value nesting exceeds the supported depth, including cyclic value graphs.
      */
-    override fun serialize(value: IValue): ByteBuffer =
-        when (value) {
+    override fun serialize(value: IValue): ByteBuffer = encode(value, depth = 0)
+
+    // Recursive encoding of one value; nesting depth is validated at every level.
+    private fun encode(
+        value: IValue,
+        depth: Int,
+    ): ByteBuffer {
+        checkNestingDepth(depth)
+        return when (value) {
             is NullVal -> byteBufferOf(Type.NULL.byte)
             is StrVal -> {
                 val strCore = value.core.toByteArray()
@@ -84,18 +91,19 @@ public object DftByteBufferSerializerImpl : IValSerializer<ByteBuffer> {
                     .typedFlip()
             }
 
-            is ListVal -> containerToBuffer(Type.LIST, value.map { element -> serialize(element) })
+            is ListVal -> containerToBuffer(Type.LIST, value.map { element -> encode(element, depth + 1) })
 
-            is SetVal -> containerToBuffer(Type.SET, value.map { element -> serialize(element) })
+            is SetVal -> containerToBuffer(Type.SET, value.map { element -> encode(element, depth + 1) })
 
             is MapVal -> { // 1 byte type | count | size_keyN | keyN | size_valueN | valueN
-                val elements = value.map { (k, v) -> k.toByteArray() to serialize(v) }
+                val elements = value.map { (k, v) -> k.toByteArray() to encode(v, depth + 1) }
                 val bufferLength = TYPE_TAG_BYTES + SIZE_PREFIX_BYTES + elements.sumOf { (k, v) -> SIZE_PREFIX_BYTES + k.size + v.limit() }
                 val buffer = ByteBuffer.allocate(bufferLength).put(Type.MAP).putInt(value.size)
                 elements.forEach { (k, v) -> buffer.putInt(k.size).put(k).put(v) }
                 buffer.typedFlip()
             }
         }
+    }
 
     // LIST and SET share one container layout: 1 byte type | count | element1 | element2 | ...
     private fun containerToBuffer(
@@ -121,14 +129,18 @@ public object DftByteBufferSerializerImpl : IValSerializer<ByteBuffer> {
     override fun deserialize(material: ByteBuffer): IValue =
         decodeMaterial {
             require(material.hasRemaining()) { "No remaining bytes in buffer" }
-            val value = decode(material)
+            val value = decode(material, depth = 0)
             require(!material.hasRemaining()) { "Trailing material: ${material.remaining()} bytes after value" }
             value
         }
 
     // Recursive decoding of one value; boundary validation and exception wrapping live in deserialize.
-    private fun decode(material: ByteBuffer): IValue =
-        when (val type = material.get()) {
+    private fun decode(
+        material: ByteBuffer,
+        depth: Int,
+    ): IValue {
+        checkNestingDepth(depth)
+        return when (val type = material.get()) {
             Type.NULL.byte -> NullVal
             Type.STR.byte -> StrVal(material.getString())
             Type.BOOL_TRUE.byte -> BoolVal.T
@@ -141,17 +153,17 @@ public object DftByteBufferSerializerImpl : IValSerializer<ByteBuffer> {
             Type.UNSURE_BOOL.byte -> Unsure.BOOL
             Type.RANGE.byte ->
                 RangeVal(
-                    start = requireDecodedType<IntVal>(decode(material), "range start"),
-                    endInclusive = requireDecodedType<IntVal>(decode(material), "range end"),
+                    start = requireDecodedType<IntVal>(decode(material, depth + 1), "range start"),
+                    endInclusive = requireDecodedType<IntVal>(decode(material, depth + 1), "range end"),
                 )
             Type.LIST.byte -> { // count | element1 | element2 | ...
                 val count = readContainerCount(material)
-                ListVal(size = count).also { list -> repeat(count) { list.plusAssign(decode(material)) } }
+                ListVal(size = count).also { list -> repeat(count) { list.plusAssign(decode(material, depth + 1)) } }
             }
 
             Type.SET.byte -> { // count | element1 | element2 | ...
                 val count = readContainerCount(material)
-                SetVal(size = count).also { set -> repeat(count) { set.plusAssign(decode(material)) } }
+                SetVal(size = count).also { set -> repeat(count) { set.plusAssign(decode(material, depth + 1)) } }
             }
 
             Type.MAP.byte -> { // cnt | keyN | valueN
@@ -159,13 +171,14 @@ public object DftByteBufferSerializerImpl : IValSerializer<ByteBuffer> {
                 val container = MapVal(mapElementsCount)
                 repeat(mapElementsCount) {
                     val keyString = material.getString()
-                    container[keyString] = decode(material)
+                    container[keyString] = decode(material, depth + 1)
                 }
                 container // Return the container with all elements
             }
 
             else -> throw ValFormatException("Unknown type: $type")
         }
+    }
 
     // LIST and SET decode share one validated element-count prefix.
     private fun readContainerCount(material: ByteBuffer): Int = checkSizePrefix(material.getInt(), material.remaining(), "element count")
