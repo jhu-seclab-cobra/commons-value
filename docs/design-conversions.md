@@ -46,9 +46,9 @@ Part of [commons-value design](design-primitive.md). Specifies extension functio
 
 **`Boolean.boolVal: BoolVal`** -- Returns `BoolVal.T` for true, `BoolVal.F` for false.
 
-**`Any?.primitiveVal: IPrimitiveVal`** -- Converts null/Long/Double/String/Boolean/IPrimitiveVal to corresponding IPrimitiveVal. Long and Int map to IntVal. Float and Double map to FloatVal. Throws `IllegalArgumentException` for unsupported types.
+**`Any?.primitiveVal: IPrimitiveVal`** -- Converts null/Long/Double/String/Char/Boolean/IPrimitiveVal to corresponding IPrimitiveVal. Long and Int map to IntVal. Float and Double map to FloatVal. Char maps to StrVal. Throws `IllegalArgumentException` for unsupported types.
 
-**`IPrimitiveVal.compareTo(other: IPrimitiveVal): Int`** -- Compares two primitives of same type. IntVal by Long, FloatVal by Double, StrVal by String, BoolVal by Boolean, NullVal always equal. Throws `IllegalArgumentException` for cross-type comparison.
+Primitive comparison is the `IPrimitiveVal.compareTo` member: [design-primitive.md](design-primitive.md).
 
 **`String.startsWith(other: StrVal): Boolean`** -- Checks if string starts with StrVal's content.
 
@@ -62,6 +62,8 @@ Part of [commons-value design](design-primitive.md). Specifies extension functio
 
 **`IntRange.rangeVal: RangeVal`** — Converts IntRange to RangeVal.
 
+**`LongRange.rangeVal: RangeVal`** — Converts LongRange to RangeVal.
+
 **`ListVal?.orEmpty(): ListVal`** — Returns self or empty ListVal if null.
 
 **`SetVal?.orEmpty(): SetVal`** — Returns self or empty SetVal if null.
@@ -70,7 +72,7 @@ Part of [commons-value design](design-primitive.md). Specifies extension functio
 
 ### ValueConversions (top-level extension)
 
-**`Any?.toVal: IValue`** -- Universal converter: null -> NullVal, Long/Int -> IntVal, Double/Float -> FloatVal, String -> StrVal, Boolean -> BoolVal, List -> ListVal, Map -> MapVal, IntRange -> RangeVal, Set -> SetVal, IValue -> identity. Throws `IllegalArgumentException` for unsupported types.
+**`Any?.toVal: IValue`** -- Universal converter: null -> NullVal, Long/Int -> IntVal, Double/Float -> FloatVal, String/Char -> StrVal, Boolean -> BoolVal, List -> ListVal, Map -> MapVal, IntRange/LongRange -> RangeVal, Set -> SetVal, IValue -> identity. Throws `IllegalArgumentException` for unsupported types.
 
 Wire-format helper functions (`asHexInt`, buffer readers): [design-serializer.md](design-serializer.md).
 
@@ -80,7 +82,8 @@ Wire-format helper functions (`asHexInt`, buffer readers): [design-serializer.md
 
 | Exception | When Raised |
 |-----------|------------|
-| `IllegalArgumentException` | `Any?.toVal` / `Any?.primitiveVal` called on unsupported type; `IPrimitiveVal.compareTo` with incompatible types; serializer encounters unknown IValue subtype; deserializer encounters unknown type tag; empty ByteArray/ByteBuffer deserialization; size or count prefix negative or exceeding remaining material |
+| `IllegalArgumentException` | `Any?.toVal` / `Any?.primitiveVal` called on unsupported type; serializer encounters unknown IValue subtype, nesting deeper than `MAX_NESTING_DEPTH`, or string content with unpaired surrogates |
+| `ValFormatException` (extends `IllegalArgumentException`) | Any malformed material passed to `deserialize`: unknown tag, truncated payload, invalid size/count prefix, unparsable number, excessive nesting, empty material, trailing material ([design-serializer.md](design-serializer.md)) |
 | `IndexOutOfBoundsException` | `ListVal.get`/`set`/`subList` with out-of-range index; `StrVal.get` with out-of-range index |
 | `NumberFormatException` | `String.intVal` / `String.floatVal` / `String.asHexInt()` on invalid input |
-| `BufferUnderflowException` | ByteBuffer/CharBuffer read operations when insufficient data remains |
+| `BufferUnderflowException` | WireFormat ByteBuffer/CharBuffer read helpers when insufficient data remains (never leaked by `deserialize`) |

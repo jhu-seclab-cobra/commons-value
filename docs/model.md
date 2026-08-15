@@ -30,5 +30,10 @@
 - Every type tag identifies exactly one value kind; a kind may own several tags (boolean encodings differ by material format).
 - Serialization round-trip preserves exact value kind: serialize then deserialize yields a value equal to the original.
 - Two integer values with equal content are equal. Two floating-point values with equal content are equal.
+- Primitive values form a total order. Kinds rank null < boolean < numeric < string < uncertain; the two numeric kinds order as one family by exact numeric value, with NaN above every number. Order-equivalence does not imply equality: equal-valued members of different numeric kinds compare as equivalent yet remain distinct values.
+- Value graphs are trees: no collection value contains itself, directly or transitively.
+- A value tree nests at most 1000 levels; serialization and deserialization reject deeper trees.
+- Serializable string content is well-formed UTF-16: serialization rejects strings holding unpaired surrogates.
+- Deserialization consumes its material exactly: a well-formed encoding followed by trailing content is malformed.
 
 Rationale: [concept.md](concept.md). Implementation mapping: [design-primitive.md](design-primitive.md).

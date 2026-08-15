@@ -8,14 +8,25 @@ Part of [commons-value design](design-primitive.md). Specifies the `IValSerializ
 
 ### IValSerializer\<Material : Any\>
 
-**Responsibility:** Interface defining serialization and deserialization of IValue to/from a material format. `Material` is upper-bounded by `Any` (non-nullable).
+**Responsibility:** Interface defining serialization and deserialization of IValue to/from a material format. `Material` is upper-bounded by `Any` (non-nullable). Declares `ValFormatException`, the single malformed-input error type.
 
 **Methods:**
 
 | Method | Behavior | Input | Output | Errors |
 |--------|----------|-------|--------|--------|
-| `serialize(value: IValue)` | Encodes value into material format | `value: IValue` | `Material` | `IllegalArgumentException` on unknown type |
-| `deserialize(material: Material)` | Decodes material into IValue | `material: Material` | `IValue` | `IllegalArgumentException` on unknown type |
+| `serialize(value: IValue)` | Encodes value into material format | `value: IValue` | `Material` | `IllegalArgumentException` on nesting deeper than `MAX_NESTING_DEPTH` or string content with unpaired surrogates |
+| `deserialize(material: Material)` | Decodes material into IValue; consumes the material exactly | `material: Material` | `IValue` | `ValFormatException` on any malformed material |
+
+**Deserialization contract (all implementations):**
+- Every malformed-material failure raises `ValFormatException`: unknown tag, truncated payload, invalid size/count prefix, unparsable number, nesting deeper than `MAX_NESTING_DEPTH`, empty/exhausted material, trailing material after the top-level value. Underlying `BufferUnderflowException`/`NumberFormatException` are wrapped at the serializer boundary, never leaked.
+- Full consumption: after decoding the top-level value, remaining material is malformed.
+- Nested length-prefixed parses assert that the nested decode consumed its window exactly (position equals window end).
+
+---
+
+### ValFormatException
+
+**Responsibility:** Signals malformed serialized material. Extends `IllegalArgumentException`; carries the original cause when wrapping a lower-level exception. Declared in `IValSerializer.kt`.
 
 ---
 
@@ -64,6 +75,10 @@ Part of [commons-value design](design-primitive.md). Specifies the `IValSerializ
 ### WireFormat (extension functions)
 
 Buffer and encoding helpers shared by the serializer implementations.
+
+**`MAX_NESTING_DEPTH` (internal const, value 1000)** -- Maximum value-tree nesting accepted by serialize and deserialize. Bounds stack use and rejects cyclic value graphs during serialization. Constant tier: algorithm invariant (`code/constants.md`).
+
+**`String.requireWellFormedUtf16(): String`** -- Returns the receiver; throws `IllegalArgumentException` when the string contains an unpaired UTF-16 surrogate. Called by all three serializers before encoding string content.
 
 **`String.asHexInt(): Int`** -- Parses a hexadecimal string to Int. Throws `NumberFormatException` on invalid input.
 

@@ -14,93 +14,72 @@ Part of [commons-value design](design-primitive.md). Specifies the `ICollectionV
 
 ---
 
+### Mutable Collection Contract (ListVal, SetVal, MapVal)
+
+- Each class implements the matching Kotlin mutable collection interface by delegating to `core`; all interface members and stdlib collection extensions apply. No hand-written re-implementations of interface members exist.
+- The primary constructor adopts the passed container (shared ownership: later external mutation of the container mutates the value). Every secondary constructor copies its input.
+- `equals`/`hashCode` are content-based and defined per class (`ListVal` equals only `ListVal`, etc.).
+- No copy-returning `plus`/`minus` members: `+=` resolves to the stdlib `plusAssign` (in-place); copies are taken via the copying constructors or `deepCopy()`.
+- Mutable-element caveat (JDK set semantics): mutating a collection while it is an element of a `SetVal` corrupts membership; value graphs must stay acyclic. Documented, not enforced.
+
+---
+
 ### ListVal
 
-**Responsibility:** Wraps an `ArrayList<IValue>` as a mutable ordered collection value.
+**Responsibility:** Mutable ordered collection value; `MutableList<IValue>` by delegation to `core`.
 
 **State/Fields:**
 - `core: ArrayList<IValue>` — The internal list storage.
 
 **Constructors:**
-- `ListVal(core: ArrayList<IValue>)` — Primary constructor.
+- `ListVal(core: ArrayList<IValue>)` — Primary constructor (adopts).
 - `ListVal()` — Empty list.
 - `ListVal(size: Int)` — Pre-sized empty list.
 - `ListVal(value: List<IValue>)` — Copy from list.
 - `ListVal(vararg value: IValue)` — From varargs.
 
-**Methods:**
+**Methods (own, beyond `MutableList`):**
 
 | Method | Behavior | Input | Output | Errors |
 |--------|----------|-------|--------|--------|
-| `get(index: Int)` | Returns element at index | `index: Int` | `IValue` | `IndexOutOfBoundsException` |
-| `set(index: Int, value: IValue)` | Replaces element at index | `index: Int`, `value: IValue` | — | `IndexOutOfBoundsException` |
-| `contains(value: IValue)` | Checks element membership | `value: IValue` | `Boolean` | — |
-| `containsAll(values: Collection<IValue>)` | Checks all elements present | `values: Collection<IValue>` | `Boolean` | — |
-| `indexOf(value: IValue)` | First index of element, or -1 | `value: IValue` | `Int` | — |
-| `lastIndexOf(value: IValue)` | Last index of element, or -1 | `value: IValue` | `Int` | — |
-| `subList(fromIndex: Int, toIndex: Int)` | Returns sub-range as new ListVal | `fromIndex: Int`, `toIndex: Int` | `ListVal` | `IndexOutOfBoundsException`, `IllegalArgumentException` |
-| `plus(value: IValue)` | Returns new ListVal with element appended | `value: IValue` | `ListVal` | — |
-| `plusAssign(value: IValue)` | Mutably appends element | `value: IValue` | — | — |
-| `minus(value: IValue)` | Returns new ListVal with element removed | `value: IValue` | `ListVal` | — |
-| `minusAssign(value: IValue)` | Mutably removes element | `value: IValue` | — | — |
-| `isEmpty()` / `isNotEmpty()` | Emptiness checks | — | `Boolean` | — |
-| `map(transform)` | Transforms each element | `transform: (IValue) -> R` | `List<R>` | — |
-| `flatMap(transform)` | Flat-maps each element | `transform: (IValue) -> List<R>` | `List<R>` | — |
-| `forEach(action)` | Iterates each element | `action: (IValue) -> Unit` | — | — |
-| `asSequence()` | Returns lazy sequence | — | `Sequence<IValue>` | — |
+| `deepCopy()` | Recursive structural copy | — | `ListVal` | — |
 
-**Properties:**
-- `size: Int` — Number of elements.
+`subList` keeps the `MutableList` contract: a live view backed by this list.
 
 ---
 
 ### SetVal
 
-**Responsibility:** Wraps a `LinkedHashSet<IValue>` as a mutable ordered set value.
+**Responsibility:** Mutable insertion-ordered set value; `MutableSet<IValue>` by delegation to `core`.
 
 **State/Fields:**
 - `core: LinkedHashSet<IValue>` — The internal set storage (preserves insertion order).
 
 **Constructors:**
-- `SetVal(core: LinkedHashSet<IValue>)` — Primary constructor.
+- `SetVal(core: LinkedHashSet<IValue>)` — Primary constructor (adopts).
 - `SetVal()` — Empty set.
 - `SetVal(size: Int)` — Pre-sized empty set.
 - `SetVal(value: Collection<IValue>)` — Copy from collection.
 - `SetVal(vararg value: IValue)` — From varargs.
 - `SetVal(values: Sequence<IValue>)` — From sequence.
 
-**Methods:**
+**Methods (own, beyond `MutableSet`):**
 
 | Method | Behavior | Input | Output | Errors |
 |--------|----------|-------|--------|--------|
-| `add(new: IValue)` | Adds element, returns true if new | `new: IValue` | `Boolean` | — |
-| `remove(prev: IValue)` | Removes element, returns true if present | `prev: IValue` | `Boolean` | — |
-| `plus(new: IValue)` | Returns new SetVal with element added | `new: IValue` | `SetVal` | — |
-| `plusAssign(value: IValue)` | Mutably adds element | `value: IValue` | — | — |
-| `minus(prev: IValue)` | Returns new SetVal with element removed | `prev: IValue` | `SetVal` | — |
-| `minusAssign(prev: IValue)` | Mutably removes element | `prev: IValue` | — | — |
-| `contains(value: IValue)` | Checks element membership | `value: IValue` | `Boolean` | — |
-| `containsAll(values: Collection<IValue>)` | Checks all elements present | `values: Collection<IValue>` | `Boolean` | — |
-| `isEmpty()` / `isNotEmpty()` | Emptiness checks | — | `Boolean` | — |
-| `map(transform)` | Transforms each element | `transform: (IValue) -> R` | `List<R>` | — |
-| `forEach(action)` | Iterates each element | `action: (IValue) -> Unit` | — | — |
-| `asSequence()` | Returns lazy sequence | — | `Sequence<IValue>` | — |
-| `toList()` | Converts to list | — | `List<IValue>` | — |
-
-**Properties:**
-- `size: Int` — Number of elements.
+| `deepCopy()` | Recursive structural copy | — | `SetVal` | — |
 
 ---
 
 ### MapVal
 
-**Responsibility:** Wraps a `HashMap<String, IValue>` as a mutable string-keyed map value.
+**Responsibility:** Mutable string-keyed map value; `MutableMap<String, IValue>` by delegation to `core`.
 
 **State/Fields:**
 - `core: HashMap<String, IValue>` — The internal map storage (String keys only).
 
 **Constructors:**
-- `MapVal(core: HashMap<String, IValue>)` — Primary constructor.
+- `MapVal(core: HashMap<String, IValue>)` — Primary constructor (adopts).
 - `MapVal()` — Empty map.
 - `MapVal(size: Int)` — Pre-sized empty map.
 - `MapVal(value: Map<String, IValue>)` — Copy from map.
@@ -108,31 +87,13 @@ Part of [commons-value design](design-primitive.md). Specifies the `ICollectionV
 - `MapVal(values: Sequence<Pair<String, IValue>>)` — From sequence.
 - `MapVal(values: List<Pair<String, IValue>>)` — From list of pairs.
 
-**Methods:**
+**Methods (own, beyond `MutableMap`):**
 
 | Method | Behavior | Input | Output | Errors |
 |--------|----------|-------|--------|--------|
-| `get(key: String)` | Returns value for key, or null | `key: String` | `IValue?` | — |
-| `set(key: String, value: IValue)` | Sets key-value pair | `key: String`, `value: IValue` | — | — |
-| `add(key: String, value: IValue)` | Adds key-value pair | `key: String`, `value: IValue` | `IValue?` | — |
-| `plus(pair: Pair<String, IValue>)` | Returns new MapVal with pair added | `pair: Pair<String, IValue>` | `MapVal` | — |
-| `plusAssign(pair: Pair<String, IValue>)` | Mutably adds pair | `pair: Pair<String, IValue>` | — | — |
-| `minus(key: String)` | Returns new MapVal without key | `key: String` | `MapVal` | — |
-| `minusAssign(key: String)` | Mutably removes key | `key: String` | — | — |
-| `remove(key: String)` | Removes by key, returns previous value | `key: String` | `IValue?` | — |
-| `keys()` | Returns all keys | — | `Set<String>` | — |
-| `values()` | Returns all values | — | `Collection<IValue>` | — |
-| `contains(key: String)` | Checks key presence | `key: String` | `Boolean` | — |
-| `isEmpty()` | Emptiness check | — | `Boolean` | — |
-| `forEach(action)` | Iterates each entry | `action: (Map.Entry<String, IValue>) -> Unit` | — | — |
-| `map(behavior)` | Transforms each entry | `behavior: (Map.Entry<String, IValue>) -> R` | `List<R>` | — |
-| `mapValues(behavior)` | Transforms values | `behavior: (Map.Entry<String, IValue>) -> R` | `Map<String, R>` | — |
-| `flatMap(behavior)` | Flat-maps entries | `behavior: (Map.Entry<String, IValue>) -> Iterable<R>` | `List<R>` | — |
-| `toList()` | Converts to pair list | — | `List<Pair<String, IValue>>` | — |
-| `toPairArray()` | Converts to pair array | — | `Array<Pair<String, IValue>>` | — |
+| `deepCopy()` | Recursive structural copy | — | `MapVal` | — |
 
-**Properties:**
-- `size: Int` — Number of key-value pairs.
+`keys`/`values`/`entries` are the `MutableMap` properties; the former function forms, `add`, `toPairArray`, and copy-returning `plus`/`minus` are removed.
 
 ---
 
@@ -154,7 +115,7 @@ Part of [commons-value design](design-primitive.md). Specifies the `ICollectionV
 
 | Method | Behavior | Input | Output | Errors |
 |--------|----------|-------|--------|--------|
-| `contains(num: Number)` | Checks if number is within range | `num: Number` | `Boolean` | -- |
+| `contains(num: Number)` | Checks if number is within range; compares the exact numeric value for every `Number` kind (no `Double` rounding for `BigInteger`/`BigDecimal`/`AtomicLong`) | `num: Number` | `Boolean` | -- |
 | `contains(num: Long)` | Checks if long is within range | `num: Long` | `Boolean` | -- |
 | `contains(num: IntVal)` | Checks if IntVal is within range | `num: IntVal` | `Boolean` | -- |
 | `contains(range: RangeVal)` | Checks if sub-range is fully contained | `range: RangeVal` | `Boolean` | -- |

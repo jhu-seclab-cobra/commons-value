@@ -10,9 +10,9 @@ Related design documents:
 ## Design Overview
 
 - **Classes**: `StrVal`, `IntVal`, `FloatVal`, `BoolVal`, `NullVal`, `Unsure`
-- **Relationships**: `IPrimitiveVal` extends `IValue`, `ICollectionVal` extends `IValue`
+- **Relationships**: `IPrimitiveVal` extends `IValue` and `Comparable<IPrimitiveVal>`, `ICollectionVal` extends `IValue`
 - **Abstract**: `IValue` (sealed, implemented by `IPrimitiveVal`, `ICollectionVal`), `IPrimitiveVal` (sealed, implemented by `StrVal`, `IntVal`, `FloatVal`, `BoolVal`, `NullVal`, `Unsure`), `ICollectionVal` (sealed, implemented by `ListVal`, `SetVal`, `MapVal`, `RangeVal`), `IValSerializer<Material>` (implemented by `DftByteArraySerializerImpl`, `DftByteBufferSerializerImpl`, `DftCharBufferSerializerImpl`)
-- **Exceptions**: `IllegalArgumentException` raised by value conversion and serialization on unknown types
+- **Exceptions**: `IllegalArgumentException` raised by value conversion and serialization on unknown types; `ValFormatException` extends `IllegalArgumentException`, raised by deserialization on malformed material
 - **Dependency roles**: Data holders: all value types, `Type`. Helpers: three serializer singletons (stateless, inputs by argument).
 
 ---
@@ -26,13 +26,27 @@ Related design documents:
 **State/Fields:**
 - `core: Any?` -- The actual data content of the value.
 
+**Methods:**
+
+| Method | Behavior | Input | Output | Errors |
+|--------|----------|-------|--------|--------|
+| `deepCopy()` | Returns a structurally independent copy: immutable values return themselves; mutable collections copy recursively | -- | `IValue` (covariant overrides return the concrete type) | -- |
+
 ---
 
 ### IPrimitiveVal
 
-**Responsibility:** Sealed interface for atomic, non-decomposable value types.
+**Responsibility:** Sealed interface for atomic, non-decomposable value types. Carries the total order over primitives.
 
 **State/Fields:** Inherits `core` from `IValue`.
+
+**Methods:**
+
+| Method | Behavior | Input | Output | Errors |
+|--------|----------|-------|--------|--------|
+| `compareTo(other: IPrimitiveVal)` | Total order: kind rank `NullVal < BoolVal < numeric < StrVal < Unsure`; within numeric, `IntVal` and `FloatVal` compare by exact numeric value (no Double rounding above 2^53), NaN above all numbers, `-0.0` equivalent to `0.0`; `StrVal` lexicographic; `BoolVal` `false < true`; `Unsure` by declaration order | `other: IPrimitiveVal` | `Int` | -- |
+
+Ordering is inconsistent with `equals` in the `BigDecimal` sense: `IntVal(1)`, `FloatVal(1.0)` compare as equivalent but are not equal. Sorted containers keyed by primitives collapse such equivalents.
 
 ---
 
@@ -61,7 +75,7 @@ Related design documents:
 | `trim()` | Removes leading/trailing whitespace | -- | `StrVal` | -- |
 | `contains(substring: String)` | Checks if core contains substring | `substring: String` | `Boolean` | -- |
 | `get(index: Int)` | Returns char at index; negative indices count from end | `index: Int` | `Char` | `IndexOutOfBoundsException` |
-| `get(index: IntVal)` | Returns char at IntVal index | `index: IntVal` | `Char` | `IndexOutOfBoundsException` |
+| `get(index: IntVal)` | Returns char at IntVal index; a core outside Int range is out of bounds, never truncated | `index: IntVal` | `Char` | `IndexOutOfBoundsException` |
 
 **Properties:**
 - `length: Int` -- Number of characters in the string.
