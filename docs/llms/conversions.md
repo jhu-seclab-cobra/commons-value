@@ -1,6 +1,6 @@
 # Conversion Extensions
 
-> Kotlin extension properties and functions for native-to-IR conversion, comparison, and regex.
+> Kotlin extension properties and functions for native-to-IR conversion and regex.
 
 ## Quick Start
 
@@ -32,8 +32,8 @@ val list = listOf(1, 2).listVal  // ListVal(IntVal(1L), IntVal(2L))
 - **`Path.strVal: StrVal`** -- Wraps `java.nio.file.Path` as `StrVal`.
 - **`File.strVal: StrVal`** -- Wraps `java.io.File` path as `StrVal`.
 - **`Boolean.boolVal: BoolVal`** -- Returns `BoolVal.T` or `BoolVal.F`.
-- **`Any?.primitiveVal: IPrimitiveVal`** -- Converts `null`, `Number`, `String`, `Boolean`, or existing `IPrimitiveVal`. Raises `IllegalArgumentException` on unsupported types.
-- **`Any?.toVal: IValue`** -- Converts any supported type including collections (`List`, `Set`, `Map`, `IntRange`) and existing `IValue`. Raises `IllegalArgumentException` on unsupported types.
+- **`Any?.primitiveVal: IPrimitiveVal`** -- Converts `null`, `Number`, `String`, `Char`, `Boolean`, or existing `IPrimitiveVal`. Raises `IllegalArgumentException` on unsupported types.
+- **`Any?.toVal: IValue`** -- Converts any supported type including collections (`List`, `Set`, `Map`, `IntRange`, `LongRange`) and existing `IValue`. Raises `IllegalArgumentException` on unsupported types.
 
 ### Collection Conversion Extensions
 
@@ -41,16 +41,13 @@ val list = listOf(1, 2).listVal  // ListVal(IntVal(1L), IntVal(2L))
 - **`Collection<*>.setVal: SetVal`** -- Converts collection elements via `toVal`, deduplicating.
 - **`Map<*, *>.mapVal: MapVal`** -- Converts keys via `toString()`, values via `toVal`.
 - **`IntRange.rangeVal: RangeVal`** -- Converts `IntRange` to `RangeVal`.
+- **`LongRange.rangeVal: RangeVal`** -- Converts `LongRange` to `RangeVal`.
 
 ### Null-Safe Defaults
 
 - **`ListVal?.orEmpty(): ListVal`** -- Returns receiver or empty `ListVal`.
 - **`MapVal?.orEmpty(): MapVal`** -- Returns receiver or empty `MapVal`.
 - **`SetVal?.orEmpty(): SetVal`** -- Returns receiver or empty `SetVal`.
-
-### Comparison
-
-- **`IPrimitiveVal.compareTo(other: IPrimitiveVal): Int`** -- Compares primitives. `IntVal` and `FloatVal` compare numerically, including mixed `IntVal`/`FloatVal` pairs; `StrVal` compares lexicographically; `BoolVal` compares `false < true`; `NullVal` equals `NullVal`. Raises `IllegalArgumentException` on any other cross-type comparison.
 
 ### Regex
 
@@ -72,4 +69,4 @@ val list = listOf(1, 2).listVal  // ListVal(IntVal(1L), IntVal(2L))
 
 - `Any?.toVal` delegates to type-specific extensions. Unsupported types raise `IllegalArgumentException`.
 - `Map<*, *>.mapVal` calls `toString()` on keys -- non-string keys lose type information.
-- `IPrimitiveVal.compareTo` supports cross-type comparison only for numeric pairs (`IntVal` vs `FloatVal`); any other cross-type pair (e.g., `IntVal` vs `StrVal`) raises `IllegalArgumentException`.
+- Primitive comparison is the `Comparable` member on `IPrimitiveVal` (see [core.md](core.md)), not an extension.

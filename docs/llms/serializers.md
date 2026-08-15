@@ -18,12 +18,18 @@ val restored = serializer.deserialize(bytes) // IntVal(42L)
 ### Interface
 
 - **`IValSerializer<Material : Any>`** -- Generic serialization interface. Methods: `serialize(IValue): Material`, `deserialize(Material): IValue`.
+- **`ValFormatException : IllegalArgumentException`** -- Raised by `deserialize` on malformed material.
 
 ### Implementations
 
-- **`DftByteArraySerializerImpl : IValSerializer<ByteArray>`** -- Singleton. Compact binary encoding to `ByteArray`. Raises `IllegalArgumentException` on unknown `IValue` subtype or empty input.
-- **`DftByteBufferSerializerImpl : IValSerializer<ByteBuffer>`** -- Singleton. Binary encoding to `ByteBuffer`. Raises `IllegalArgumentException` on unknown type or empty buffer.
-- **`DftCharBufferSerializerImpl : IValSerializer<CharBuffer>`** -- Singleton. Human-readable text encoding to `CharBuffer`. Format: `TYPE:value:`. Raises `IllegalArgumentException` on unknown type.
+- **`DftByteArraySerializerImpl : IValSerializer<ByteArray>`** -- Singleton. Compact binary encoding to `ByteArray`.
+- **`DftByteBufferSerializerImpl : IValSerializer<ByteBuffer>`** -- Singleton. Binary encoding to `ByteBuffer`.
+- **`DftCharBufferSerializerImpl : IValSerializer<CharBuffer>`** -- Singleton. Human-readable text encoding to `CharBuffer`. Format: `TYPE:value:`.
+
+### Error Contract (all three implementations)
+
+- `serialize` raises `IllegalArgumentException` when value nesting exceeds 1000 levels (including cyclic value graphs) or a string or map key contains an unpaired UTF-16 surrogate.
+- `deserialize` raises `ValFormatException` on malformed material: empty input, truncated or garbage data, invalid size or count prefixes, unknown type tags, trailing material after the value, or nesting beyond 1000 levels.
 
 ### Type Enum
 
@@ -35,4 +41,6 @@ val restored = serializer.deserialize(bytes) // IntVal(42L)
 - `DftByteBufferSerializerImpl` serializes `RangeVal` bounds as two `IntVal` values (`Long`-backed).
 - `DftCharBufferSerializerImpl` uses hex-encoded element counts for collections and string lengths.
 - All three serializers are `object` singletons. No instantiation needed.
-- Serializers handle nested collections (e.g., `ListVal` containing `MapVal`).
+- Serializers handle nested collections (e.g., `ListVal` containing `MapVal`) up to 1000 nesting levels.
+- `deserialize` consumes the whole material; a valid encoding followed by extra bytes or chars raises `ValFormatException`.
+- Reject or repair unpaired surrogates before `serialize`; they never round-trip.

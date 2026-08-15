@@ -31,8 +31,8 @@ when (val v: IValue = list[0]) {
 
 ### Sealed Interfaces
 
-- **`IValue`** -- Root sealed interface. Property: `val core: Any?`.
-- **`IPrimitiveVal : IValue`** -- Sealed interface for primitive IR values.
+- **`IValue`** -- Root sealed interface. Property: `val core: Any?`. Method: `deepCopy(): IValue` -- structurally independent copy; primitives return self, collections copy recursively.
+- **`IPrimitiveVal : IValue, Comparable<IPrimitiveVal>`** -- Sealed interface for primitive IR values. `compareTo` is a total order: kinds rank `NullVal < BoolVal < numeric < StrVal < Unsure`; `IntVal` and `FloatVal` compare by exact numeric value; `NaN` orders above every number; `-0.0` is order-equivalent to `0.0`; `StrVal` compares lexicographically; `Unsure` by declaration order.
 - **`ICollectionVal : IValue`** -- Sealed interface for collection IR values.
 
 ### Primitive Types
@@ -46,15 +46,17 @@ when (val v: IValue = list[0]) {
 
 ### Collection Types
 
-- **`ListVal(core: ArrayList<IValue>)`** -- Mutable ordered list. Constructors: `ListVal()`, `ListVal(size: Int)`, `ListVal(List<IValue>)`, `ListVal(vararg IValue)`. Operators: `get(Int)`, `set(Int, IValue)`, `plus(IValue)`, `plusAssign(IValue)`, `minus(IValue)`, `minusAssign(IValue)`. Methods: `size`, `contains(IValue)`, `containsAll(Collection)`, `indexOf(IValue)`, `lastIndexOf(IValue)`, `subList(Int, Int)`, `isEmpty()`, `isNotEmpty()`, `map {}`, `flatMap {}`, `forEach {}`, `asSequence()`.
-- **`SetVal(core: LinkedHashSet<IValue>)`** -- Mutable insertion-ordered set. Constructors: `SetVal()`, `SetVal(size: Int)`, `SetVal(Collection<IValue>)`, `SetVal(vararg IValue)`, `SetVal(Sequence<IValue>)`. Methods: `add(IValue)`, `remove(IValue)`, `contains(IValue)`, `containsAll(Collection)`, `size`, `isEmpty()`, `isNotEmpty()`, `map {}`, `forEach {}`, `asSequence()`, `toList()`. Operators: `plus`, `plusAssign`, `minus`, `minusAssign`.
-- **`MapVal(core: HashMap<String, IValue>)`** -- Mutable string-keyed map. Constructors: `MapVal()`, `MapVal(size: Int)`, `MapVal(Map<String, IValue>)`, `MapVal(vararg Pair<String, IValue>)`, `MapVal(Sequence<Pair>)`, `MapVal(List<Pair>)`. Operators: `get(String): IValue?`, `set(String, IValue)`, `plus(Pair)`, `minus(String)`, `contains(String)`. Methods: `add(String, IValue)`, `remove(String)`, `keys()`, `values()`, `size`, `isEmpty()`, `map {}`, `mapValues {}`, `flatMap {}`, `forEach {}`, `toList()`, `toPairArray()`.
+- **`ListVal(core: ArrayList<IValue>) : MutableList<IValue>`** -- Mutable ordered list delegating to `core`; the full `MutableList` API and stdlib collection extensions apply. Constructors: `ListVal()`, `ListVal(size: Int)`, `ListVal(List<IValue>)`, `ListVal(vararg IValue)`. Override: `deepCopy(): ListVal`.
+- **`SetVal(core: LinkedHashSet<IValue>) : MutableSet<IValue>`** -- Mutable insertion-ordered set delegating to `core`; the full `MutableSet` API and stdlib collection extensions apply. Constructors: `SetVal()`, `SetVal(size: Int)`, `SetVal(Collection<IValue>)`, `SetVal(vararg IValue)`, `SetVal(Sequence<IValue>)`. Override: `deepCopy(): SetVal`.
+- **`MapVal(core: HashMap<String, IValue>) : MutableMap<String, IValue>`** -- Mutable string-keyed map delegating to `core`; the full `MutableMap` API and stdlib map extensions apply. Constructors: `MapVal()`, `MapVal(size: Int)`, `MapVal(Map<String, IValue>)`, `MapVal(vararg Pair<String, IValue>)`, `MapVal(Sequence<Pair>)`, `MapVal(List<Pair>)`. Override: `deepCopy(): MapVal`.
 - **`RangeVal(start: IntVal, endInclusive: IntVal)`** -- Numeric range. Constructor: `RangeVal(Number, Number)`. Properties: `first: Long`, `last: Long`. Operators: `contains(Number)`, `contains(IntVal)`, `contains(RangeVal)`, `plus(RangeVal)`. Infix: `before(RangeVal)`, `after(RangeVal)` (strict: ranges sharing a boundary point are neither). Methods: `map((IntVal) -> R) {}`.
 
 ## Gotchas
 
 - `MapVal` keys are `String`, not `IValue`. Use `StrVal.core` to extract the key.
-- `ListVal` and `SetVal` are mutable via `plusAssign`/`minusAssign`. The `plus`/`minus` operators return new instances.
+- `+=`/`-=` on collection values mutate in place. `+`/`-` are stdlib extensions returning plain `List<IValue>`/`Set<IValue>`/`Map<String, IValue>`, not `ListVal`/`SetVal`/`MapVal`.
+- Collection equality is content-based and holds only between instances of the same `*Val` type. `ListVal(IntVal(1L)) == listOf(IntVal(1L))` is `false`.
+- Sharing a collection value stores the same mutable instance. Use `deepCopy()` for an independent copy.
 - `BoolVal` uses singleton instances. `BoolVal(true) === BoolVal.T` is always `true`.
 - `NullVal` is a `data object`. Identity comparison (`===`) and equality (`==`) both work.
 - `Unsure.new(String)` returns `null` when the string does not match a known `Unsure.core` value.
