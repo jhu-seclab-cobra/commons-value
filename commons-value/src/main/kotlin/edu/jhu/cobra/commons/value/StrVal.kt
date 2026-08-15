@@ -111,10 +111,19 @@ public data class StrVal(
     /**
      * Retrieves the character at the specified [index], represented as an [IntVal].
      *
+     * An index outside the [Int] range is out of bounds; it is never truncated.
+     *
      * @param index The [IntVal] representing the position of the character to retrieve.
      * @return The character at the specified position.
+     * @throws IndexOutOfBoundsException if the index does not address a character.
      */
-    public operator fun get(index: IntVal): Char = get(index.core.toInt())
+    public operator fun get(index: IntVal): Char {
+        val position = index.core
+        if (position < Int.MIN_VALUE || position > Int.MAX_VALUE) {
+            throw IndexOutOfBoundsException("Index $position out of bounds for length ${core.length}")
+        }
+        return get(position.toInt())
+    }
 
     override fun toString(): String = "StrVal{$core}"
 }

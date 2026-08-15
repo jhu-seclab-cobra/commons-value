@@ -36,6 +36,7 @@ import kotlin.test.assertTrue
  * - `should return char at IntVal index` — get(IntVal) positive
  * - `should return char at negative IntVal index` — get(IntVal) negative
  * - `should throw IndexOutOfBoundsException for out-of-range IntVal index` — get(IntVal) error
+ * - `should throw IndexOutOfBoundsException for IntVal index beyond Int range` — get(IntVal) no truncation
  * - `should return correct length` — length property
  * - `should return zero length for empty string` — length boundary
  * - `should implement IPrimitiveVal` — type hierarchy
@@ -246,6 +247,13 @@ internal class StrValTest {
     fun `should throw IndexOutOfBoundsException for out-of-range IntVal index`() {
         assertFailsWith<IndexOutOfBoundsException> {
             StrVal("Hello")[IntVal(10L)]
+        }
+    }
+
+    @Test
+    fun `should throw IndexOutOfBoundsException for IntVal index beyond Int range`() {
+        assertFailsWith<IndexOutOfBoundsException> {
+            StrVal("Hello")[IntVal(1L shl 32)]
         }
     }
 
