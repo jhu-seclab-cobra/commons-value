@@ -161,7 +161,10 @@ public object DftByteArraySerializerImpl : IValSerializer<ByteArray> {
     override fun deserialize(material: ByteArray): IValue =
         decodeMaterial {
             require(material.isNotEmpty()) { "Empty byte array" }
-            deserializeFrom(ByteBuffer.wrap(material))
+            val buffer = ByteBuffer.wrap(material)
+            val value = deserializeFrom(buffer)
+            require(!buffer.hasRemaining()) { "Trailing material: ${buffer.remaining()} bytes after value" }
+            value
         }
 
     // Shared-buffer deserialization: reads directly from a ByteBuffer, avoiding per-value wrap allocations.

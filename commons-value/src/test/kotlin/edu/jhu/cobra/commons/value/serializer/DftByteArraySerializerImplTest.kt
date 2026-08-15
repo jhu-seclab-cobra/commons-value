@@ -18,6 +18,8 @@ import kotlin.test.assertTrue
  * - `should throw IllegalArgumentException when range bound is not an IntVal` — Non-INT nested value inside RANGE rejected.
  * - `should throw ValFormatException when int payload is truncated` — Truncated INT payload raises
  *   ValFormatException instead of leaking BufferUnderflowException.
+ * - `should throw ValFormatException when trailing bytes follow value` — Material continuing past the
+ *   decoded top-level value rejected.
  */
 internal class DftByteArraySerializerImplTest : AbcSerializerImplUnitTest<ByteArray>() {
     override val testTarget: IValSerializer<ByteArray> get() = DftByteArraySerializerImpl
@@ -81,6 +83,14 @@ internal class DftByteArraySerializerImplTest : AbcSerializerImplUnitTest<ByteAr
         val truncatedBytes = byteArrayOf(Type.INT.byte, 0, 0)
         assertFailsWith<ValFormatException> {
             DftByteArraySerializerImpl.deserialize(truncatedBytes)
+        }
+    }
+
+    @Test
+    fun `should throw ValFormatException when trailing bytes follow value`() {
+        val trailingBytes = byteArrayOf(Type.NULL.byte, Type.NULL.byte)
+        assertFailsWith<ValFormatException> {
+            DftByteArraySerializerImpl.deserialize(trailingBytes)
         }
     }
 }

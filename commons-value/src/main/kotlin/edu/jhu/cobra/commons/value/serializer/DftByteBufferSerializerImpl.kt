@@ -121,7 +121,9 @@ public object DftByteBufferSerializerImpl : IValSerializer<ByteBuffer> {
     override fun deserialize(material: ByteBuffer): IValue =
         decodeMaterial {
             require(material.hasRemaining()) { "No remaining bytes in buffer" }
-            decode(material)
+            val value = decode(material)
+            require(!material.hasRemaining()) { "Trailing material: ${material.remaining()} bytes after value" }
+            value
         }
 
     // Recursive decoding of one value; boundary validation and exception wrapping live in deserialize.

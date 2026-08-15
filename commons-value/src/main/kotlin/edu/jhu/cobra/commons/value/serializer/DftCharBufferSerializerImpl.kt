@@ -131,7 +131,9 @@ public object DftCharBufferSerializerImpl : IValSerializer<CharBuffer> {
     override fun deserialize(material: CharBuffer): IValue =
         decodeMaterial {
             require(material.hasRemaining()) { "No remaining chars in buffer" }
-            decode(material)
+            val value = decode(material)
+            require(!material.hasRemaining()) { "Trailing material: ${material.remaining()} chars after value" }
+            value
         }
 
     // Recursive decoding of one value; boundary validation and exception wrapping live in deserialize.

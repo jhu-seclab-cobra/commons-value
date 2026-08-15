@@ -18,6 +18,8 @@ import kotlin.test.assertTrue
  * - `should throw IllegalArgumentException when buffer is fully consumed` — Re-reading an exhausted buffer rejected.
  * - `should throw ValFormatException when long payload is truncated` — Truncated INT payload raises
  *   ValFormatException instead of leaking BufferUnderflowException.
+ * - `should throw ValFormatException when trailing bytes follow value` — Material continuing past the
+ *   decoded top-level value rejected.
  */
 internal class DftByteBufferSerializerImplTest : AbcSerializerImplUnitTest<ByteBuffer>() {
     override val testTarget: IValSerializer<ByteBuffer> get() = DftByteBufferSerializerImpl
@@ -114,6 +116,19 @@ internal class DftByteBufferSerializerImplTest : AbcSerializerImplUnitTest<ByteB
                 .typedFlip()
         assertFailsWith<ValFormatException> {
             DftByteBufferSerializerImpl.deserialize(truncatedBuffer)
+        }
+    }
+
+    @Test
+    fun `should throw ValFormatException when trailing bytes follow value`() {
+        val trailingBuffer =
+            ByteBuffer
+                .allocate(2)
+                .put(Type.NULL.byte)
+                .put(Type.NULL.byte)
+                .typedFlip()
+        assertFailsWith<ValFormatException> {
+            DftByteBufferSerializerImpl.deserialize(trailingBuffer)
         }
     }
 }

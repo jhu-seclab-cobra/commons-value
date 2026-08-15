@@ -18,6 +18,8 @@ import kotlin.test.assertTrue
  *   ValFormatException instead of leaking NumberFormatException.
  * - `should throw ValFormatException when container count is not hexadecimal` — Unparsable List count raises
  *   ValFormatException instead of leaking NumberFormatException.
+ * - `should throw ValFormatException when trailing chars follow value` — Material continuing past the
+ *   decoded top-level value rejected.
  */
 internal class DftCharBufferSerializerImplTest : AbcSerializerImplUnitTest<CharBuffer>() {
     override val testTarget: IValSerializer<CharBuffer> get() = DftCharBufferSerializerImpl
@@ -79,6 +81,14 @@ internal class DftCharBufferSerializerImplTest : AbcSerializerImplUnitTest<CharB
         val corruptBuffer = "List:zz:".asCharBuffer()
         assertFailsWith<ValFormatException> {
             DftCharBufferSerializerImpl.deserialize(corruptBuffer)
+        }
+    }
+
+    @Test
+    fun `should throw ValFormatException when trailing chars follow value`() {
+        val trailingBuffer = "Null:Null:".asCharBuffer()
+        assertFailsWith<ValFormatException> {
+            DftCharBufferSerializerImpl.deserialize(trailingBuffer)
         }
     }
 }
