@@ -15,6 +15,7 @@ public val Any?.toVal: IValue
             is List<*> -> listVal
             is Map<*, *> -> mapVal
             is IntRange -> rangeVal
+            is LongRange -> rangeVal
             is Set<*> -> setVal
             else -> primitiveVal
         }

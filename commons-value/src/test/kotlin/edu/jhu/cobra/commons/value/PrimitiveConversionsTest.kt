@@ -23,6 +23,7 @@ import kotlin.test.assertTrue
  * - `should convert Number to IntVal via primitiveVal` — Any?.primitiveVal Number (Int dispatches to IntVal)
  * - `should convert String to StrVal via primitiveVal` — Any?.primitiveVal String
  * - `should convert Boolean to BoolVal via primitiveVal` — Any?.primitiveVal Boolean
+ * - `should convert Char to StrVal via primitiveVal` — Any?.primitiveVal Char
  * - `should return IPrimitiveVal unchanged via primitiveVal` — Any?.primitiveVal identity
  * - `should throw IllegalArgumentException for unsupported primitiveVal type` — primitiveVal error
  * - `should convert Int to IntVal via primitiveVal` — primitiveVal Int dispatches to intVal
@@ -96,6 +97,11 @@ internal class PrimitiveConversionsTest {
     @Test
     fun `should convert Boolean to BoolVal via primitiveVal`() {
         assertEquals(BoolVal.T, true.primitiveVal)
+    }
+
+    @Test
+    fun `should convert Char to StrVal via primitiveVal`() {
+        assertEquals(StrVal("x"), 'x'.primitiveVal)
     }
 
     @Test

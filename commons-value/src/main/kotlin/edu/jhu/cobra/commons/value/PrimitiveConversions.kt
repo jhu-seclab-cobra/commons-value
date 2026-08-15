@@ -71,6 +71,7 @@ public val Boolean.boolVal: BoolVal get() = if (this) BoolVal.T else BoolVal.F
  * - [Long], [Int], [Short], [Byte] → [IntVal]
  * - [Double], [Float] → [FloatVal]
  * - [String] → [StrVal]
+ * - [Char] → [StrVal]
  * - [Boolean] → [BoolVal]
  * - [IPrimitiveVal] → returns as is
  *
@@ -88,6 +89,7 @@ public val Any?.primitiveVal: IPrimitiveVal
             is Double -> floatVal
             is Float -> floatVal
             is String -> strVal
+            is Char -> StrVal(toString())
             is Boolean -> boolVal
             is IPrimitiveVal -> this
             else -> throw IllegalArgumentException("Cannot convert $this to IPrimitiveVal")

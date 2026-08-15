@@ -75,3 +75,13 @@ public fun SetVal?.orEmpty(): SetVal = this ?: SetVal()
  * @return A [RangeVal] representing the same range of integers
  */
 public val IntRange.rangeVal: RangeVal get() = RangeVal(first, last)
+
+/**
+ * Converts a [LongRange] to a [RangeVal].
+ *
+ * This extension property creates a new [RangeVal] instance using the first and last values
+ * of the [LongRange]. The inclusivity of the range bounds is preserved.
+ *
+ * @return A [RangeVal] representing the same range of integers
+ */
+public val LongRange.rangeVal: RangeVal get() = RangeVal(first, last)

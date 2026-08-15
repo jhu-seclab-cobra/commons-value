@@ -26,6 +26,8 @@ import kotlin.test.assertSame
  * - `should convert Long to IntVal via toVal` — Long dispatches to intVal.
  * - `should convert Double to FloatVal via toVal` — Double dispatches to floatVal.
  * - `should convert Float to FloatVal via toVal` — Float dispatches to floatVal.
+ * - `should convert Char to StrVal via toVal` — Char produces a one-character StrVal.
+ * - `should convert LongRange to RangeVal via toVal` — LongRange produces RangeVal with matching bounds.
  */
 internal class ValueConversionsTest {
     @Test
@@ -152,5 +154,20 @@ internal class ValueConversionsTest {
         val result = 3.14f.toVal
         assertIs<FloatVal>(result)
         assertEquals(3.14f.toDouble(), result.core)
+    }
+
+    @Test
+    fun `should convert Char to StrVal via toVal`() {
+        val result = 'x'.toVal
+        assertIs<StrVal>(result)
+        assertEquals("x", result.core)
+    }
+
+    @Test
+    fun `should convert LongRange to RangeVal via toVal`() {
+        val result = (1L..Long.MAX_VALUE).toVal
+        assertIs<RangeVal>(result)
+        assertEquals(1L, result.first)
+        assertEquals(Long.MAX_VALUE, result.last)
     }
 }

@@ -24,8 +24,9 @@ import kotlin.test.assertTrue
  * - `should convert empty map to empty MapVal`
  * - `should throw IllegalArgumentException for unconvertible value in mapVal`
  *
- * IntRange.rangeVal:
+ * IntRange.rangeVal / LongRange.rangeVal:
  * - `should convert IntRange to RangeVal`
+ * - `should convert LongRange to RangeVal`
  *
  * ListVal?.orEmpty:
  * - `should return empty ListVal when null`
@@ -131,6 +132,14 @@ internal class CollectionConversionsTest {
         val result = range.rangeVal
         assertEquals(1, result.first)
         assertEquals(10, result.last)
+    }
+
+    @Test
+    fun `should convert LongRange to RangeVal`() {
+        val range = 1L..Long.MAX_VALUE
+        val result = range.rangeVal
+        assertEquals(1L, result.first)
+        assertEquals(Long.MAX_VALUE, result.last)
     }
 
     // -- ListVal?.orEmpty --
