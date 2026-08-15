@@ -189,10 +189,7 @@ public object DftByteArraySerializerImpl : IValSerializer<ByteArray> {
             Type.FLOAT.byte -> FloatVal(buffer.double)
             Type.RANGE.byte -> {
                 val firstSize = checkSizePrefix(buffer.getInt(), buffer.remaining(), "range bound size")
-                val savedLimit = buffer.limit()
-                buffer.limit(buffer.position() + firstSize)
-                val first = requireDecodedType<IntVal>(deserializeFrom(buffer), "range start")
-                buffer.limit(savedLimit)
+                val first = requireDecodedType<IntVal>(decodeWindow(buffer, firstSize, "range start"), "range start")
                 val second = requireDecodedType<IntVal>(deserializeFrom(buffer), "range end")
                 RangeVal(first, second)
             }
@@ -205,10 +202,7 @@ public object DftByteArraySerializerImpl : IValSerializer<ByteArray> {
                     val keyBytes = ByteArray(keySize).also { buffer.get(it) }
                     val key = keyBytes.decodeToString()
                     val valueSize = checkSizePrefix(buffer.getInt(), buffer.remaining(), "value size")
-                    val savedLimit = buffer.limit()
-                    buffer.limit(buffer.position() + valueSize)
-                    map[key] = deserializeFrom(buffer)
-                    buffer.limit(savedLimit)
+                    map[key] = decodeWindow(buffer, valueSize, "map value")
                 }
                 map
             }
@@ -222,10 +216,23 @@ public object DftByteArraySerializerImpl : IValSerializer<ByteArray> {
     ) {
         while (buffer.hasRemaining()) {
             val elementSize = checkSizePrefix(buffer.getInt(), buffer.remaining(), "element size")
-            val savedLimit = buffer.limit()
-            buffer.limit(buffer.position() + elementSize)
-            action(deserializeFrom(buffer))
-            buffer.limit(savedLimit)
+            action(decodeWindow(buffer, elementSize, "container element"))
         }
+    }
+
+    // Decodes one nested value from a size-bounded window and asserts the window is consumed exactly.
+    private fun decodeWindow(
+        buffer: ByteBuffer,
+        size: Int,
+        context: String,
+    ): IValue {
+        val savedLimit = buffer.limit()
+        buffer.limit(buffer.position() + size)
+        val value = deserializeFrom(buffer)
+        require(!buffer.hasRemaining()) {
+            "Nested $context consumed ${size - buffer.remaining()} of its declared $size bytes"
+        }
+        buffer.limit(savedLimit)
+        return value
     }
 }

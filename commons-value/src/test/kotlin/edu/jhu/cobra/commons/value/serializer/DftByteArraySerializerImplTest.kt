@@ -20,6 +20,8 @@ import kotlin.test.assertTrue
  *   ValFormatException instead of leaking BufferUnderflowException.
  * - `should throw ValFormatException when trailing bytes follow value` — Material continuing past the
  *   decoded top-level value rejected.
+ * - `should throw ValFormatException when nested element does not consume its declared window` — Element
+ *   size prefix larger than the element's encoding rejected instead of silently shifting the parse.
  */
 internal class DftByteArraySerializerImplTest : AbcSerializerImplUnitTest<ByteArray>() {
     override val testTarget: IValSerializer<ByteArray> get() = DftByteArraySerializerImpl
@@ -91,6 +93,16 @@ internal class DftByteArraySerializerImplTest : AbcSerializerImplUnitTest<ByteAr
         val trailingBytes = byteArrayOf(Type.NULL.byte, Type.NULL.byte)
         assertFailsWith<ValFormatException> {
             DftByteArraySerializerImpl.deserialize(trailingBytes)
+        }
+    }
+
+    @Test
+    fun `should throw ValFormatException when nested element does not consume its declared window`() {
+        // First element declares 2 bytes but its NULL encoding consumes 1; the leftover byte
+        // shifts the parse yet still yields a well-formed second element.
+        val corruptBytes = byteArrayOf(Type.LIST.byte, 0, 0, 0, 2, Type.NULL.byte, 0, 0, 0, 1, Type.NULL.byte)
+        assertFailsWith<ValFormatException> {
+            DftByteArraySerializerImpl.deserialize(corruptBytes)
         }
     }
 }
