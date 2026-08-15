@@ -17,12 +17,12 @@ import kotlin.test.assertTrue
  * - `should initialize from sequence of pairs`
  * - `should initialize from list of pairs`
  *
- * get / set / add / plus:
+ * get / set / put / plus:
  * - `should return value for existing key`
  * - `should return null for missing key`
  * - `should set key-value pair via set operator`
  * - `should overwrite existing key via set operator`
- * - `should add key-value pair via add method`
+ * - `should put key-value pair and return previous value`
  * - `should return new map with pair added via plus operator`
  * - `should add key-value pair via plusAssign operator`
  *
@@ -46,13 +46,12 @@ import kotlin.test.assertTrue
  * - `should return zero for empty map`
  * - `should return correct size after mutations`
  *
- * forEach / map / mapValues / flatMap / toList / toPairArray:
+ * forEach / map / mapValues / flatMap / toList:
  * - `should iterate all entries with forEach`
  * - `should transform entries with map`
  * - `should transform values with mapValues`
  * - `should flatten entries with flatMap`
  * - `should convert to pair list with toList`
- * - `should convert to pair array with toPairArray`
  *
  * Boundary:
  * - `should handle empty map operations`
@@ -142,12 +141,12 @@ internal class MapValTest {
         assertEquals(StrVal("new"), map["k"])
     }
 
-    // -- add --
+    // -- put --
 
     @Test
-    fun `should add key-value pair via add method`() {
+    fun `should put key-value pair and return previous value`() {
         val map = MapVal()
-        val prev = map.add("k", StrVal("v"))
+        val prev = map.put("k", StrVal("v"))
         assertNull(prev)
         assertEquals(StrVal("v"), map["k"])
     }
@@ -207,7 +206,7 @@ internal class MapValTest {
     @Test
     fun `should return all keys`() {
         val map = MapVal("a" to IntVal(1L), "b" to IntVal(2L))
-        val keys = map.keys()
+        val keys = map.keys
         assertEquals(2, keys.size)
         assertTrue(keys.contains("a"))
         assertTrue(keys.contains("b"))
@@ -216,7 +215,7 @@ internal class MapValTest {
     @Test
     fun `should return all values`() {
         val map = MapVal("a" to IntVal(1L), "b" to IntVal(2L))
-        val values = map.values()
+        val values = map.values
         assertEquals(2, values.size)
         assertTrue(values.contains(IntVal(1L)))
         assertTrue(values.contains(IntVal(2L)))
@@ -318,25 +317,14 @@ internal class MapValTest {
         assertTrue(list.any { it.first == "b" && it.second == StrVal("2") })
     }
 
-    // -- toPairArray --
-
-    @Test
-    fun `should convert to pair array with toPairArray`() {
-        val map = MapVal("a" to IntVal(1L), "b" to IntVal(2L))
-        val array = map.toPairArray()
-        assertEquals(2, array.size)
-        assertTrue(array.any { it.first == "a" && it.second == IntVal(1L) })
-        assertTrue(array.any { it.first == "b" && it.second == IntVal(2L) })
-    }
-
     // -- Boundary --
 
     @Test
     fun `should handle empty map operations`() {
         val map = MapVal()
         assertNull(map["any"])
-        assertEquals(0, map.keys().size)
-        assertEquals(0, map.values().size)
+        assertEquals(0, map.keys.size)
+        assertEquals(0, map.values.size)
         assertEquals(0, map.toList().size)
         assertFalse("any" in map)
     }

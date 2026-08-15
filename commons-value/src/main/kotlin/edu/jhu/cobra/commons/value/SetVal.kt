@@ -1,25 +1,21 @@
 package edu.jhu.cobra.commons.value
 
 /**
- * Represents a set of [IValue] objects, providing various operations for set manipulation.
- * It behaves similarly to Kotlin's [Set] interface, allowing common set operations.
+ * Represents a set of [IValue] objects as a [MutableSet] backed by [core].
+ *
+ * All [MutableSet] members and standard library collection extensions operate directly on [core],
+ * which preserves insertion order. The primary constructor adopts the passed set; secondary
+ * constructors copy their input. Equality is content-based and holds only between [SetVal] instances.
+ *
+ * Mutating an element while it is a member of the set corrupts membership, matching the
+ * [java.util.Set] contract for mutable elements.
  *
  * @property core The internal set of [IValue] elements.
  */
 public class SetVal(
     override val core: LinkedHashSet<IValue> = LinkedHashSet(),
-) : ICollectionVal {
-    override fun equals(other: Any?): Boolean = this === other || (other is SetVal && core == other.core)
-
-    override fun hashCode(): Int = core.hashCode()
-
-    /**
-     * Returns the size of the set.
-     *
-     * @return The number of elements in the set.
-     */
-    public val size: Int get() = core.size
-
+) : ICollectionVal,
+    MutableSet<IValue> by core {
     /**
      * Constructs an empty [SetVal] sized to hold [size] elements without rehashing.
      *
@@ -48,114 +44,9 @@ public class SetVal(
      */
     public constructor(values: Sequence<IValue>) : this(LinkedHashSet<IValue>().apply { addAll(values) })
 
-    /**
-     * Adds the specified [IValue] to the set.
-     *
-     * @param new The value to add.
-     * @return `true` if the set did not already contain the specified value.
-     */
-    public fun add(new: IValue): Boolean = core.add(new)
+    override fun equals(other: Any?): Boolean = this === other || (other is SetVal && core == other.core)
 
-    /**
-     * Removes the specified [IValue] from the set.
-     *
-     * @param prev The value to remove.
-     * @return `true` if the set contained the specified value.
-     */
-    public fun remove(prev: IValue): Boolean = core.remove(prev)
-
-    /**
-     * Adds the specified value to the set using the plus operator.
-     *
-     * @param new The value to add.
-     * @return A new [SetVal] with the added value.
-     */
-    public operator fun plus(new: IValue): SetVal = SetVal(core + new)
-
-    /**
-     * Adds the specified value to the set in place.
-     *
-     * @param value The value to add.
-     */
-    public operator fun plusAssign(value: IValue) {
-        core.add(value)
-    }
-
-    /**
-     * Removes the specified value from the set using the minus operator.
-     *
-     * @param prev The value to remove.
-     * @return A new [SetVal] with the value removed.
-     */
-    public operator fun minus(prev: IValue): SetVal = SetVal(core - prev)
-
-    /**
-     * Removes the specified value from the set in place.
-     *
-     * @param prev The value to remove.
-     */
-    public operator fun minusAssign(prev: IValue) {
-        core.remove(prev)
-    }
-
-    /**
-     * Checks if the set contains the specified [value].
-     *
-     * @param value The value to check for.
-     * @return `true` if the set contains the [value], `false` otherwise.
-     */
-    public fun contains(value: IValue): Boolean = core.contains(value)
-
-    /**
-     * Checks if the set contains all elements from the specified collection.
-     *
-     * @param values The collection of elements to check for.
-     * @return `true` if all elements are contained in the set, `false` otherwise.
-     */
-    public fun containsAll(values: Collection<IValue>): Boolean = core.containsAll(values)
-
-    /**
-     * Maps each element of the set to another value using the provided transformation function.
-     *
-     * @param transform The transformation function to apply.
-     * @return A list containing the transformed elements.
-     */
-    public fun <R> map(transform: (IValue) -> R): List<R> = core.map(transform)
-
-    /**
-     * Converts the set to a list.
-     *
-     * @return A list containing the elements of the set.
-     */
-    public fun toList(): List<IValue> = core.toList()
-
-    /**
-     * Applies the given action to each element in the set.
-     *
-     * @param action The action to perform on each element.
-     */
-    public fun forEach(action: (IValue) -> Unit): Unit = core.forEach(action)
-
-    /**
-     * Returns a sequence of the elements in the set.
-     *
-     * @return A sequence of [IValue] elements.
-     */
-    public fun asSequence(): Sequence<IValue> = core.asSequence()
-
-    /**
-     * Checks if the set is empty.
-     *
-     * @return `true` if the set is empty, `false` otherwise.
-     */
-    public fun isEmpty(): Boolean = core.isEmpty()
-
-    /**
-     * Checks if the set is not empty.
-     *
-     * @return `true` if the set is not empty, `false` otherwise.
-     */
-    public fun isNotEmpty(): Boolean = core.isNotEmpty()
+    override fun hashCode(): Int = core.hashCode()
 
     override fun toString(): String = core.joinToString(prefix = "{", postfix = "}")
 }
