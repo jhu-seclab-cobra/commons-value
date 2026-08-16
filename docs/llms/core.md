@@ -48,14 +48,15 @@ when (val v: IValue = list[0]) {
 
 - **`ListVal(core: ArrayList<IValue>) : MutableList<IValue>`** -- Mutable ordered list delegating to `core`; the full `MutableList` API and stdlib collection extensions apply. Constructors: `ListVal()`, `ListVal(size: Int)`, `ListVal(List<IValue>)`, `ListVal(vararg IValue)`. Override: `deepCopy(): ListVal`.
 - **`SetVal(core: LinkedHashSet<IValue>) : MutableSet<IValue>`** -- Mutable insertion-ordered set delegating to `core`; the full `MutableSet` API and stdlib collection extensions apply. Constructors: `SetVal()`, `SetVal(size: Int)`, `SetVal(Collection<IValue>)`, `SetVal(vararg IValue)`, `SetVal(Sequence<IValue>)`. Override: `deepCopy(): SetVal`.
-- **`MapVal(core: HashMap<String, IValue>) : MutableMap<String, IValue>`** -- Mutable string-keyed map delegating to `core`; the full `MutableMap` API and stdlib map extensions apply. Constructors: `MapVal()`, `MapVal(size: Int)`, `MapVal(Map<String, IValue>)`, `MapVal(vararg Pair<String, IValue>)`, `MapVal(Sequence<Pair>)`, `MapVal(List<Pair>)`. Override: `deepCopy(): MapVal`.
+- **`MapVal(core: LinkedHashMap<String, IValue>) : MutableMap<String, IValue>`** -- Mutable insertion-ordered string-keyed map delegating to `core`; the full `MutableMap` API and stdlib map extensions apply. Constructors: `MapVal()`, `MapVal(size: Int)`, `MapVal(Map<String, IValue>)`, `MapVal(vararg Pair<String, IValue>)`, `MapVal(Sequence<Pair>)`, `MapVal(List<Pair>)`. Override: `deepCopy(): MapVal`.
 - **`RangeVal(start: IntVal, endInclusive: IntVal)`** -- Numeric range. Constructor: `RangeVal(Number, Number)`. Properties: `first: Long`, `last: Long`. Operators: `contains(Number)`, `contains(IntVal)`, `contains(RangeVal)`, `plus(RangeVal)`. Infix: `before(RangeVal)`, `after(RangeVal)` (strict: ranges sharing a boundary point are neither). Methods: `map((IntVal) -> R) {}`.
 
 ## Gotchas
 
 - `MapVal` keys are `String`, not `IValue`. Use `StrVal.core` to extract the key.
 - `+=`/`-=` on collection values mutate in place. `+`/`-` are stdlib extensions returning plain `List<IValue>`/`Set<IValue>`/`Map<String, IValue>`, not `ListVal`/`SetVal`/`MapVal`.
-- Collection equality is content-based and holds only between instances of the same `*Val` type. `ListVal(IntVal(1L)) == listOf(IntVal(1L))` is `false`.
+- Collection equality follows the JDK collection contract: a `ListVal`/`SetVal`/`MapVal` equals any `List`/`Set`/`Map` with equal content. `ListVal(IntVal(1L)) == listOf(IntVal(1L))` is `true`.
+- `StrVal.equals(IPrimitiveVal, ignoreCase)` returns `false` for `NullVal`; it never matches the string `"null"`.
 - Sharing a collection value stores the same mutable instance. Use `deepCopy()` for an independent copy.
 - `BoolVal` uses singleton instances. `BoolVal(true) === BoolVal.T` is always `true`.
 - `NullVal` is a `data object`. Identity comparison (`===`) and equality (`==`) both work.

@@ -90,14 +90,15 @@ when (val v: IValue = list[0]) {
 
 - **`ListVal(core: ArrayList<IValue>) : MutableList<IValue>`** -- Mutable ordered list delegating to `core`; the full `MutableList` API and stdlib collection extensions apply. Constructors: `ListVal()`, `ListVal(size: Int)`, `ListVal(List<IValue>)`, `ListVal(vararg IValue)`. Override: `deepCopy(): ListVal`.
 - **`SetVal(core: LinkedHashSet<IValue>) : MutableSet<IValue>`** -- Mutable insertion-ordered set delegating to `core`; the full `MutableSet` API and stdlib collection extensions apply. Constructors: `SetVal()`, `SetVal(size: Int)`, `SetVal(Collection<IValue>)`, `SetVal(vararg IValue)`, `SetVal(Sequence<IValue>)`. Override: `deepCopy(): SetVal`.
-- **`MapVal(core: HashMap<String, IValue>) : MutableMap<String, IValue>`** -- Mutable string-keyed map delegating to `core`; the full `MutableMap` API and stdlib map extensions apply. Constructors: `MapVal()`, `MapVal(size: Int)`, `MapVal(Map<String, IValue>)`, `MapVal(vararg Pair<String, IValue>)`, `MapVal(Sequence<Pair>)`, `MapVal(List<Pair>)`. Override: `deepCopy(): MapVal`.
+- **`MapVal(core: LinkedHashMap<String, IValue>) : MutableMap<String, IValue>`** -- Mutable insertion-ordered string-keyed map delegating to `core`; the full `MutableMap` API and stdlib map extensions apply. Constructors: `MapVal()`, `MapVal(size: Int)`, `MapVal(Map<String, IValue>)`, `MapVal(vararg Pair<String, IValue>)`, `MapVal(Sequence<Pair>)`, `MapVal(List<Pair>)`. Override: `deepCopy(): MapVal`.
 - **`RangeVal(start: IntVal, endInclusive: IntVal)`** -- Numeric range. Constructor: `RangeVal(Number, Number)`. Properties: `first: Long`, `last: Long`. Operators: `contains(Number)`, `contains(IntVal)`, `contains(RangeVal)`, `plus(RangeVal)`. Infix: `before(RangeVal)`, `after(RangeVal)` (strict: ranges sharing a boundary point are neither). Methods: `map((IntVal) -> R) {}`.
 
 ## Gotchas
 
 - `MapVal` keys are `String`, not `IValue`. Use `StrVal.core` to extract the key.
 - `+=`/`-=` on collection values mutate in place. `+`/`-` are stdlib extensions returning plain `List<IValue>`/`Set<IValue>`/`Map<String, IValue>`, not `ListVal`/`SetVal`/`MapVal`.
-- Collection equality is content-based and holds only between instances of the same `*Val` type. `ListVal(IntVal(1L)) == listOf(IntVal(1L))` is `false`.
+- Collection equality follows the JDK collection contract: a `ListVal`/`SetVal`/`MapVal` equals any `List`/`Set`/`Map` with equal content. `ListVal(IntVal(1L)) == listOf(IntVal(1L))` is `true`.
+- `StrVal.equals(IPrimitiveVal, ignoreCase)` returns `false` for `NullVal`; it never matches the string `"null"`.
 - Sharing a collection value stores the same mutable instance. Use `deepCopy()` for an independent copy.
 - `BoolVal` uses singleton instances. `BoolVal(true) === BoolVal.T` is always `true`.
 - `NullVal` is a `data object`. Identity comparison (`===`) and equality (`==`) both work.
@@ -139,7 +140,7 @@ val restored = serializer.deserialize(bytes) // IntVal(42L)
 ### Error Contract (all three implementations)
 
 - `serialize` raises `IllegalArgumentException` when value nesting exceeds 1000 levels (including cyclic value graphs) or a string or map key contains an unpaired UTF-16 surrogate.
-- `deserialize` raises `ValFormatException` on malformed material: empty input, truncated or garbage data, invalid size or count prefixes, unknown type tags, trailing material after the value, or nesting beyond 1000 levels.
+- `deserialize` raises `ValFormatException` on malformed material: empty input, truncated or garbage data, invalid size or count prefixes, unknown type tags, malformed UTF-8 in string or key bytes, wrong delimiter characters (`DftCharBufferSerializerImpl`), trailing material after the value, or nesting beyond 1000 levels.
 
 ### Type Enum
 
@@ -149,7 +150,7 @@ val restored = serializer.deserialize(bytes) // IntVal(42L)
 
 - `DftByteArraySerializerImpl` and `DftByteBufferSerializerImpl` use different binary layouts. Bytes from one cannot be deserialized by the other.
 - `DftByteBufferSerializerImpl` serializes `RangeVal` bounds as two `IntVal` values (`Long`-backed).
-- `DftCharBufferSerializerImpl` uses hex-encoded element counts for collections and string lengths.
+- `DftCharBufferSerializerImpl` uses hex-encoded element counts for collections and string lengths; hex prefixes parse as unsigned, so a negative prefix is rejected as non-hexadecimal.
 - All three serializers are `object` singletons. No instantiation needed.
 - Serializers handle nested collections (e.g., `ListVal` containing `MapVal`) up to 1000 nesting levels.
 - `deserialize` consumes the whole material; a valid encoding followed by extra bytes or chars raises `ValFormatException`.
@@ -212,7 +213,7 @@ val list = listOf(1, 2).listVal  // ListVal(IntVal(1L), IntVal(2L))
 
 ### Regex
 
-- **`StrVal.toRegex(doCaseIgnore: Boolean = false): Regex`** -- Escapes special characters, replaces `Unsure` core strings with regex patterns (`.*`, `\d+`, `(true|false)`).
+- **`StrVal.toRegex(doCaseIgnore: Boolean = false): Regex`** -- Escapes special characters, replaces `Unsure` core strings with regex patterns (`.*`, signed decimal with optional fraction and exponent for `NUM`, `(true|false)`).
 - **`Unsure.toRegex(doCaseIgnore: Boolean = false): Regex`** -- Returns the regex pattern for the `Unsure` variant.
 
 ### Range Checks (on `Number`)
@@ -233,4 +234,3 @@ val list = listOf(1, 2).listVal  // ListVal(IntVal(1L), IntVal(2L))
 - Primitive comparison is the `Comparable` member on `IPrimitiveVal` (see [core.md](core.md)), not an extension.
 
 ---
-

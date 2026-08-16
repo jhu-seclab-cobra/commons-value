@@ -51,7 +51,7 @@ val list = listOf(1, 2).listVal  // ListVal(IntVal(1L), IntVal(2L))
 
 ### Regex
 
-- **`StrVal.toRegex(doCaseIgnore: Boolean = false): Regex`** -- Escapes special characters, replaces `Unsure` core strings with regex patterns (`.*`, `\d+`, `(true|false)`).
+- **`StrVal.toRegex(doCaseIgnore: Boolean = false): Regex`** -- Escapes special characters, replaces `Unsure` core strings with regex patterns (`.*`, signed decimal with optional fraction and exponent for `NUM`, `(true|false)`).
 - **`Unsure.toRegex(doCaseIgnore: Boolean = false): Regex`** -- Returns the regex pattern for the `Unsure` variant.
 
 ### Range Checks (on `Number`)
