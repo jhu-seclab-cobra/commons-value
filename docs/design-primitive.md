@@ -44,7 +44,7 @@ Related design documents:
 
 | Method | Behavior | Input | Output | Errors |
 |--------|----------|-------|--------|--------|
-| `compareTo(other: IPrimitiveVal)` | Total order: kind rank `NullVal < BoolVal < numeric < StrVal < Unsure`; within numeric, `IntVal` and `FloatVal` compare by exact numeric value (no Double rounding above 2^53), NaN above all numbers, `-0.0` equivalent to `0.0`; `StrVal` lexicographic; `BoolVal` `false < true`; `Unsure` by declaration order | `other: IPrimitiveVal` | `Int` | -- |
+| `compareTo(other: IPrimitiveVal)` | Total order: kind rank `NullVal < BoolVal < numeric < StrVal < Unsure`; within numeric, `IntVal` and `FloatVal` compare by exact numeric value (no Double rounding above 2^53), NaN above all numbers, `-0.0` equivalent to `0.0`; `StrVal` lexicographic; `BoolVal` `false < true`; `Unsure` by declaration order. The order is inconsistent with `equals`: equal-valued members of different numeric kinds compare as equivalent yet remain distinct values | `other: IPrimitiveVal` | `Int` | -- |
 
 Ordering is inconsistent with `equals` in the `BigDecimal` sense: `IntVal(1)`, `FloatVal(1.0)` compare as equivalent but are not equal. Sorted containers keyed by primitives collapse such equivalents.
 

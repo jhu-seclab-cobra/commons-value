@@ -161,8 +161,8 @@ Fixes from the 2026-08-16 code-quality audit. Same protocol as above: bug tasks 
 
 ## Task 24 — Document compareTo order inconsistent with equals
 
-- [ ] design-primitive.md `compareTo` row states the order is inconsistent with `equals` (KDoc already does).
-- [ ] llms/core.md `IPrimitiveVal` entry and a gotcha state: `IntVal(1L)` and `FloatVal(1.0)` compare as equivalent but are not equal; sorted collections collapse them, hash collections keep both. Regenerate full.txt.
+- [x] design-primitive.md `compareTo` row states the order is inconsistent with `equals` (KDoc already does).
+- [x] llms/core.md `IPrimitiveVal` entry and a gotcha state: `IntVal(1L)` and `FloatVal(1.0)` compare as equivalent but are not equal; sorted collections collapse them, hash collections keep both. Regenerate full.txt.
 - Commit: `docs(value): flag compareTo order as inconsistent with equals`.
 
 ## Task 25 — Guard deepCopy against cyclic value graphs
