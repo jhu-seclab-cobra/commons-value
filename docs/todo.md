@@ -157,7 +157,7 @@ Fixes from the 2026-08-16 code-quality audit. Same protocol as above: bug tasks 
 
 ## Task 23 — Verify
 
-- [ ] `./gradlew detekt ktlintCheck test build` clean.
+- [x] `./gradlew detekt ktlintCheck test build` clean.
 
 ---
 
