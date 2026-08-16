@@ -18,7 +18,7 @@ private val Unsure.regexPattern: String
         when (this) {
             Unsure.ANY -> ".*"
             Unsure.STR -> ".*"
-            Unsure.NUM -> "\\d+"
+            Unsure.NUM -> "-?\\d+(\\.\\d+)?([eE][+-]?\\d+)?"
             Unsure.BOOL -> "(true|false)"
         }
 
@@ -31,7 +31,7 @@ private val Unsure.regexPattern: String
  *    `Unsure{...}` rendering produced by [Unsure.toString] — with their regex equivalents:
  *    - `Unsure.ANY` → `.*`
  *    - `Unsure.STR` → `.*`
- *    - `Unsure.NUM` → `\d+`
+ *    - `Unsure.NUM` → `-?\d+(\.\d+)?([eE][+-]?\d+)?`
  *    - `Unsure.BOOL` → `(true|false)`
  *
  * @param doCaseIgnore Whether to make the regex case-insensitive
@@ -53,7 +53,8 @@ public fun StrVal.toRegex(doCaseIgnore: Boolean = false): Regex {
  * Converts the current [Unsure] instance to its corresponding regular expression.
  *
  * - [Unsure.ANY] and [Unsure.STR] are represented as `.*`, allowing matching of any string.
- * - [Unsure.NUM] is represented as `\\d+`, allowing matching of one or more numeric digits.
+ * - [Unsure.NUM] is represented as `-?\d+(\.\d+)?([eE][+-]?\d+)?`, matching the [IntVal] and finite
+ *   [FloatVal] textual renderings (signed integers, decimals, exponent notation).
  * - [Unsure.BOOL] is represented as `(true|false)`, allowing matching of boolean values `true` or `false`.
  *
  * @param doCaseIgnore Whether to make the regex case-insensitive

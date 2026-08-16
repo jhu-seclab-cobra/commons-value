@@ -30,7 +30,7 @@ Part of [commons-value design](design-primitive.md). Specifies extension functio
 
 ### PatternConversions (extension functions)
 
-**`StrVal.toRegex(doCaseIgnore: Boolean = false): Regex`** -- Escapes special regex chars, replaces Unsure placeholders with regex patterns (ANY/STR -> `.*`, NUM -> `\d+`, BOOL -> `(true|false)`).
+**`StrVal.toRegex(doCaseIgnore: Boolean = false): Regex`** -- Escapes special regex chars, replaces Unsure placeholders with regex patterns (ANY/STR -> `.*`, NUM -> `-?\d+(\.\d+)?([eE][+-]?\d+)?`, BOOL -> `(true|false)`).
 
 **`Unsure.toRegex(doCaseIgnore: Boolean = false): Regex`** -- Returns regex pattern corresponding to Unsure type.
 

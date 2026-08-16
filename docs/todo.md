@@ -130,9 +130,9 @@ Fixes from the 2026-08-16 code-quality audit. Same protocol as above: bug tasks 
 
 ## Task 19 — Unsure.NUM regex covers numeric renderings
 
-- [ ] Failing tests: NUM placeholder matches `-5`, `3.14`, `1.0E10`; still rejects non-numeric text.
-- [ ] NUM regex fragment `-?\d+(\.\d+)?([eE][+-]?\d+)?` (covers IntVal and FloatVal `toString` renderings except non-finite specials).
-- [ ] Update design-conversions.md pattern table.
+- [x] Failing tests: NUM placeholder matches `-5`, `3.14`, `1.0E10`; still rejects non-numeric text.
+- [x] NUM regex fragment `-?\d+(\.\d+)?([eE][+-]?\d+)?` (covers IntVal and FloatVal `toString` renderings except non-finite specials).
+- [x] Update design-conversions.md pattern table.
 - Commit: `fix(value): match signed and decimal numerals for Unsure.NUM`.
 
 ## Task 20 — asHexInt round-trips 8-digit hex

@@ -17,6 +17,7 @@ import kotlin.test.assertTrue
  * - `should match any string for Unsure ANY toRegex` — Unsure.toRegex ANY
  * - `should match any string for Unsure STR toRegex` — Unsure.toRegex STR
  * - `should match digits for Unsure NUM toRegex` — Unsure.toRegex NUM
+ * - `should match signed decimal and exponent numerals for Unsure NUM toRegex` — NUM covers IntVal/FloatVal renderings
  * - `should match true or false for Unsure BOOL toRegex` — Unsure.toRegex BOOL
  * - `should produce case-insensitive regex from Unsure toRegex` — Unsure.toRegex ignoreCase
  */
@@ -90,6 +91,16 @@ internal class PatternConversionsTest {
     fun `should match digits for Unsure NUM toRegex`() {
         assertTrue("123".matches(Unsure.NUM.toRegex()))
         assertFalse("abc".matches(Unsure.NUM.toRegex()))
+    }
+
+    @Test
+    fun `should match signed decimal and exponent numerals for Unsure NUM toRegex`() {
+        val regex = Unsure.NUM.toRegex()
+        assertTrue("-5".matches(regex))
+        assertTrue("3.14".matches(regex))
+        assertTrue("1.0E10".matches(regex))
+        assertFalse("1.".matches(regex))
+        assertFalse("v2".matches(regex))
     }
 
     @Test
