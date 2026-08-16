@@ -18,7 +18,7 @@ Part of [commons-value design](design-primitive.md). Specifies the `ICollectionV
 
 - Each class implements the matching Kotlin mutable collection interface by delegating to `core`; all interface members and stdlib collection extensions apply. No hand-written re-implementations of interface members exist.
 - The primary constructor adopts the passed container (shared ownership: later external mutation of the container mutates the value). Every secondary constructor copies its input.
-- `equals`/`hashCode` are content-based and defined per class (`ListVal` equals only `ListVal`, etc.).
+- `equals`/`hashCode` follow the JDK collection contract: a value equals any `List`/`Set`/`Map` with equal content (matching `AbstractList`/`AbstractSet`/`AbstractMap` semantics), so equality is symmetric with plain collections.
 - No copy-returning `plus`/`minus` members: `+=` resolves to the stdlib `plusAssign` (in-place); copies are taken via the copying constructors or `deepCopy()`.
 - Mutable-element caveat (JDK set semantics): mutating a collection while it is an element of a `SetVal` corrupts membership; value graphs must stay acyclic. Documented, not enforced.
 

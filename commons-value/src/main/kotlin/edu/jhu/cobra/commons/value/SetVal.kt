@@ -5,7 +5,8 @@ package edu.jhu.cobra.commons.value
  *
  * All [MutableSet] members and standard library collection extensions operate directly on [core],
  * which preserves insertion order. The primary constructor adopts the passed set; secondary
- * constructors copy their input. Equality is content-based and holds only between [SetVal] instances.
+ * constructors copy their input. Equality follows the JDK collection contract: a [SetVal] equals
+ * any [Set] with equal content.
  *
  * Mutating an element while it is a member of the set corrupts membership, matching the
  * [java.util.Set] contract for mutable elements.
@@ -51,7 +52,7 @@ public class SetVal(
      */
     override fun deepCopy(): SetVal = SetVal(core.mapTo(LinkedHashSet(hashCapacityFor(core.size))) { it.deepCopy() })
 
-    override fun equals(other: Any?): Boolean = this === other || (other is SetVal && core == other.core)
+    override fun equals(other: Any?): Boolean = this === other || (other is Set<*> && core == other)
 
     override fun hashCode(): Int = core.hashCode()
 

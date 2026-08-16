@@ -104,9 +104,9 @@ Fixes from the 2026-08-16 code-quality audit. Same protocol as above: bug tasks 
 
 ## Task 15 — Collection equals honors the JDK collection contract
 
-- [ ] Failing tests: `plainList == listVal && listVal != plainList` asymmetry (same for SetVal/MapVal); equal hashCodes with direction-dependent HashSet lookups.
-- [ ] `equals` accepts any `List`/`Set`/`Map` with equal content (`other is List<*> && core == other`), matching `AbstractList`/`AbstractSet`/`AbstractMap` semantics. `hashCode` already matches.
-- [ ] Update design-collection.md contract line ("equals only ListVal" → JDK-contract equality).
+- [x] Failing tests: `plainList == listVal && listVal != plainList` asymmetry (same for SetVal/MapVal); equal hashCodes with direction-dependent HashSet lookups.
+- [x] `equals` accepts any `List`/`Set`/`Map` with equal content (`other is List<*> && core == other`), matching `AbstractList`/`AbstractSet`/`AbstractMap` semantics. `hashCode` already matches.
+- [x] Update design-collection.md contract line ("equals only ListVal" → JDK-contract equality).
 - Commit: `fix(value)!: align collection equals with the JDK collection contract`.
 
 ## Task 16 — Reject invalid UTF-8 at deserialize

@@ -6,7 +6,7 @@ package edu.jhu.cobra.commons.value
  * All [MutableMap] members and standard library map extensions operate directly on [core],
  * which preserves insertion order. The primary constructor adopts the passed map; secondary
  * constructors copy their input.
- * Equality is content-based and holds only between [MapVal] instances.
+ * Equality follows the JDK collection contract: a [MapVal] equals any [Map] with equal content.
  *
  * @property core The internal map of key-value pairs.
  */
@@ -61,7 +61,7 @@ public class MapVal(
             core.mapValuesTo(LinkedHashMap(hashCapacityFor(core.size))) { (_, value) -> value.deepCopy() },
         )
 
-    override fun equals(other: Any?): Boolean = this === other || (other is MapVal && core == other.core)
+    override fun equals(other: Any?): Boolean = this === other || (other is Map<*, *> && core == other)
 
     override fun hashCode(): Int = core.hashCode()
 

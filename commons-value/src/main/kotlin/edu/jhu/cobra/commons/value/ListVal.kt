@@ -9,7 +9,7 @@ private const val DEFAULT_INITIAL_CAPACITY = 5
  *
  * All [MutableList] members and standard library collection extensions operate directly on [core].
  * The primary constructor adopts the passed list; secondary constructors copy their input.
- * Equality is content-based and holds only between [ListVal] instances.
+ * Equality follows the JDK collection contract: a [ListVal] equals any [List] with equal content.
  *
  * @property core The internal list of [IValue] elements.
  */
@@ -46,7 +46,7 @@ public class ListVal(
      */
     override fun deepCopy(): ListVal = ListVal(core.mapTo(ArrayList(core.size)) { it.deepCopy() })
 
-    override fun equals(other: Any?): Boolean = this === other || (other is ListVal && core == other.core)
+    override fun equals(other: Any?): Boolean = this === other || (other is List<*> && core == other)
 
     override fun hashCode(): Int = core.hashCode()
 

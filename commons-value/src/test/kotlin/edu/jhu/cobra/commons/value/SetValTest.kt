@@ -54,6 +54,10 @@ import kotlin.test.assertTrue
  * deepCopy:
  * - `should deep copy set without sharing mutable state`
  *
+ * Equality:
+ * - `should equal plain set with same content symmetrically` — JDK collection contract.
+ * - `should not equal list with same elements`
+ *
  * Boundary:
  * - `should preserve insertion order`
  * - `should handle empty set operations`
@@ -305,6 +309,23 @@ internal class SetValTest {
         assertEquals(set, copy)
         copy.filterIsInstance<ListVal>().single().add(IntVal(2L))
         assertEquals(1, inner.size)
+    }
+
+    // -- Equality --
+
+    @Test
+    fun `should equal plain set with same content symmetrically`() {
+        val setVal = SetVal(IntVal(1L), IntVal(2L))
+        val plain: Set<IValue> = setOf(IntVal(1L), IntVal(2L))
+        assertTrue(plain == setVal)
+        assertTrue(setVal == plain)
+        assertEquals(plain.hashCode(), setVal.hashCode())
+    }
+
+    @Test
+    fun `should not equal list with same elements`() {
+        val setVal = SetVal(IntVal(1L))
+        assertFalse(setVal.equals(ListVal(IntVal(1L))))
     }
 
     @Test

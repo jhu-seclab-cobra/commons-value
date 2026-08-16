@@ -59,6 +59,9 @@ import kotlin.test.assertTrue
  * Iteration order:
  * - `should iterate entries in insertion order` — keys chosen so hash order differs from insertion order.
  *
+ * Equality:
+ * - `should equal plain map with same content symmetrically` — JDK collection contract.
+ *
  * Boundary:
  * - `should handle empty map operations`
  * - `should enforce String keys only`
@@ -342,6 +345,17 @@ internal class MapValTest {
         // "b" hashes after "a": a hash-ordered map would iterate a,b and fail this assertion.
         val map = MapVal("b" to IntVal(2L), "a" to IntVal(1L))
         assertEquals(listOf("b", "a"), map.keys.toList())
+    }
+
+    // -- Equality --
+
+    @Test
+    fun `should equal plain map with same content symmetrically`() {
+        val mapVal = MapVal("k" to IntVal(1L))
+        val plain: Map<String, IValue> = mapOf("k" to IntVal(1L))
+        assertTrue(plain == mapVal)
+        assertTrue(mapVal == plain)
+        assertEquals(plain.hashCode(), mapVal.hashCode())
     }
 
     // -- Boundary --
