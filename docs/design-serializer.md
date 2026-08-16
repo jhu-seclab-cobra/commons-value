@@ -76,7 +76,7 @@ Part of [commons-value design](design-primitive.md). Specifies the `IValSerializ
 
 Buffer and encoding helpers shared by the serializer implementations.
 
-**`MAX_NESTING_DEPTH` (internal const, value 1000)** -- Maximum value-tree nesting accepted by serialize and deserialize. Bounds stack use and rejects cyclic value graphs during serialization. Constant tier: algorithm invariant (`code/constants.md`).
+**`MAX_NESTING_DEPTH` (internal const, value 1000)** -- Maximum value-tree nesting accepted by `deepCopy`, serialize, and deserialize. Declared in the value package (`IValue.kt`) with `checkNestingDepth`; serializers import both. Bounds stack use and rejects cyclic value graphs. Constant tier: algorithm invariant (`code/constants.md`).
 
 **`String.requireWellFormedUtf16(): String`** -- Returns the receiver; throws `IllegalArgumentException` when the string contains an unpaired UTF-16 surrogate. Called by all three serializers before encoding string content.
 

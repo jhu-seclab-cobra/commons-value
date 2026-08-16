@@ -40,7 +40,13 @@ public class ListVal(
      *
      * @return A new [ListVal] whose elements are deep copies of this list's elements.
      */
-    override fun deepCopy(): ListVal = ListVal(core.mapTo(ArrayList(core.size)) { it.deepCopy() })
+    override fun deepCopy(): ListVal = deepCopy(depth = 0)
+
+    // Depth-guarded recursion body reached through the dispatch in IValue.kt.
+    internal fun deepCopy(depth: Int): ListVal {
+        checkNestingDepth(depth)
+        return ListVal(core.mapTo(ArrayList(core.size)) { it.deepCopy(depth + 1) })
+    }
 
     override fun equals(other: Any?): Boolean = this === other || (other is List<*> && core == other)
 

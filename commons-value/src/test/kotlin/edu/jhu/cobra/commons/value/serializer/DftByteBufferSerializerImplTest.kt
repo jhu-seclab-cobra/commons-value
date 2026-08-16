@@ -1,5 +1,6 @@
 package edu.jhu.cobra.commons.value.serializer
 
+import edu.jhu.cobra.commons.value.MAX_NESTING_DEPTH
 import java.nio.ByteBuffer
 import kotlin.test.Test
 import kotlin.test.assertFailsWith

@@ -2,6 +2,7 @@ package edu.jhu.cobra.commons.value
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
@@ -53,6 +54,8 @@ import kotlin.test.assertTrue
  *
  * deepCopy:
  * - `should deep copy set without sharing mutable state`
+ * - `should throw IllegalArgumentException when deepCopy meets cyclic set` — Cyclic value graph
+ *   rejected with a diagnosable error instead of StackOverflowError.
  *
  * Equality:
  * - `should equal plain set with same content symmetrically` — JDK collection contract.
@@ -309,6 +312,13 @@ internal class SetValTest {
         assertEquals(set, copy)
         copy.filterIsInstance<ListVal>().single().add(IntVal(2L))
         assertEquals(1, inner.size)
+    }
+
+    @Test
+    fun `should throw IllegalArgumentException when deepCopy meets cyclic set`() {
+        val set = SetVal()
+        set.add(set)
+        assertFailsWith<IllegalArgumentException> { set.deepCopy() }
     }
 
     // -- Equality --

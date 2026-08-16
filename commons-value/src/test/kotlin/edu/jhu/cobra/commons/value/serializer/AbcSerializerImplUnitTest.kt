@@ -5,6 +5,7 @@ import edu.jhu.cobra.commons.value.FloatVal
 import edu.jhu.cobra.commons.value.IValue
 import edu.jhu.cobra.commons.value.IntVal
 import edu.jhu.cobra.commons.value.ListVal
+import edu.jhu.cobra.commons.value.MAX_NESTING_DEPTH
 import edu.jhu.cobra.commons.value.MapVal
 import edu.jhu.cobra.commons.value.NullVal
 import edu.jhu.cobra.commons.value.RangeVal

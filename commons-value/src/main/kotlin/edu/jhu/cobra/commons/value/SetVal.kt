@@ -50,7 +50,13 @@ public class SetVal(
      *
      * @return A new [SetVal] whose elements are deep copies of this set's elements.
      */
-    override fun deepCopy(): SetVal = SetVal(core.mapTo(LinkedHashSet(hashCapacityFor(core.size))) { it.deepCopy() })
+    override fun deepCopy(): SetVal = deepCopy(depth = 0)
+
+    // Depth-guarded recursion body reached through the dispatch in IValue.kt.
+    internal fun deepCopy(depth: Int): SetVal {
+        checkNestingDepth(depth)
+        return SetVal(core.mapTo(LinkedHashSet(hashCapacityFor(core.size))) { it.deepCopy(depth + 1) })
+    }
 
     override fun equals(other: Any?): Boolean = this === other || (other is Set<*> && core == other)
 

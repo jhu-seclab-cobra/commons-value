@@ -19,6 +19,35 @@ public sealed interface IValue {
      * mutable state is shared between the original and the copy.
      *
      * @return A value equal to this one that shares no mutable state with it.
+     * @throws IllegalArgumentException If value nesting exceeds the supported depth, including
+     *   cyclic value graphs.
      */
     public fun deepCopy(): IValue
 }
+
+// Bounds recursive value-graph traversal in deepCopy and the serializers: keeps stack use
+// finite and rejects cyclic value graphs with a diagnosable error.
+internal const val MAX_NESTING_DEPTH = 1000
+
+/**
+ * Validates a recursive value-nesting depth against [MAX_NESTING_DEPTH].
+ *
+ * @param depth The current nesting depth, zero for the top-level value
+ * @return The validated depth
+ * @throws IllegalArgumentException if [depth] exceeds [MAX_NESTING_DEPTH]
+ */
+internal fun checkNestingDepth(depth: Int): Int {
+    require(depth <= MAX_NESTING_DEPTH) { "Value nesting exceeds $MAX_NESTING_DEPTH levels" }
+    return depth
+}
+
+// Depth-carrying dispatch for the recursive copy: mutable collections continue through their
+// guarded overloads; immutable values are their own copy.
+internal fun IValue.deepCopy(depth: Int): IValue =
+    when (this) {
+        is ListVal -> deepCopy(depth)
+        is SetVal -> deepCopy(depth)
+        is MapVal -> deepCopy(depth)
+        is RangeVal -> this
+        is IPrimitiveVal -> this
+    }

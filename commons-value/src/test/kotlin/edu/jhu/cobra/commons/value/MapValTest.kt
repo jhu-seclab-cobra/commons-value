@@ -2,6 +2,7 @@ package edu.jhu.cobra.commons.value
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -55,6 +56,8 @@ import kotlin.test.assertTrue
  *
  * deepCopy:
  * - `should deep copy map values without sharing mutable state`
+ * - `should throw IllegalArgumentException when deepCopy meets cyclic map` — Cyclic value graph
+ *   rejected with a diagnosable error instead of StackOverflowError.
  *
  * Iteration order:
  * - `should iterate entries in insertion order` — keys chosen so hash order differs from insertion order.
@@ -336,6 +339,13 @@ internal class MapValTest {
         assertEquals(map, copy)
         (copy["k"] as ListVal).add(IntVal(2L))
         assertEquals(1, inner.size)
+    }
+
+    @Test
+    fun `should throw IllegalArgumentException when deepCopy meets cyclic map`() {
+        val map = MapVal()
+        map["self"] = map
+        assertFailsWith<IllegalArgumentException> { map.deepCopy() }
     }
 
     // -- Iteration order --

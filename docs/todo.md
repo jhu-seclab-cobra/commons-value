@@ -167,10 +167,10 @@ Fixes from the 2026-08-16 code-quality audit. Same protocol as above: bug tasks 
 
 ## Task 25 — Guard deepCopy against cyclic value graphs
 
-- [ ] Reproduction test first: `ListVal` containing itself — `deepCopy()` raises `IllegalArgumentException`, not `StackOverflowError`. Sibling tests for `SetVal` and `MapVal`.
-- [ ] Move `MAX_NESTING_DEPTH` and `checkNestingDepth` from serializer `WireValidation.kt` to the value package (`IValue.kt`); serializer files import them.
-- [ ] Collection `deepCopy` overrides delegate to depth-guarded internal `deepCopy(depth)` members; recursion dispatches via an internal `IValue.deepCopy(depth)` extension.
-- [ ] Update design-collection.md (deepCopy cyclic rejection), design-serializer.md (constant ownership), llms/core.md, full.txt.
+- [x] Reproduction test first: `ListVal` containing itself — `deepCopy()` raises `IllegalArgumentException`, not `StackOverflowError`. Sibling tests for `SetVal` and `MapVal`.
+- [x] Move `MAX_NESTING_DEPTH` and `checkNestingDepth` from serializer `WireValidation.kt` to the value package (`IValue.kt`); serializer files import them.
+- [x] Collection `deepCopy` overrides delegate to depth-guarded internal `deepCopy(depth)` members; recursion dispatches via an internal `IValue.deepCopy(depth)` extension.
+- [x] Update design-collection.md (deepCopy cyclic rejection), design-serializer.md (constant ownership), llms/core.md, full.txt.
 - Commit: `fix(value): guard deepCopy against cyclic value graphs`.
 
 ---

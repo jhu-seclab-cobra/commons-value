@@ -42,7 +42,7 @@ Part of [commons-value design](design-primitive.md). Specifies the `ICollectionV
 
 | Method | Behavior | Input | Output | Errors |
 |--------|----------|-------|--------|--------|
-| `deepCopy()` | Recursive structural copy | — | `ListVal` | — |
+| `deepCopy()` | Recursive structural copy | — | `ListVal` | `IllegalArgumentException` on nesting deeper than `MAX_NESTING_DEPTH` (including cyclic value graphs) |
 
 `subList` keeps the `MutableList` contract: a live view backed by this list.
 
@@ -67,7 +67,7 @@ Part of [commons-value design](design-primitive.md). Specifies the `ICollectionV
 
 | Method | Behavior | Input | Output | Errors |
 |--------|----------|-------|--------|--------|
-| `deepCopy()` | Recursive structural copy | — | `SetVal` | — |
+| `deepCopy()` | Recursive structural copy | — | `SetVal` | `IllegalArgumentException` on nesting deeper than `MAX_NESTING_DEPTH` (including cyclic value graphs) |
 
 ---
 
@@ -91,7 +91,7 @@ Part of [commons-value design](design-primitive.md). Specifies the `ICollectionV
 
 | Method | Behavior | Input | Output | Errors |
 |--------|----------|-------|--------|--------|
-| `deepCopy()` | Recursive structural copy | — | `MapVal` | — |
+| `deepCopy()` | Recursive structural copy | — | `MapVal` | `IllegalArgumentException` on nesting deeper than `MAX_NESTING_DEPTH` (including cyclic value graphs) |
 
 `keys`/`values`/`entries` are the `MutableMap` properties; the former function forms, `add`, `toPairArray`, and copy-returning `plus`/`minus` are removed.
 

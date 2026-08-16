@@ -56,10 +56,15 @@ public class MapVal(
      *
      * @return A new [MapVal] whose values are deep copies of this map's values.
      */
-    override fun deepCopy(): MapVal =
-        MapVal(
-            core.mapValuesTo(LinkedHashMap(hashCapacityFor(core.size))) { (_, value) -> value.deepCopy() },
+    override fun deepCopy(): MapVal = deepCopy(depth = 0)
+
+    // Depth-guarded recursion body reached through the dispatch in IValue.kt.
+    internal fun deepCopy(depth: Int): MapVal {
+        checkNestingDepth(depth)
+        return MapVal(
+            core.mapValuesTo(LinkedHashMap(hashCapacityFor(core.size))) { (_, value) -> value.deepCopy(depth + 1) },
         )
+    }
 
     override fun equals(other: Any?): Boolean = this === other || (other is Map<*, *> && core == other)
 

@@ -11,6 +11,7 @@ import edu.jhu.cobra.commons.value.RangeVal
 import edu.jhu.cobra.commons.value.SetVal
 import edu.jhu.cobra.commons.value.StrVal
 import edu.jhu.cobra.commons.value.Unsure
+import edu.jhu.cobra.commons.value.checkNestingDepth
 import java.nio.ByteBuffer
 
 /**

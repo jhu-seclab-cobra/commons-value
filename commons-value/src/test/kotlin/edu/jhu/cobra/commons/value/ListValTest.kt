@@ -69,6 +69,8 @@ import kotlin.test.assertTrue
  *
  * deepCopy:
  * - `should deep copy nested list without sharing mutable state`
+ * - `should throw IllegalArgumentException when deepCopy meets cyclic list` — Cyclic value graph
+ *   rejected with a diagnosable error instead of StackOverflowError.
  *
  * Equality:
  * - `should equal plain list with same content symmetrically` — JDK collection contract.
@@ -401,6 +403,13 @@ internal class ListValTest {
         assertEquals(outer, copy)
         (copy[0] as ListVal).add(IntVal(2L))
         assertEquals(1, inner.size)
+    }
+
+    @Test
+    fun `should throw IllegalArgumentException when deepCopy meets cyclic list`() {
+        val list = ListVal()
+        list.add(list)
+        assertFailsWith<IllegalArgumentException> { list.deepCopy() }
     }
 
     // -- Equality --

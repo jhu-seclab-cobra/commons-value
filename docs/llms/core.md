@@ -31,7 +31,7 @@ when (val v: IValue = list[0]) {
 
 ### Sealed Interfaces
 
-- **`IValue`** -- Root sealed interface. Property: `val core: Any?`. Method: `deepCopy(): IValue` -- structurally independent copy; primitives return self, collections copy recursively.
+- **`IValue`** -- Root sealed interface. Property: `val core: Any?`. Method: `deepCopy(): IValue` -- structurally independent copy; primitives return self, collections copy recursively. Throws `IllegalArgumentException` on nesting deeper than 1000 levels, including cyclic value graphs.
 - **`IPrimitiveVal : IValue, Comparable<IPrimitiveVal>`** -- Sealed interface for primitive IR values. `compareTo` is a total order: kinds rank `NullVal < BoolVal < numeric < StrVal < Unsure`; `IntVal` and `FloatVal` compare by exact numeric value; `NaN` orders above every number; `-0.0` is order-equivalent to `0.0`; `StrVal` compares lexicographically; `Unsure` by declaration order. The order is inconsistent with `equals`: equal-valued `IntVal`/`FloatVal` pairs compare as equivalent yet are not equal.
 - **`ICollectionVal : IValue`** -- Sealed interface for collection IR values.
 

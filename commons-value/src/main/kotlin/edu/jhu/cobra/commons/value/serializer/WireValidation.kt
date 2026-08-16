@@ -4,22 +4,6 @@ import edu.jhu.cobra.commons.value.IValue
 import java.nio.BufferUnderflowException
 import java.nio.charset.CharacterCodingException
 
-// Bounds recursive nesting in serialize and deserialize: keeps stack use finite on adversarial
-// material and rejects cyclic value graphs at serialize.
-internal const val MAX_NESTING_DEPTH = 1000
-
-/**
- * Validates a recursive value-nesting depth against [MAX_NESTING_DEPTH].
- *
- * @param depth The current nesting depth, zero for the top-level value
- * @return The validated depth
- * @throws IllegalArgumentException if [depth] exceeds [MAX_NESTING_DEPTH]
- */
-internal fun checkNestingDepth(depth: Int): Int {
-    require(depth <= MAX_NESTING_DEPTH) { "Value nesting exceeds $MAX_NESTING_DEPTH levels" }
-    return depth
-}
-
 /**
  * Validates that a string contains no unpaired UTF-16 surrogate characters.
  *
