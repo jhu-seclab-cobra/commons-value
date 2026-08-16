@@ -88,3 +88,79 @@ Protocol: each bug task follows `/debug` — failing reproduction test first, th
 ---
 
 Order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 → 9 → 10 → 11 → 12 → 13. Tasks 7–11 depend on 4 (test files touch collection APIs). One commit per task.
+
+---
+
+# 2026-08-16 Audit Tasks
+
+Fixes from the 2026-08-16 code-quality audit. Same protocol as above: bug tasks follow `/debug` (failing reproduction test first, then fix, one commit carrying both); parent-repo grep confirmed no call sites for the changed behaviors (`toRegex`, cross-type `equals`, WireFormat helpers).
+
+## Task 14 — MapVal deterministic iteration
+
+- [ ] Failing test: `toString`/serialization order equals insertion order for keys whose HashMap order differs.
+- [ ] `MapVal.core: LinkedHashMap<String, IValue>`; aligns with `SetVal`'s `LinkedHashSet`. Serialized output becomes deterministic.
+- [ ] Update design-collection.md (`core` field type).
+- Commit: `fix(value): preserve MapVal insertion order with LinkedHashMap`.
+
+## Task 15 — Collection equals honors the JDK collection contract
+
+- [ ] Failing tests: `plainList == listVal && listVal != plainList` asymmetry (same for SetVal/MapVal); equal hashCodes with direction-dependent HashSet lookups.
+- [ ] `equals` accepts any `List`/`Set`/`Map` with equal content (`other is List<*> && core == other`), matching `AbstractList`/`AbstractSet`/`AbstractMap` semantics. `hashCode` already matches.
+- [ ] Update design-collection.md contract line ("equals only ListVal" → JDK-contract equality).
+- Commit: `fix(value)!: align collection equals with the JDK collection contract`.
+
+## Task 16 — Reject invalid UTF-8 at deserialize
+
+- [ ] Failing tests: material with an invalid UTF-8 byte in STR payload / map key raises `ValFormatException` on both byte serializers (currently silently decodes to U+FFFD).
+- [ ] `decodeToString(throwOnInvalidSequence = true)` at every byte→string boundary; `decodeMaterial` wraps `CharacterCodingException` as `ValFormatException`.
+- [ ] Update design-serializer.md deserialization contract (add malformed-UTF-8 clause); symmetric with serialize-side surrogate rejection.
+- Commit: `fix(serializer): reject invalid UTF-8 at deserialize`.
+
+## Task 17 — CharBuffer decode validates delimiters
+
+- [ ] Failing test: map material with a non-`=` char between key and value (or wrong element separator) raises `ValFormatException` instead of parsing.
+- [ ] Consumed delimiter chars are checked (`=`, `,`, `:`) in map/container decode loops.
+- Commit: `fix(serializer): validate delimiters in char-buffer decode`.
+
+## Task 18 — StrVal cross-type equals never matches NullVal
+
+- [ ] Failing test: `StrVal("null").equals(NullVal, ignoreCase = false)` is `false` (currently `true` via `null.toString()`).
+- [ ] `equals(value: IPrimitiveVal, ignoreCase)` returns `false` for `NullVal`.
+- Commit: `fix(value): exclude NullVal from StrVal cross-type equals`.
+
+## Task 19 — Unsure.NUM regex covers numeric renderings
+
+- [ ] Failing tests: NUM placeholder matches `-5`, `3.14`, `1.0E10`; still rejects non-numeric text.
+- [ ] NUM regex fragment `-?\d+(\.\d+)?([eE][+-]?\d+)?` (covers IntVal and FloatVal `toString` renderings except non-finite specials).
+- [ ] Update design-conversions.md pattern table.
+- Commit: `fix(value): match signed and decimal numerals for Unsure.NUM`.
+
+## Task 20 — asHexInt round-trips 8-digit hex
+
+- [ ] Failing test: `(-1).asHexString().asHexInt() == -1` (currently `NumberFormatException`).
+- [ ] `Integer.parseUnsignedInt(s, 16)`; negative size prefixes stay rejected by `checkSizePrefix`.
+- [ ] Update design-serializer.md entry.
+- Commit: `fix(serializer): round-trip 8-digit hex in asHexInt`.
+
+## Task 21 — Buffer shim and dead-code cleanup
+
+- [ ] Remove `typedFlip`/`typedPosition` (JVM 21: `ByteBuffer.flip()`/`CharBuffer.position()` covariant since Java 9) and dead `CharBuffer.remove(until)`; callers use the JDK methods directly.
+- [ ] `ListVal` default constructor uses lazy `ArrayList()`; drop `DEFAULT_INITIAL_CAPACITY` and its incorrect rationale comment.
+- [ ] `Any?.primitiveVal` Char branch reuses `Char.strVal`.
+- [ ] Update design-serializer.md (remove shim entries).
+- Commit: `refactor(serializer): drop Java 8 buffer shims and dead helpers`.
+
+## Task 22 — LLM docs sync
+
+- [ ] Update docs/llms/* and full.txt for MapVal order, equals contract, UTF-8 strictness, NUM pattern.
+- Commit: `docs(value): sync llms docs with audit fixes`.
+
+## Task 23 — Verify
+
+- [ ] `./gradlew detekt ktlintCheck test build` clean.
+
+---
+
+Deferred (need their own design phase before any code): wire-format version/magic header; `toVal` coverage for `Array`/`Sequence`/`BigInteger`/`BigDecimal`; narrowing WireFormat helper visibility to `internal`.
+
+Order: 14 → 15 → 16 → 17 → 18 → 19 → 20 → 21 → 22 → 23. One commit per task.
