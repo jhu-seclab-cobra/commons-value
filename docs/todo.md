@@ -159,8 +159,22 @@ Fixes from the 2026-08-16 code-quality audit. Same protocol as above: bug tasks 
 
 - [x] `./gradlew detekt ktlintCheck test build` clean.
 
+## Task 24 — Document compareTo order inconsistent with equals
+
+- [ ] design-primitive.md `compareTo` row states the order is inconsistent with `equals` (KDoc already does).
+- [ ] llms/core.md `IPrimitiveVal` entry and a gotcha state: `IntVal(1L)` and `FloatVal(1.0)` compare as equivalent but are not equal; sorted collections collapse them, hash collections keep both. Regenerate full.txt.
+- Commit: `docs(value): flag compareTo order as inconsistent with equals`.
+
+## Task 25 — Guard deepCopy against cyclic value graphs
+
+- [ ] Reproduction test first: `ListVal` containing itself — `deepCopy()` raises `IllegalArgumentException`, not `StackOverflowError`. Sibling tests for `SetVal` and `MapVal`.
+- [ ] Move `MAX_NESTING_DEPTH` and `checkNestingDepth` from serializer `WireValidation.kt` to the value package (`IValue.kt`); serializer files import them.
+- [ ] Collection `deepCopy` overrides delegate to depth-guarded internal `deepCopy(depth)` members; recursion dispatches via an internal `IValue.deepCopy(depth)` extension.
+- [ ] Update design-collection.md (deepCopy cyclic rejection), design-serializer.md (constant ownership), llms/core.md, full.txt.
+- Commit: `fix(value): guard deepCopy against cyclic value graphs`.
+
 ---
 
 Deferred (need their own design phase before any code): wire-format version/magic header; `toVal` coverage for `Array`/`Sequence`/`BigInteger`/`BigDecimal`; narrowing WireFormat helper visibility to `internal`.
 
-Order: 14 → 15 → 16 → 17 → 18 → 19 → 20 → 21 → 22 → 23. One commit per task.
+Order: 14 → 15 → 16 → 17 → 18 → 19 → 20 → 21 → 22 → 23 → 24 → 25. One commit per task.
