@@ -69,7 +69,7 @@ Ordering is inconsistent with `equals` in the `BigDecimal` sense: `IntVal(1)`, `
 | `substringAfter(delimiter: String)` | Returns substring after first delimiter occurrence | `delimiter: String` | `String` | -- |
 | `substringBefore(delimiter: String)` | Returns substring before first delimiter occurrence | `delimiter: String` | `String` | -- |
 | `equals(string: String, ignoreCase: Boolean)` | Case-optional string equality | `string: String`, `ignoreCase: Boolean` | `Boolean` | -- |
-| `equals(value: IPrimitiveVal, ignoreCase: Boolean)` | Case-optional equality with another primitive | `value: IPrimitiveVal`, `ignoreCase: Boolean` | `Boolean` | -- |
+| `equals(value: IPrimitiveVal, ignoreCase: Boolean)` | Case-optional equality with another primitive's textual rendering; `NullVal` is never equal | `value: IPrimitiveVal`, `ignoreCase: Boolean` | `Boolean` | -- |
 | `uppercase()` | Converts to uppercase | -- | `StrVal` | -- |
 | `lowercase()` | Converts to lowercase | -- | `StrVal` | -- |
 | `trim()` | Removes leading/trailing whitespace | -- | `StrVal` | -- |

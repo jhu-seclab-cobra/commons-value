@@ -124,8 +124,8 @@ Fixes from the 2026-08-16 code-quality audit. Same protocol as above: bug tasks 
 
 ## Task 18 — StrVal cross-type equals never matches NullVal
 
-- [ ] Failing test: `StrVal("null").equals(NullVal, ignoreCase = false)` is `false` (currently `true` via `null.toString()`).
-- [ ] `equals(value: IPrimitiveVal, ignoreCase)` returns `false` for `NullVal`.
+- [x] Failing test: `StrVal("null").equals(NullVal, ignoreCase = false)` is `false` (currently `true` via `null.toString()`).
+- [x] `equals(value: IPrimitiveVal, ignoreCase)` returns `false` for `NullVal`.
 - Commit: `fix(value): exclude NullVal from StrVal cross-type equals`.
 
 ## Task 19 — Unsure.NUM regex covers numeric renderings

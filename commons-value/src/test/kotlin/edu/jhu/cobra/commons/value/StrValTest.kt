@@ -25,6 +25,7 @@ import kotlin.test.assertTrue
  * - `should return true from equals when IPrimitiveVal case differs and ignoreCase true` — equals(IPrimitiveVal) ignore case
  * - `should return true from equals when IPrimitiveVal core matches as string` — equals(IPrimitiveVal) cross-type match
  * - `should return false from equals when IPrimitiveVal core differs as string` — equals(IPrimitiveVal) cross-type mismatch
+ * - `should return false from equals when IPrimitiveVal is NullVal` — "null" text never equals the null value
  * - `should return uppercase StrVal` — uppercase
  * - `should return lowercase StrVal` — lowercase
  * - `should return trimmed StrVal` — trim
@@ -137,6 +138,11 @@ internal class StrValTest {
     @Test
     fun `should return false from equals when IPrimitiveVal core differs as string`() {
         assertFalse(StrVal("hello").equals(IntVal(42L), ignoreCase = false))
+    }
+
+    @Test
+    fun `should return false from equals when IPrimitiveVal is NullVal`() {
+        assertFalse(StrVal("null").equals(NullVal, ignoreCase = false))
     }
 
     // --- uppercase / lowercase / trim ---

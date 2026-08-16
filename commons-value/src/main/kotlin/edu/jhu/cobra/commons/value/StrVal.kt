@@ -53,6 +53,8 @@ public data class StrVal(
     /**
      * Compares this [StrVal] with another [IPrimitiveVal], optionally ignoring case.
      *
+     * A [NullVal] is never equal: the absence of a value has no textual rendering.
+     *
      * @param value The [IPrimitiveVal] to compare to.
      * @param ignoreCase Whether to ignore case during comparison.
      * @return `true` if the values are equal, `false` otherwise.
@@ -60,7 +62,7 @@ public data class StrVal(
     public fun equals(
         value: IPrimitiveVal,
         ignoreCase: Boolean,
-    ): Boolean = core.equals(value.core.toString(), ignoreCase)
+    ): Boolean = value !is NullVal && core.equals(value.core.toString(), ignoreCase)
 
     /**
      * Converts the string to uppercase.
