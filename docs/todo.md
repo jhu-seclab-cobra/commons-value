@@ -137,9 +137,9 @@ Fixes from the 2026-08-16 code-quality audit. Same protocol as above: bug tasks 
 
 ## Task 20 — asHexInt round-trips 8-digit hex
 
-- [ ] Failing test: `(-1).asHexString().asHexInt() == -1` (currently `NumberFormatException`).
-- [ ] `Integer.parseUnsignedInt(s, 16)`; negative size prefixes stay rejected by `checkSizePrefix`.
-- [ ] Update design-serializer.md entry.
+- [x] Failing test: `(-1).asHexString().asHexInt() == -1` (currently `NumberFormatException`).
+- [x] `Integer.parseUnsignedInt(s, 16)`; negative size prefixes stay rejected by `checkSizePrefix`.
+- [x] Update design-serializer.md entry.
 - Commit: `fix(serializer): round-trip 8-digit hex in asHexInt`.
 
 ## Task 21 — Buffer shim and dead-code cleanup

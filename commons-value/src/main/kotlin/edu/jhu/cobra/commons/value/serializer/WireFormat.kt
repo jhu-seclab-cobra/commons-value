@@ -15,10 +15,13 @@ internal const val TAGGED_LONG_BYTES = TYPE_TAG_BYTES + Long.SIZE_BYTES
 /**
  * Converts a hexadecimal string into an integer.
  *
- * @return The decimal integer value of the hexadecimal string
+ * The parse is unsigned so every [Int.asHexString] output round-trips, including the 8-digit
+ * two's-complement rendering of a negative value.
+ *
+ * @return The integer whose unsigned hexadecimal representation is this string
  * @throws NumberFormatException if the string is not a valid hexadecimal number
  */
-public fun String.asHexInt(): Int = Integer.parseInt(this, 16)
+public fun String.asHexInt(): Int = Integer.parseUnsignedInt(this, 16)
 
 /**
  * Converts an integer into its hexadecimal string representation.

@@ -12,6 +12,7 @@ import kotlin.test.assertFailsWith
  * - `should parse lowercase hex string via asHexInt` — "ff" parses to 255.
  * - `should parse zero hex string via asHexInt` — "0" parses to 0.
  * - `should throw NumberFormatException for invalid asHexInt input` — "GG" rejected.
+ * - `should round-trip negative int through asHexString and asHexInt` — 8-digit hex parses back.
  * - `should convert int to hex string via asHexString` — 255 converts to "ff".
  * - `should convert zero to hex string via asHexString` — 0 converts to "0".
  * - `should return remainder from getBuffer when delimiter absent after advanced position` — Delimiter-absent read
@@ -42,6 +43,12 @@ internal class WireFormatTest {
         assertFailsWith<NumberFormatException> {
             "GG".asHexInt()
         }
+    }
+
+    @Test
+    fun `should round-trip negative int through asHexString and asHexInt`() {
+        // asHexString(-1) yields "ffffffff"; a signed parse overflows on 8-digit hex.
+        assertEquals(-1, (-1).asHexString().asHexInt())
     }
 
     // --- Int.asHexString ---

@@ -12,7 +12,8 @@ import kotlin.test.assertTrue
  * - `should throw IllegalArgumentException when deserializing unknown type label` — Unknown type string rejected.
  * - `should throw IllegalArgumentException when deserializing empty CharBuffer` — Empty buffer rejected.
  * - `should throw IllegalArgumentException when string length exceeds remaining chars` — Corrupt length prefix rejected.
- * - `should throw IllegalArgumentException with context when string length is negative` — Negative length prefix reported with context.
+ * - `should throw ValFormatException when string length prefix is negative` — "-1" is not unsigned
+ *   hexadecimal; rejected at the prefix parse.
  * - `should throw IllegalArgumentException when map key is not a StrVal` — Non-Str key inside MAP rejected.
  * - `should throw ValFormatException when int payload is not numeric` — Unparsable IntV payload raises
  *   ValFormatException instead of leaking NumberFormatException.
@@ -55,13 +56,11 @@ internal class DftCharBufferSerializerImplTest : AbcSerializerImplUnitTest<CharB
     }
 
     @Test
-    fun `should throw IllegalArgumentException with context when string length is negative`() {
+    fun `should throw ValFormatException when string length prefix is negative`() {
         val corruptBuffer = "Str:-1:".asCharBuffer()
-        val exception =
-            assertFailsWith<IllegalArgumentException> {
-                DftCharBufferSerializerImpl.deserialize(corruptBuffer)
-            }
-        assertTrue("size" in exception.message.orEmpty())
+        assertFailsWith<ValFormatException> {
+            DftCharBufferSerializerImpl.deserialize(corruptBuffer)
+        }
     }
 
     @Test

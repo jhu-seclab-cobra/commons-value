@@ -80,7 +80,7 @@ Buffer and encoding helpers shared by the serializer implementations.
 
 **`String.requireWellFormedUtf16(): String`** -- Returns the receiver; throws `IllegalArgumentException` when the string contains an unpaired UTF-16 surrogate. Called by all three serializers before encoding string content.
 
-**`String.asHexInt(): Int`** -- Parses a hexadecimal string to Int. Throws `NumberFormatException` on invalid input.
+**`String.asHexInt(): Int`** -- Parses a hexadecimal string to Int as unsigned, so every `Int.asHexString()` output round-trips (including 8-digit renderings of negative values). Throws `NumberFormatException` on invalid input.
 
 **`Int.asHexString(): String`** -- Converts Int to its hexadecimal string form.
 
