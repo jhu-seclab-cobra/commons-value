@@ -147,12 +147,12 @@ Fixes from the 2026-08-16 code-quality audit. Same protocol as above: bug tasks 
 - [x] Remove `typedFlip`/`typedPosition` (JVM 21: `ByteBuffer.flip()`/`CharBuffer.position()` covariant since Java 9) and dead `CharBuffer.remove(until)`; callers use the JDK methods directly.
 - [x] `ListVal` default constructor uses lazy `ArrayList()`; drop `DEFAULT_INITIAL_CAPACITY` and its incorrect rationale comment.
 - [x] `Any?.primitiveVal` Char branch reuses `Char.strVal`.
-- [ ] Update design-serializer.md (remove shim entries).
+- [x] Update design-serializer.md (remove shim entries).
 - Commit: `refactor(serializer): drop Java 8 buffer shims and dead helpers`.
 
 ## Task 22 — LLM docs sync
 
-- [ ] Update docs/llms/* and full.txt for MapVal order, equals contract, UTF-8 strictness, NUM pattern.
+- [x] Update docs/llms/* and full.txt for MapVal order, equals contract, UTF-8 strictness, NUM pattern.
 - Commit: `docs(value): sync llms docs with audit fixes`.
 
 ## Task 23 — Verify
