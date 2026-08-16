@@ -118,8 +118,8 @@ Fixes from the 2026-08-16 code-quality audit. Same protocol as above: bug tasks 
 
 ## Task 17 — CharBuffer decode validates delimiters
 
-- [ ] Failing test: map material with a non-`=` char between key and value (or wrong element separator) raises `ValFormatException` instead of parsing.
-- [ ] Consumed delimiter chars are checked (`=`, `,`, `:`) in map/container decode loops.
+- [x] Failing test: map material with a non-`=` char between key and value (or wrong element separator) raises `ValFormatException` instead of parsing.
+- [x] Consumed delimiter chars are checked (`=`, `,`, `:`) in map/container decode loops.
 - Commit: `fix(serializer): validate delimiters in char-buffer decode`.
 
 ## Task 18 — StrVal cross-type equals never matches NullVal

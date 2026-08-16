@@ -22,6 +22,10 @@ import kotlin.test.assertTrue
  *   decoded top-level value rejected.
  * - `should throw ValFormatException when deserialized nesting exceeds limit` — Material nested one past
  *   MAX_NESTING_DEPTH rejected at deserialize.
+ * - `should throw ValFormatException when map key delimiter is not equals sign` — Wrong char between
+ *   key and value rejected instead of being consumed silently.
+ * - `should throw ValFormatException when list element delimiter is invalid` — Wrong char between
+ *   elements rejected instead of being consumed silently.
  */
 internal class DftCharBufferSerializerImplTest : AbcSerializerImplUnitTest<CharBuffer>() {
     override val testTarget: IValSerializer<CharBuffer> get() = DftCharBufferSerializerImpl
@@ -100,6 +104,24 @@ internal class DftCharBufferSerializerImplTest : AbcSerializerImplUnitTest<CharB
         val material = ("List:1:".repeat(levels) + "Null:" + ":".repeat(levels)).asCharBuffer()
         assertFailsWith<ValFormatException> {
             DftCharBufferSerializerImpl.deserialize(material)
+        }
+    }
+
+    @Test
+    fun `should throw ValFormatException when map key delimiter is not equals sign`() {
+        // Valid form: Map:1:Str:1:a=Null::
+        val corruptBuffer = "Map:1:Str:1:a#Null::".asCharBuffer()
+        assertFailsWith<ValFormatException> {
+            DftCharBufferSerializerImpl.deserialize(corruptBuffer)
+        }
+    }
+
+    @Test
+    fun `should throw ValFormatException when list element delimiter is invalid`() {
+        // Valid form: List:2:Null:,Null::
+        val corruptBuffer = "List:2:Null:;Null::".asCharBuffer()
+        assertFailsWith<ValFormatException> {
+            DftCharBufferSerializerImpl.deserialize(corruptBuffer)
         }
     }
 }

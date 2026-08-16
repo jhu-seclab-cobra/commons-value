@@ -192,11 +192,11 @@ public object DftCharBufferSerializerImpl : IValSerializer<CharBuffer> {
             Type.MAP.str -> { // mapType:hex_cnt{key=value,key=value,...}
                 val eleCount = checkSizePrefix(material.getString(':').asHexInt(), material.remaining(), "entry count")
                 val container = MapVal(size = eleCount)
-                repeat(eleCount) {
+                repeat(eleCount) { index ->
                     val key = requireDecodedType<StrVal>(decode(material, depth + 1), "map key")
-                    material.get() // remove the delimiter '='
+                    requireDelimiter(material, '=')
                     val value = decode(material, depth + 1)
-                    material.get() // remove the delimiter ',' or ':'
+                    requireDelimiter(material, if (index == eleCount - 1) ':' else ',')
                     container[key.core] = value
                 }
                 container // return the final container of the map out
@@ -217,9 +217,18 @@ public object DftCharBufferSerializerImpl : IValSerializer<CharBuffer> {
         depth: Int,
         action: (IValue) -> Unit,
     ) {
-        repeat(count) {
+        repeat(count) { index ->
             action(decode(material, depth))
-            material.get() // remove the end delimiter
+            requireDelimiter(material, if (index == count - 1) ':' else ',')
         }
+    }
+
+    // Delimiters are part of the wire format; a mismatch means the material is malformed.
+    private fun requireDelimiter(
+        material: CharBuffer,
+        expected: Char,
+    ) {
+        val actual = material.get()
+        require(actual == expected) { "Invalid delimiter '$actual': expected '$expected'" }
     }
 }
