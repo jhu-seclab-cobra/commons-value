@@ -94,12 +94,6 @@ Buffer and encoding helpers shared by the serializer implementations.
 
 **`String.asCharBuffer(): CharBuffer`** -- Copies the string into a CharBuffer.
 
-**`ByteBuffer.typedFlip(): ByteBuffer` / `CharBuffer.typedFlip(): CharBuffer`** -- `flip()` preserving the receiver type (Java 8 `Buffer` return-type compatibility).
-
-**`CharBuffer.typedPosition(pos: Int): CharBuffer`** -- `position(pos)` preserving the receiver type. Throws `IllegalArgumentException` on out-of-bounds position.
-
-**`CharBuffer.remove(until: Char): Boolean`** -- Advances past characters up to and including `until`; returns whether the delimiter was found.
-
 **`CharBuffer.getBuffer(until: Char): CharBuffer` / `CharBuffer.getString(until: Char): String`** -- Reads characters up to `until` (delimiter consumed, excluded from result); reads all remaining characters when the delimiter is absent.
 
 **`CharBuffer.getBuffer(size: Int): CharBuffer` / `CharBuffer.getString(size: Int): String`** -- Reads exactly `size` characters. Throws `IllegalArgumentException` when `size` is negative or exceeds remaining characters.

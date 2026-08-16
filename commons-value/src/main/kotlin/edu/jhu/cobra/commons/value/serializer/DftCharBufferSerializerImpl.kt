@@ -105,7 +105,7 @@ public object DftCharBufferSerializerImpl : IValSerializer<CharBuffer> {
                         .put(v)
                         .put(',')
                 } // key=value,...
-                charBuffer.typedPosition(charBuffer.position() - 1).put(':').typedFlip() // }
+                charBuffer.position(charBuffer.position() - 1).put(':').flip() // }
             }
         }
     }
@@ -124,7 +124,7 @@ public object DftCharBufferSerializerImpl : IValSerializer<CharBuffer> {
             .put(eleCount)
             .put(':') // type:cnt:
         elements.forEach { element -> charBuffer.put(element).put(',') } // element,element,...
-        return charBuffer.typedPosition(charBuffer.position() - 1).put(':').typedFlip()
+        return charBuffer.position(charBuffer.position() - 1).put(':').flip()
     }
 
     /**

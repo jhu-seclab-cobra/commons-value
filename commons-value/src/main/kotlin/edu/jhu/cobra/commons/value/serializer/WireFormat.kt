@@ -77,57 +77,6 @@ public fun ByteBuffer.put(type: Type): ByteBuffer = put(type.byte)
 public fun String.asCharBuffer(): CharBuffer = CharBuffer.wrap(toCharArray())
 
 /**
- * JVM compatibility extension function for ByteBuffer.flip().
- *
- * This function exists because in Java 8, Buffer.flip() returns Buffer instead of ByteBuffer.
- * To maintain type safety and avoid casting, this extension function ensures ByteBuffer is returned
- * while maintaining the same functionality as the original flip() method.
- *
- * @return The same [ByteBuffer] with its position set to zero and its limit set to the previous position
- */
-public fun ByteBuffer.typedFlip(): ByteBuffer = apply { flip() }
-
-/**
- * JVM compatibility extension function for CharBuffer.flip().
- *
- * This function exists because in Java 8, Buffer.flip() returns Buffer instead of CharBuffer.
- * To maintain type safety and avoid casting, this extension function ensures CharBuffer is returned
- * while maintaining the same functionality as the original flip() method.
- *
- * @return The same [CharBuffer] with its position set to zero and its limit set to the previous position
- */
-public fun CharBuffer.typedFlip(): CharBuffer = apply { flip() }
-
-/**
- * JVM compatibility extension function for CharBuffer.position().
- *
- * This function exists because in Java 8, Buffer.position() returns Buffer instead of CharBuffer.
- * To maintain type safety and avoid casting, this extension function ensures CharBuffer is returned
- * while maintaining the same functionality as the original position() method.
- *
- * @param pos The new position value
- * @return The same [CharBuffer] with its position set to the specified value
- * @throws IllegalArgumentException if pos is negative or larger than the buffer's limit
- */
-public fun CharBuffer.typedPosition(pos: Int): CharBuffer = apply { position(pos) }
-
-/**
- * Consumes characters from the buffer up to and including the first occurrence of [until].
- *
- * If the character is absent, all remaining characters are consumed.
- *
- * @param until The character to stop consuming at
- * @return true if the character was found, false otherwise
- */
-public fun CharBuffer.remove(until: Char): Boolean {
-    val (curPos, maxPos) = position() to limit()
-    repeat(maxPos - curPos) {
-        if (get() == until) return true
-    }
-    return false
-}
-
-/**
  * Reads characters from the buffer into a new [CharBuffer] until a specified character is encountered.
  *
  * The delimiter itself is consumed but not included in the result. If the delimiter is absent,
@@ -143,7 +92,7 @@ public fun CharBuffer.getBuffer(until: Char): CharBuffer {
     val newBuffer = CharBuffer.allocate(length ?: (maxPos - curPos))
     repeat(newBuffer.limit()) { newBuffer.put(this.get()) }
     if (length != null) get() // remove the found character
-    return newBuffer.typedFlip()
+    return newBuffer.flip()
 }
 
 /**
@@ -156,7 +105,7 @@ public fun CharBuffer.getBuffer(until: Char): CharBuffer {
 public fun CharBuffer.getBuffer(size: Int): CharBuffer {
     val newBuffer = CharBuffer.allocate(checkSizePrefix(size, remaining(), "buffer size"))
     repeat(newBuffer.limit()) { newBuffer.put(this.get()) }
-    return newBuffer.typedFlip()
+    return newBuffer.flip()
 }
 
 /**

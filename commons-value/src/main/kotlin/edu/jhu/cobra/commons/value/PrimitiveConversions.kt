@@ -89,7 +89,7 @@ public val Any?.primitiveVal: IPrimitiveVal
             is Double -> floatVal
             is Float -> floatVal
             is String -> strVal
-            is Char -> StrVal(toString())
+            is Char -> strVal
             is Boolean -> boolVal
             is IPrimitiveVal -> this
             else -> throw IllegalArgumentException("Cannot convert $this to IPrimitiveVal")

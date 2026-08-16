@@ -144,9 +144,9 @@ Fixes from the 2026-08-16 code-quality audit. Same protocol as above: bug tasks 
 
 ## Task 21 — Buffer shim and dead-code cleanup
 
-- [ ] Remove `typedFlip`/`typedPosition` (JVM 21: `ByteBuffer.flip()`/`CharBuffer.position()` covariant since Java 9) and dead `CharBuffer.remove(until)`; callers use the JDK methods directly.
-- [ ] `ListVal` default constructor uses lazy `ArrayList()`; drop `DEFAULT_INITIAL_CAPACITY` and its incorrect rationale comment.
-- [ ] `Any?.primitiveVal` Char branch reuses `Char.strVal`.
+- [x] Remove `typedFlip`/`typedPosition` (JVM 21: `ByteBuffer.flip()`/`CharBuffer.position()` covariant since Java 9) and dead `CharBuffer.remove(until)`; callers use the JDK methods directly.
+- [x] `ListVal` default constructor uses lazy `ArrayList()`; drop `DEFAULT_INITIAL_CAPACITY` and its incorrect rationale comment.
+- [x] `Any?.primitiveVal` Char branch reuses `Char.strVal`.
 - [ ] Update design-serializer.md (remove shim entries).
 - Commit: `refactor(serializer): drop Java 8 buffer shims and dead helpers`.
 

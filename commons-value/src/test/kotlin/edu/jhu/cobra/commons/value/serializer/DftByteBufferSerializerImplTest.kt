@@ -30,7 +30,7 @@ internal class DftByteBufferSerializerImplTest : AbcSerializerImplUnitTest<ByteB
 
     @Test
     fun `should throw IllegalArgumentException when deserializing unknown type tag`() {
-        val invalidBuffer = ByteBuffer.allocate(1).put(99.toByte()).typedFlip()
+        val invalidBuffer = ByteBuffer.allocate(1).put(99.toByte()).flip()
         assertFailsWith<IllegalArgumentException> {
             DftByteBufferSerializerImpl.deserialize(invalidBuffer)
         }
@@ -52,7 +52,7 @@ internal class DftByteBufferSerializerImplTest : AbcSerializerImplUnitTest<ByteB
                 .put(Type.STR.byte)
                 .putInt(100)
                 .put('a'.code.toByte())
-                .typedFlip()
+                .flip()
         assertFailsWith<IllegalArgumentException> {
             DftByteBufferSerializerImpl.deserialize(buffer)
         }
@@ -65,7 +65,7 @@ internal class DftByteBufferSerializerImplTest : AbcSerializerImplUnitTest<ByteB
                 .allocate(5)
                 .put(Type.STR.byte)
                 .putInt(-1)
-                .typedFlip()
+                .flip()
         assertFailsWith<IllegalArgumentException> {
             DftByteBufferSerializerImpl.deserialize(buffer)
         }
@@ -78,7 +78,7 @@ internal class DftByteBufferSerializerImplTest : AbcSerializerImplUnitTest<ByteB
                 .allocate(5)
                 .put(Type.LIST.byte)
                 .putInt(-1)
-                .typedFlip()
+                .flip()
         val exception =
             assertFailsWith<IllegalArgumentException> {
                 DftByteBufferSerializerImpl.deserialize(buffer)
@@ -93,7 +93,7 @@ internal class DftByteBufferSerializerImplTest : AbcSerializerImplUnitTest<ByteB
                 .allocate(2)
                 .put(Type.RANGE.byte)
                 .put(Type.NULL.byte)
-                .typedFlip()
+                .flip()
         val exception =
             assertFailsWith<IllegalArgumentException> {
                 DftByteBufferSerializerImpl.deserialize(corruptBuffer)
@@ -103,7 +103,7 @@ internal class DftByteBufferSerializerImplTest : AbcSerializerImplUnitTest<ByteB
 
     @Test
     fun `should throw IllegalArgumentException when buffer is fully consumed`() {
-        val consumedBuffer = ByteBuffer.allocate(1).put(Type.NULL.byte).typedFlip()
+        val consumedBuffer = ByteBuffer.allocate(1).put(Type.NULL.byte).flip()
         DftByteBufferSerializerImpl.deserialize(consumedBuffer)
         assertFailsWith<IllegalArgumentException> {
             DftByteBufferSerializerImpl.deserialize(consumedBuffer)
@@ -117,7 +117,7 @@ internal class DftByteBufferSerializerImplTest : AbcSerializerImplUnitTest<ByteB
                 .allocate(3)
                 .put(Type.INT.byte)
                 .putShort(0)
-                .typedFlip()
+                .flip()
         assertFailsWith<ValFormatException> {
             DftByteBufferSerializerImpl.deserialize(truncatedBuffer)
         }
@@ -130,7 +130,7 @@ internal class DftByteBufferSerializerImplTest : AbcSerializerImplUnitTest<ByteB
                 .allocate(2)
                 .put(Type.NULL.byte)
                 .put(Type.NULL.byte)
-                .typedFlip()
+                .flip()
         assertFailsWith<ValFormatException> {
             DftByteBufferSerializerImpl.deserialize(trailingBuffer)
         }
@@ -141,7 +141,7 @@ internal class DftByteBufferSerializerImplTest : AbcSerializerImplUnitTest<ByteB
         val levels = MAX_NESTING_DEPTH + 1
         val material = ByteBuffer.allocate(levels * (TYPE_TAG_BYTES + SIZE_PREFIX_BYTES) + TYPE_TAG_BYTES)
         repeat(levels) { material.put(Type.LIST.byte).putInt(1) }
-        material.put(Type.NULL.byte).typedFlip()
+        material.put(Type.NULL.byte).flip()
         assertFailsWith<ValFormatException> {
             DftByteBufferSerializerImpl.deserialize(material)
         }
@@ -156,7 +156,7 @@ internal class DftByteBufferSerializerImplTest : AbcSerializerImplUnitTest<ByteB
                 .put(Type.STR.byte)
                 .putInt(1)
                 .put(0xFF.toByte())
-                .typedFlip()
+                .flip()
         assertFailsWith<ValFormatException> {
             DftByteBufferSerializerImpl.deserialize(corruptBuffer)
         }

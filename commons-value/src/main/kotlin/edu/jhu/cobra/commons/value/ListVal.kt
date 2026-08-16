@@ -1,9 +1,5 @@
 package edu.jhu.cobra.commons.value
 
-// Most ListVal instances hold only a few elements; a small initial capacity avoids
-// ArrayList's default ten-slot allocation.
-private const val DEFAULT_INITIAL_CAPACITY = 5
-
 /**
  * Represents a list of [IValue] objects as a [MutableList] backed by [core].
  *
@@ -14,7 +10,7 @@ private const val DEFAULT_INITIAL_CAPACITY = 5
  * @property core The internal list of [IValue] elements.
  */
 public class ListVal(
-    override val core: ArrayList<IValue> = ArrayList(DEFAULT_INITIAL_CAPACITY),
+    override val core: ArrayList<IValue> = ArrayList(),
 ) : ICollectionVal,
     MutableList<IValue> by core {
     /**
