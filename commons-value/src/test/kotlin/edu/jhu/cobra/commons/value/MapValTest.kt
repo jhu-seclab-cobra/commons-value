@@ -56,6 +56,9 @@ import kotlin.test.assertTrue
  * deepCopy:
  * - `should deep copy map values without sharing mutable state`
  *
+ * Iteration order:
+ * - `should iterate entries in insertion order` — keys chosen so hash order differs from insertion order.
+ *
  * Boundary:
  * - `should handle empty map operations`
  * - `should enforce String keys only`
@@ -330,6 +333,15 @@ internal class MapValTest {
         assertEquals(map, copy)
         (copy["k"] as ListVal).add(IntVal(2L))
         assertEquals(1, inner.size)
+    }
+
+    // -- Iteration order --
+
+    @Test
+    fun `should iterate entries in insertion order`() {
+        // "b" hashes after "a": a hash-ordered map would iterate a,b and fail this assertion.
+        val map = MapVal("b" to IntVal(2L), "a" to IntVal(1L))
+        assertEquals(listOf("b", "a"), map.keys.toList())
     }
 
     // -- Boundary --

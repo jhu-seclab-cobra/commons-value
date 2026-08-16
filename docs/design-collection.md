@@ -76,10 +76,10 @@ Part of [commons-value design](design-primitive.md). Specifies the `ICollectionV
 **Responsibility:** Mutable string-keyed map value; `MutableMap<String, IValue>` by delegation to `core`.
 
 **State/Fields:**
-- `core: HashMap<String, IValue>` — The internal map storage (String keys only).
+- `core: LinkedHashMap<String, IValue>` — The internal map storage (String keys only; preserves insertion order, so iteration and serialized output are deterministic).
 
 **Constructors:**
-- `MapVal(core: HashMap<String, IValue>)` — Primary constructor (adopts).
+- `MapVal(core: LinkedHashMap<String, IValue>)` — Primary constructor (adopts).
 - `MapVal()` — Empty map.
 - `MapVal(size: Int)` — Pre-sized empty map.
 - `MapVal(value: Map<String, IValue>)` — Copy from map.

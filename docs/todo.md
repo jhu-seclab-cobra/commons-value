@@ -97,9 +97,9 @@ Fixes from the 2026-08-16 code-quality audit. Same protocol as above: bug tasks 
 
 ## Task 14 — MapVal deterministic iteration
 
-- [ ] Failing test: `toString`/serialization order equals insertion order for keys whose HashMap order differs.
-- [ ] `MapVal.core: LinkedHashMap<String, IValue>`; aligns with `SetVal`'s `LinkedHashSet`. Serialized output becomes deterministic.
-- [ ] Update design-collection.md (`core` field type).
+- [x] Failing test: `toString`/serialization order equals insertion order for keys whose HashMap order differs.
+- [x] `MapVal.core: LinkedHashMap<String, IValue>`; aligns with `SetVal`'s `LinkedHashSet`. Serialized output becomes deterministic.
+- [x] Update design-collection.md (`core` field type).
 - Commit: `fix(value): preserve MapVal insertion order with LinkedHashMap`.
 
 ## Task 15 — Collection equals honors the JDK collection contract
