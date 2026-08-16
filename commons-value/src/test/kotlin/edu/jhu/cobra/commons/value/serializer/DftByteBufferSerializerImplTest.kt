@@ -22,6 +22,8 @@ import kotlin.test.assertTrue
  *   decoded top-level value rejected.
  * - `should throw ValFormatException when deserialized nesting exceeds limit` — Material nested one past
  *   MAX_NESTING_DEPTH rejected at deserialize.
+ * - `should throw ValFormatException when STR payload contains invalid UTF-8` — Malformed byte sequence
+ *   rejected instead of silently decoding to U+FFFD.
  */
 internal class DftByteBufferSerializerImplTest : AbcSerializerImplUnitTest<ByteBuffer>() {
     override val testTarget: IValSerializer<ByteBuffer> get() = DftByteBufferSerializerImpl
@@ -142,6 +144,21 @@ internal class DftByteBufferSerializerImplTest : AbcSerializerImplUnitTest<ByteB
         material.put(Type.NULL.byte).typedFlip()
         assertFailsWith<ValFormatException> {
             DftByteBufferSerializerImpl.deserialize(material)
+        }
+    }
+
+    @Test
+    fun `should throw ValFormatException when STR payload contains invalid UTF-8`() {
+        // 0xFF is never valid in UTF-8.
+        val corruptBuffer =
+            ByteBuffer
+                .allocate(6)
+                .put(Type.STR.byte)
+                .putInt(1)
+                .put(0xFF.toByte())
+                .typedFlip()
+        assertFailsWith<ValFormatException> {
+            DftByteBufferSerializerImpl.deserialize(corruptBuffer)
         }
     }
 }

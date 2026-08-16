@@ -111,9 +111,9 @@ Fixes from the 2026-08-16 code-quality audit. Same protocol as above: bug tasks 
 
 ## Task 16 — Reject invalid UTF-8 at deserialize
 
-- [ ] Failing tests: material with an invalid UTF-8 byte in STR payload / map key raises `ValFormatException` on both byte serializers (currently silently decodes to U+FFFD).
-- [ ] `decodeToString(throwOnInvalidSequence = true)` at every byte→string boundary; `decodeMaterial` wraps `CharacterCodingException` as `ValFormatException`.
-- [ ] Update design-serializer.md deserialization contract (add malformed-UTF-8 clause); symmetric with serialize-side surrogate rejection.
+- [x] Failing tests: material with an invalid UTF-8 byte in STR payload / map key raises `ValFormatException` on both byte serializers (currently silently decodes to U+FFFD).
+- [x] `decodeToString(throwOnInvalidSequence = true)` at every byte→string boundary; `decodeMaterial` wraps `CharacterCodingException` as `ValFormatException`.
+- [x] Update design-serializer.md deserialization contract (add malformed-UTF-8 clause); symmetric with serialize-side surrogate rejection.
 - Commit: `fix(serializer): reject invalid UTF-8 at deserialize`.
 
 ## Task 17 — CharBuffer decode validates delimiters

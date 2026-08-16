@@ -2,6 +2,7 @@ package edu.jhu.cobra.commons.value.serializer
 
 import edu.jhu.cobra.commons.value.IValue
 import java.nio.BufferUnderflowException
+import java.nio.charset.CharacterCodingException
 
 // Bounds recursive nesting in serialize and deserialize: keeps stack use finite on adversarial
 // material and rejects cyclic value graphs at serialize.
@@ -60,8 +61,9 @@ private fun String.requireSurrogatesPaired(from: Int): String {
  * Runs a deserialization body and normalizes every decoding failure to [ValFormatException].
  *
  * Truncated material surfaces as [BufferUnderflowException], unparsable numbers as
- * [NumberFormatException], and validation failures as [IllegalArgumentException]; all three
- * are rethrown as [ValFormatException] with the original failure as cause.
+ * [NumberFormatException], malformed UTF-8 as [CharacterCodingException], and validation
+ * failures as [IllegalArgumentException]; all are rethrown as [ValFormatException] with the
+ * original failure as cause.
  *
  * @param block The deserialization body to run
  * @return The value produced by [block]
@@ -76,6 +78,8 @@ internal inline fun <T> decodeMaterial(block: () -> T): T =
         throw ValFormatException("Truncated material", e)
     } catch (e: NumberFormatException) {
         throw ValFormatException("Unparsable number in material", e)
+    } catch (e: CharacterCodingException) {
+        throw ValFormatException("Malformed UTF-8 in material", e)
     } catch (e: IllegalArgumentException) {
         throw ValFormatException(e.message ?: "Malformed material", e)
     }

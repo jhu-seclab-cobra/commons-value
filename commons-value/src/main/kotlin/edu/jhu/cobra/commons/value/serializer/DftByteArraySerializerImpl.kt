@@ -187,7 +187,7 @@ public object DftByteArraySerializerImpl : IValSerializer<ByteArray> {
             Type.NULL.byte -> NullVal
             Type.STR.byte -> {
                 val bytes = ByteArray(buffer.remaining()).also { buffer.get(it) }
-                StrVal(bytes.decodeToString())
+                StrVal(bytes.decodeToString(throwOnInvalidSequence = true))
             }
             Type.BOOL.byte -> {
                 val payload = buffer.get()
@@ -214,7 +214,7 @@ public object DftByteArraySerializerImpl : IValSerializer<ByteArray> {
                 while (buffer.hasRemaining()) {
                     val keySize = checkSizePrefix(buffer.getInt(), buffer.remaining(), "key size")
                     val keyBytes = ByteArray(keySize).also { buffer.get(it) }
-                    val key = keyBytes.decodeToString()
+                    val key = keyBytes.decodeToString(throwOnInvalidSequence = true)
                     val valueSize = checkSizePrefix(buffer.getInt(), buffer.remaining(), "value size")
                     map[key] = decodeWindow(buffer, valueSize, "map value", depth + 1)
                 }

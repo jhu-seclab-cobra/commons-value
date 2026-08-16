@@ -45,8 +45,9 @@ public fun ByteBuffer.getArray(size: Int): ByteArray = ByteArray(checkSizePrefix
  * @param size The size of the string to read, or null to use the integer prefix
  * @return The decoded string from the buffer
  * @throws IllegalArgumentException if the size is negative or exceeds the remaining bytes
+ * @throws CharacterCodingException if the bytes are not well-formed UTF-8
  */
-public fun ByteBuffer.getString(size: Int? = null): String = getArray(size ?: getInt()).decodeToString()
+public fun ByteBuffer.getString(size: Int? = null): String = getArray(size ?: getInt()).decodeToString(throwOnInvalidSequence = true)
 
 /**
  * Creates a [ByteBuffer] from a variable number of byte elements.

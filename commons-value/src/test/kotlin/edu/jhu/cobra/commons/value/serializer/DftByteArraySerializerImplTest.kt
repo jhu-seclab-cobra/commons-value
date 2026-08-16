@@ -25,6 +25,9 @@ import kotlin.test.assertTrue
  *   size prefix larger than the element's encoding rejected instead of silently shifting the parse.
  * - `should throw ValFormatException when deserialized nesting exceeds limit` — Material nested one past
  *   MAX_NESTING_DEPTH rejected at deserialize.
+ * - `should throw ValFormatException when STR payload contains invalid UTF-8` — Malformed byte sequence
+ *   rejected instead of silently decoding to U+FFFD.
+ * - `should throw ValFormatException when map key contains invalid UTF-8` — Malformed key bytes rejected.
  */
 internal class DftByteArraySerializerImplTest : AbcSerializerImplUnitTest<ByteArray>() {
     override val testTarget: IValSerializer<ByteArray> get() = DftByteArraySerializerImpl
@@ -118,6 +121,23 @@ internal class DftByteArraySerializerImplTest : AbcSerializerImplUnitTest<ByteAr
         }
         assertFailsWith<ValFormatException> {
             DftByteArraySerializerImpl.deserialize(material)
+        }
+    }
+
+    @Test
+    fun `should throw ValFormatException when STR payload contains invalid UTF-8`() {
+        // 0xFF is never valid in UTF-8.
+        val corruptBytes = byteArrayOf(Type.STR.byte, 0xFF.toByte())
+        assertFailsWith<ValFormatException> {
+            DftByteArraySerializerImpl.deserialize(corruptBytes)
+        }
+    }
+
+    @Test
+    fun `should throw ValFormatException when map key contains invalid UTF-8`() {
+        val corruptBytes = byteArrayOf(Type.MAP.byte, 0, 0, 0, 1, 0xFF.toByte(), 0, 0, 0, 1, Type.NULL.byte)
+        assertFailsWith<ValFormatException> {
+            DftByteArraySerializerImpl.deserialize(corruptBytes)
         }
     }
 }
