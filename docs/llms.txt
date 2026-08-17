@@ -2,9 +2,7 @@
 
 > Sealed Intermediate Representation (IR) value types for the Cobra static analysis engine.
 
-commons-value defines language-agnostic IR types used to store and transport values across Cobra analysis modules. IR types attach to graph properties and flow through data-flow analyses. They carry no language-specific semantics -- language adapters in each analysis module handle the mapping from source language constructs to IR values.
-
-Package root: `edu.jhu.cobra.commons.value`. Serializers: `edu.jhu.cobra.commons.value.serializer`.
+commons-value defines language-agnostic IR types (package root `edu.jhu.cobra.commons.value`, serializers in `edu.jhu.cobra.commons.value.serializer`) used to store and transport values across Cobra analysis modules. IR types attach to graph properties and flow through data-flow analyses. They carry no language-specific semantics -- language adapters in each analysis module handle the mapping from source language constructs to IR values.
 
 ## Instructions for Agents
 

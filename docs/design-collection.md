@@ -20,7 +20,8 @@ Part of [commons-value design](design-primitive.md). Specifies the `ICollectionV
 - The primary constructor adopts the passed container (shared ownership: later external mutation of the container mutates the value). Every secondary constructor copies its input.
 - `equals`/`hashCode` follow the JDK collection contract: a value equals any `List`/`Set`/`Map` with equal content (matching `AbstractList`/`AbstractSet`/`AbstractMap` semantics), so equality is symmetric with plain collections.
 - No copy-returning `plus`/`minus` members: `+=` resolves to the stdlib `plusAssign` (in-place); copies are taken via the copying constructors or `deepCopy()`.
-- Mutable-element caveat (JDK set semantics): mutating a collection while it is an element of a `SetVal` corrupts membership; value graphs must stay acyclic. Documented, not enforced.
+- Mutable-element caveat (JDK set semantics): mutating a collection while it is an element of a `SetVal` corrupts membership. Documented, not enforced.
+- Value graphs must stay acyclic. Construction does not prevent cycles; `deepCopy` and serialization reject them at the `MAX_NESTING_DEPTH` bound.
 
 ---
 

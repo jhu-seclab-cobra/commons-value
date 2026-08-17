@@ -72,13 +72,23 @@ Part of [commons-value design](design-primitive.md). Specifies the `IValSerializ
 
 ## Function Specifications
 
+### WireValidation (validation helpers)
+
+Internal validation helpers shared by the serializer implementations.
+
+**`MAX_NESTING_DEPTH` (internal const, value 1000)** -- Maximum value-tree nesting accepted by `deepCopy`, serialize, and deserialize. Declared in the value package (`IValue.kt`) with `checkNestingDepth(depth: Int): Int`; serializers import both. Bounds stack use and rejects cyclic value graphs. Constant tier: algorithm invariant (`code/constants.md`).
+
+**`String.requireWellFormedUtf16(): String`** -- Returns the receiver; throws `IllegalArgumentException` when the string contains an unpaired UTF-16 surrogate. Called by all three serializers before encoding string content.
+
+**`decodeMaterial(block: () -> T): T`** -- Runs a deserialization body and rethrows every decoding failure (`BufferUnderflowException`, `NumberFormatException`, `CharacterCodingException`, `IllegalArgumentException`) as `ValFormatException` with the original cause. Wraps the body of every `deserialize` implementation.
+
+**`checkSizePrefix(size: Int, remaining: Int, context: String): Int`** -- Returns the validated size; throws `IllegalArgumentException` when a decoded size or count prefix is negative or exceeds the remaining material.
+
+**`requireDecodedType<T : IValue>(value: IValue, context: String): T`** -- Returns the value narrowed to `T`; throws `IllegalArgumentException` when a decoded value has an unexpected type (map keys decoded as non-`StrVal`).
+
 ### WireFormat (extension functions)
 
 Buffer and encoding helpers shared by the serializer implementations.
-
-**`MAX_NESTING_DEPTH` (internal const, value 1000)** -- Maximum value-tree nesting accepted by `deepCopy`, serialize, and deserialize. Declared in the value package (`IValue.kt`) with `checkNestingDepth`; serializers import both. Bounds stack use and rejects cyclic value graphs. Constant tier: algorithm invariant (`code/constants.md`).
-
-**`String.requireWellFormedUtf16(): String`** -- Returns the receiver; throws `IllegalArgumentException` when the string contains an unpaired UTF-16 surrogate. Called by all three serializers before encoding string content.
 
 **`String.asHexInt(): Int`** -- Parses a hexadecimal string to Int as unsigned, so every `Int.asHexString()` output round-trips (including 8-digit renderings of negative values). Throws `NumberFormatException` on invalid input.
 

@@ -2,9 +2,7 @@
 
 > Sealed Intermediate Representation (IR) value types for the Cobra static analysis engine.
 
-commons-value defines language-agnostic IR types used to store and transport values across Cobra analysis modules. IR types attach to graph properties and flow through data-flow analyses. They carry no language-specific semantics -- language adapters in each analysis module handle the mapping from source language constructs to IR values.
-
-Package root: `edu.jhu.cobra.commons.value`. Serializers: `edu.jhu.cobra.commons.value.serializer`.
+commons-value defines language-agnostic IR types (package root `edu.jhu.cobra.commons.value`, serializers in `edu.jhu.cobra.commons.value.serializer`) used to store and transport values across Cobra analysis modules. IR types attach to graph properties and flow through data-flow analyses. They carry no language-specific semantics -- language adapters in each analysis module handle the mapping from source language constructs to IR values.
 
 ## Instructions for Agents
 
@@ -91,7 +89,7 @@ when (val v: IValue = list[0]) {
 - **`ListVal(core: ArrayList<IValue>) : MutableList<IValue>`** -- Mutable ordered list delegating to `core`; the full `MutableList` API and stdlib collection extensions apply. Constructors: `ListVal()`, `ListVal(size: Int)`, `ListVal(List<IValue>)`, `ListVal(vararg IValue)`. Override: `deepCopy(): ListVal`.
 - **`SetVal(core: LinkedHashSet<IValue>) : MutableSet<IValue>`** -- Mutable insertion-ordered set delegating to `core`; the full `MutableSet` API and stdlib collection extensions apply. Constructors: `SetVal()`, `SetVal(size: Int)`, `SetVal(Collection<IValue>)`, `SetVal(vararg IValue)`, `SetVal(Sequence<IValue>)`. Override: `deepCopy(): SetVal`.
 - **`MapVal(core: LinkedHashMap<String, IValue>) : MutableMap<String, IValue>`** -- Mutable insertion-ordered string-keyed map delegating to `core`; the full `MutableMap` API and stdlib map extensions apply. Constructors: `MapVal()`, `MapVal(size: Int)`, `MapVal(Map<String, IValue>)`, `MapVal(vararg Pair<String, IValue>)`, `MapVal(Sequence<Pair>)`, `MapVal(List<Pair>)`. Override: `deepCopy(): MapVal`.
-- **`RangeVal(start: IntVal, endInclusive: IntVal)`** -- Numeric range. Constructor: `RangeVal(Number, Number)`. Properties: `first: Long`, `last: Long`. Operators: `contains(Number)`, `contains(IntVal)`, `contains(RangeVal)`, `plus(RangeVal)`. Infix: `before(RangeVal)`, `after(RangeVal)` (strict: ranges sharing a boundary point are neither). Methods: `map((IntVal) -> R) {}`.
+- **`RangeVal(start: IntVal, endInclusive: IntVal)`** -- Numeric range. Constructor: `RangeVal(Number, Number)`. Properties: `first: Long`, `last: Long`. Operators: `contains(Number)`, `contains(IntVal)`, `contains(RangeVal)`, `plus(RangeVal)`. Infix: `before(RangeVal)`, `after(RangeVal)` (strict: ranges sharing a boundary point are neither). Methods: `map(transform: (IntVal) -> R): List<R>`.
 
 ## Gotchas
 

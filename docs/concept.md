@@ -29,12 +29,12 @@ Source Language                  commons-value IR                    Cross-Modul
   Language       ┌────────────►│  (closed hierarchy)├──────────►  Graph property storage
   Adapter        │             │                    │              Constraint solvers
   Layer    ──────┘             │  Primitives:       │              Pattern matching
-  (per module)                 │    Str, Int, Float, │              Serialization layer
-                               │    Bool, Null,      │
-                               │    Unsure           │              Reporter modules
+  (per module)                 │    string, integer, │              Serialization layer
+                               │    float, boolean,  │
+                               │    null, uncertain  │              Reporter modules
                                │  Collections:      │
-                               │    List, Set, Map, │
-                               │    Range           │
+                               │    list, set, map, │
+                               │    range           │
                                └────────┬───────────┘
                                         │
                                         ▼
@@ -53,7 +53,7 @@ Source Language                  commons-value IR                    Cross-Modul
 - **Name:** Primitive Value
 - **Definition:** Atomic, indivisible data item. Six concrete forms: string, integer, floating-point, boolean, null, and uncertain.
 - **Scope:** Leaf nodes only. Excludes composite or nested structures.
-- **Relationships:** Subtype of Value. Contains String, Numeric, Boolean, Null, and Uncertain values.
+- **Relationships:** Subtype of Value. Contains string, integer, floating-point, boolean, null, and uncertain values.
 
 - **Name:** Collection Value
 - **Definition:** Aggregate structure containing multiple values. Four forms: ordered list, unique set, string-keyed map, and numeric range. Supports recursive nesting.
