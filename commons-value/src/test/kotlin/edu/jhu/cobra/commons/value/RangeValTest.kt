@@ -214,5 +214,4 @@ internal class RangeValTest {
         val range = RangeVal(1, 10)
         assertFalse(RangeVal(5, 11) in range)
     }
-
 }

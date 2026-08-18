@@ -52,15 +52,19 @@ import kotlin.test.assertFailsWith
 internal class IValSerializerCollectionTest {
     companion object {
         @JvmStatic
-        fun serializers(): Stream<Arguments> = Stream.of(
-            Arguments.of(DftByteArraySerializerImpl),
-            Arguments.of(DftByteBufferSerializerImpl),
-            Arguments.of(DftCharBufferSerializerImpl),
-        )
+        fun serializers(): Stream<Arguments> =
+            Stream.of(
+                Arguments.of(DftByteArraySerializerImpl),
+                Arguments.of(DftByteBufferSerializerImpl),
+                Arguments.of(DftCharBufferSerializerImpl),
+            )
     }
 
     @Suppress("UNCHECKED_CAST")
-    private fun assertRoundTrip(serializer: IValSerializer<*>, value: IValue) {
+    private fun assertRoundTrip(
+        serializer: IValSerializer<*>,
+        value: IValue,
+    ) {
         val s = serializer as IValSerializer<Any>
         val serialized = s.serialize(value)
         val deserialized = s.deserialize(serialized)
@@ -234,9 +238,7 @@ internal class IValSerializerCollectionTest {
     @Suppress("UNCHECKED_CAST")
     @ParameterizedTest
     @MethodSource("serializers")
-    fun `should throw IllegalArgumentException when serializing unpaired surrogate in string`(
-        serializer: IValSerializer<*>,
-    ) {
+    fun `should throw IllegalArgumentException when serializing unpaired surrogate in string`(serializer: IValSerializer<*>) {
         val s = serializer as IValSerializer<Any>
         assertFailsWith<IllegalArgumentException> {
             s.serialize(StrVal("broken: \uD800"))
@@ -246,9 +248,7 @@ internal class IValSerializerCollectionTest {
     @Suppress("UNCHECKED_CAST")
     @ParameterizedTest
     @MethodSource("serializers")
-    fun `should throw IllegalArgumentException when serializing unpaired surrogate in map key`(
-        serializer: IValSerializer<*>,
-    ) {
+    fun `should throw IllegalArgumentException when serializing unpaired surrogate in map key`(serializer: IValSerializer<*>) {
         val s = serializer as IValSerializer<Any>
         assertFailsWith<IllegalArgumentException> {
             s.serialize(MapVal("broken: \uD800" to NullVal))

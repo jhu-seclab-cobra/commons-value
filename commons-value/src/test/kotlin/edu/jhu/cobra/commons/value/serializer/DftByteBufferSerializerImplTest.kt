@@ -30,7 +30,6 @@ import kotlin.test.assertTrue
  * - `should round-trip RangeVal with Long MAX_VALUE bounds` — Long bounds survive serialization without truncation.
  */
 internal class DftByteBufferSerializerImplTest {
-
     @Test
     fun `should throw IllegalArgumentException when deserializing unknown type tag`() {
         val invalidBuffer = ByteBuffer.allocate(1).put(99.toByte()).flip()

@@ -29,7 +29,6 @@ import kotlin.test.assertTrue
  *   elements rejected instead of being consumed silently.
  */
 internal class DftCharBufferSerializerImplTest {
-
     @Test
     fun `should throw IllegalArgumentException when deserializing unknown type label`() {
         val invalidBuffer = "Unknown:value:".asCharBuffer()

@@ -59,15 +59,19 @@ import kotlin.test.assertTrue
 internal class IValSerializerTest {
     companion object {
         @JvmStatic
-        fun serializers(): Stream<Arguments> = Stream.of(
-            Arguments.of(DftByteArraySerializerImpl),
-            Arguments.of(DftByteBufferSerializerImpl),
-            Arguments.of(DftCharBufferSerializerImpl),
-        )
+        fun serializers(): Stream<Arguments> =
+            Stream.of(
+                Arguments.of(DftByteArraySerializerImpl),
+                Arguments.of(DftByteBufferSerializerImpl),
+                Arguments.of(DftCharBufferSerializerImpl),
+            )
     }
 
     @Suppress("UNCHECKED_CAST")
-    private fun assertRoundTrip(serializer: IValSerializer<*>, value: IValue) {
+    private fun assertRoundTrip(
+        serializer: IValSerializer<*>,
+        value: IValue,
+    ) {
         val s = serializer as IValSerializer<Any>
         val serialized = s.serialize(value)
         val deserialized = s.deserialize(serialized)

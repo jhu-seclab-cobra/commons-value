@@ -30,7 +30,6 @@ import kotlin.test.assertTrue
  * - `should throw ValFormatException when map key contains invalid UTF-8` — Malformed key bytes rejected.
  */
 internal class DftByteArraySerializerImplTest {
-
     @Test
     fun `should throw IllegalArgumentException when deserializing unknown type tag`() {
         val invalidBytes = byteArrayOf(99)
