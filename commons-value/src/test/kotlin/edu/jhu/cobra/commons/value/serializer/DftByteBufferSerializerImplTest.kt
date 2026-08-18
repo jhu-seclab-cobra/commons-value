@@ -1,8 +1,11 @@
 package edu.jhu.cobra.commons.value.serializer
 
+import edu.jhu.cobra.commons.value.IntVal
 import edu.jhu.cobra.commons.value.MAX_NESTING_DEPTH
+import edu.jhu.cobra.commons.value.RangeVal
 import java.nio.ByteBuffer
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
@@ -25,6 +28,7 @@ import kotlin.test.assertTrue
  *   MAX_NESTING_DEPTH rejected at deserialize.
  * - `should throw ValFormatException when STR payload contains invalid UTF-8` — Malformed byte sequence
  *   rejected instead of silently decoding to U+FFFD.
+ * - `should round-trip RangeVal with Long MAX_VALUE bounds` — Long bounds survive serialization without truncation.
  */
 internal class DftByteBufferSerializerImplTest : AbcSerializerImplUnitTest<ByteBuffer>() {
     override val testTarget: IValSerializer<ByteBuffer> get() = DftByteBufferSerializerImpl
@@ -161,5 +165,17 @@ internal class DftByteBufferSerializerImplTest : AbcSerializerImplUnitTest<ByteB
         assertFailsWith<ValFormatException> {
             DftByteBufferSerializerImpl.deserialize(corruptBuffer)
         }
+    }
+
+    @Test
+    fun `should round-trip RangeVal with Long MAX_VALUE bounds`() {
+        val range = RangeVal(IntVal(Long.MAX_VALUE), IntVal(Long.MAX_VALUE))
+        val serialized = DftByteBufferSerializerImpl.serialize(range)
+        val restored = DftByteBufferSerializerImpl.deserialize(serialized) as RangeVal
+        assertEquals(
+            Long.MAX_VALUE,
+            restored.first,
+            "RangeVal Long bounds should survive ByteBuffer round-trip without truncation",
+        )
     }
 }

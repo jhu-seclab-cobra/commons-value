@@ -57,6 +57,7 @@ import kotlin.test.assertTrue
  * - `should return zero when equal to Long` -- compareTo(Long) ==
  * - `should compare against Int MAX_VALUE` -- boundary compareTo(Int)
  * - `should compare against Int MIN_VALUE` -- boundary compareTo(Int)
+ * - `should return positive from compareTo when Long MAX_VALUE compared to zero` -- Long.MAX_VALUE truncation guard
  *
  * toString:
  * - `should format as IntVal braces` -- "IntVal{42}"
@@ -255,6 +256,15 @@ internal class IntValTest {
     @Test
     fun `should compare against Int MIN_VALUE`() {
         assertEquals(0, IntVal(Int.MIN_VALUE.toLong()).compareTo(Int.MIN_VALUE))
+    }
+
+    @Test
+    fun `should return positive from compareTo when Long MAX_VALUE compared to zero`() {
+        val big = IntVal(Long.MAX_VALUE)
+        assertTrue(
+            big.compareTo(0) > 0,
+            "IntVal(Long.MAX_VALUE).compareTo(0) should be positive, not truncated to Int",
+        )
     }
 
     // --- toString ---
