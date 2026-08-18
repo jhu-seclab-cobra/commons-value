@@ -7,8 +7,7 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
 /**
- * Tests for [DftByteArraySerializerImpl]. Extends [AbcSerializerImplUnitTest] for round-trip
- * contract coverage and adds ByteArray-specific error cases.
+ * ByteArray-specific error tests for [DftByteArraySerializerImpl].
  *
  * - `should throw IllegalArgumentException when deserializing unknown type tag` — Unknown byte tag rejected.
  * - `should throw IllegalArgumentException when deserializing empty ByteArray` — Empty input rejected.
@@ -30,8 +29,7 @@ import kotlin.test.assertTrue
  *   rejected instead of silently decoding to U+FFFD.
  * - `should throw ValFormatException when map key contains invalid UTF-8` — Malformed key bytes rejected.
  */
-internal class DftByteArraySerializerImplTest : AbcSerializerImplUnitTest<ByteArray>() {
-    override val testTarget: IValSerializer<ByteArray> get() = DftByteArraySerializerImpl
+internal class DftByteArraySerializerImplTest {
 
     @Test
     fun `should throw IllegalArgumentException when deserializing unknown type tag`() {

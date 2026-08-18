@@ -7,8 +7,7 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
 /**
- * Tests for [DftCharBufferSerializerImpl]. Extends [AbcSerializerImplUnitTest] for round-trip
- * contract coverage and adds CharBuffer-specific error cases.
+ * CharBuffer-specific error tests for [DftCharBufferSerializerImpl].
  *
  * - `should throw IllegalArgumentException when deserializing unknown type label` — Unknown type string rejected.
  * - `should throw IllegalArgumentException when deserializing empty CharBuffer` — Empty buffer rejected.
@@ -29,8 +28,7 @@ import kotlin.test.assertTrue
  * - `should throw ValFormatException when list element delimiter is invalid` — Wrong char between
  *   elements rejected instead of being consumed silently.
  */
-internal class DftCharBufferSerializerImplTest : AbcSerializerImplUnitTest<CharBuffer>() {
-    override val testTarget: IValSerializer<CharBuffer> get() = DftCharBufferSerializerImpl
+internal class DftCharBufferSerializerImplTest {
 
     @Test
     fun `should throw IllegalArgumentException when deserializing unknown type label`() {

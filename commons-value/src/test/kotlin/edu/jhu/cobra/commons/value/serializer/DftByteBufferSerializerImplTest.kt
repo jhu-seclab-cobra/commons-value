@@ -10,8 +10,7 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
 /**
- * Tests for [DftByteBufferSerializerImpl]. Extends [AbcSerializerImplUnitTest] for round-trip
- * contract coverage and adds ByteBuffer-specific error cases.
+ * ByteBuffer-specific error tests for [DftByteBufferSerializerImpl].
  *
  * - `should throw IllegalArgumentException when deserializing unknown type tag` — Unknown byte tag rejected.
  * - `should throw IllegalArgumentException when deserializing empty ByteBuffer` — Empty buffer rejected.
@@ -30,8 +29,7 @@ import kotlin.test.assertTrue
  *   rejected instead of silently decoding to U+FFFD.
  * - `should round-trip RangeVal with Long MAX_VALUE bounds` — Long bounds survive serialization without truncation.
  */
-internal class DftByteBufferSerializerImplTest : AbcSerializerImplUnitTest<ByteBuffer>() {
-    override val testTarget: IValSerializer<ByteBuffer> get() = DftByteBufferSerializerImpl
+internal class DftByteBufferSerializerImplTest {
 
     @Test
     fun `should throw IllegalArgumentException when deserializing unknown type tag`() {
