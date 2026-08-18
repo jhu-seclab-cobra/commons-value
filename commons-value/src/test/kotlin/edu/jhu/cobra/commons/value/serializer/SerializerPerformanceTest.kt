@@ -10,6 +10,7 @@ import edu.jhu.cobra.commons.value.SetVal
 import edu.jhu.cobra.commons.value.StrVal
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
+import kotlin.random.Random
 import kotlin.test.assertEquals
 
 /**
@@ -39,9 +40,18 @@ internal class SerializerPerformanceTest {
         private val COLLECTION_TYPES = intArrayOf(4, 5, 6, 7)
     }
 
-    private val primitiveDataSet = List(100_000) { randomIValue(PRIMITIVE_TYPES[it % PRIMITIVE_TYPES.size]) }
-    private val collectionDataSet = List(10_000) { randomIValue(COLLECTION_TYPES[it % COLLECTION_TYPES.size]) }
-    private val mixedDataSet = List(100_000) { randomIValue() }
+    private val primitiveDataSet =
+        Random(SEED).let { rng ->
+            List(100_000) { randomIValue(PRIMITIVE_TYPES[it % PRIMITIVE_TYPES.size], rng) }
+        }
+    private val collectionDataSet =
+        Random(SEED).let { rng ->
+            List(10_000) { randomIValue(COLLECTION_TYPES[it % COLLECTION_TYPES.size], rng) }
+        }
+    private val mixedDataSet =
+        Random(SEED).let { rng ->
+            List(100_000) { randomIValue(rng = rng) }
+        }
     private val valueCreationCount = 600_000
 
     private val warmupRuns = 5
@@ -118,7 +128,8 @@ internal class SerializerPerformanceTest {
 
     @Test
     fun `should compare serialized sizes across serializers`() {
-        val sampleData = List(1000) { randomIValue() }
+        val rng = Random(SEED)
+        val sampleData = List(1000) { randomIValue(rng = rng) }
         val baSize = sampleData.sumOf { DftByteArraySerializerImpl.serialize(it).size }
         val bbSize = sampleData.sumOf { DftByteBufferSerializerImpl.serialize(it).limit() }
         val cbSize = sampleData.sumOf { DftCharBufferSerializerImpl.serialize(it).length * 2 }
