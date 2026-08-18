@@ -15,21 +15,21 @@ import kotlin.test.assertEquals
 /**
  * Performance benchmarks for the three [IValSerializer] implementations.
  *
- * - `ByteArraySerializer primitive data round-trip` — Throughput for primitives via ByteArray.
- * - `ByteArraySerializer mixed data round-trip` — Throughput for mixed values via ByteArray.
- * - `ByteArraySerializer collection data round-trip` — Throughput for collections via ByteArray.
- * - `ByteBufferSerializer primitive data round-trip` — Throughput for primitives via ByteBuffer.
- * - `ByteBufferSerializer mixed data round-trip` — Throughput for mixed values via ByteBuffer.
- * - `ByteBufferSerializer collection data round-trip` — Throughput for collections via ByteBuffer.
- * - `CharBufferSerializer primitive data round-trip` — Throughput for primitives via CharBuffer.
- * - `CharBufferSerializer mixed data round-trip` — Throughput for mixed values via CharBuffer.
- * - `CharBufferSerializer collection data round-trip` — Throughput for collections via CharBuffer.
- * - `ByteArraySerializer memory allocation` — Memory per-op for ByteArray primitives.
- * - `ByteBufferSerializer memory allocation` — Memory per-op for ByteBuffer primitives.
- * - `CharBufferSerializer memory allocation` — Memory per-op for CharBuffer primitives.
- * - `collection serialization memory allocation` — Memory per-op for collections across all serializers.
- * - `serialized size comparison` — Output size comparison across all three serializers.
- * - `value creation throughput` — Throughput for creating value type instances.
+ * - `should round-trip ByteArraySerializer primitive data` — Throughput for primitives via ByteArray.
+ * - `should round-trip ByteArraySerializer mixed data` — Throughput for mixed values via ByteArray.
+ * - `should round-trip ByteArraySerializer collection data` — Throughput for collections via ByteArray.
+ * - `should round-trip ByteBufferSerializer primitive data` — Throughput for primitives via ByteBuffer.
+ * - `should round-trip ByteBufferSerializer mixed data` — Throughput for mixed values via ByteBuffer.
+ * - `should round-trip ByteBufferSerializer collection data` — Throughput for collections via ByteBuffer.
+ * - `should round-trip CharBufferSerializer primitive data` — Throughput for primitives via CharBuffer.
+ * - `should round-trip CharBufferSerializer mixed data` — Throughput for mixed values via CharBuffer.
+ * - `should round-trip CharBufferSerializer collection data` — Throughput for collections via CharBuffer.
+ * - `should measure ByteArraySerializer memory allocation` — Memory per-op for ByteArray primitives.
+ * - `should measure ByteBufferSerializer memory allocation` — Memory per-op for ByteBuffer primitives.
+ * - `should measure CharBufferSerializer memory allocation` — Memory per-op for CharBuffer primitives.
+ * - `should measure collection serialization memory allocation` — Memory per-op for collections across all serializers.
+ * - `should compare serialized sizes across serializers` — Output size comparison across all three serializers.
+ * - `should measure value creation throughput` — Throughput for creating value type instances.
  */
 @Tag("performance")
 internal class SerializerPerformanceTest {
@@ -48,67 +48,67 @@ internal class SerializerPerformanceTest {
     private val measureRuns = 7
 
     @Test
-    fun `ByteArraySerializer primitive data round-trip`() {
+    fun `should round-trip ByteArraySerializer primitive data`() {
         benchmarkSerializer("ByteArray-primitive", DftByteArraySerializerImpl, primitiveDataSet)
     }
 
     @Test
-    fun `ByteArraySerializer mixed data round-trip`() {
+    fun `should round-trip ByteArraySerializer mixed data`() {
         benchmarkSerializer("ByteArray-mixed", DftByteArraySerializerImpl, mixedDataSet)
     }
 
     @Test
-    fun `ByteArraySerializer collection data round-trip`() {
+    fun `should round-trip ByteArraySerializer collection data`() {
         benchmarkSerializer("ByteArray-collection", DftByteArraySerializerImpl, collectionDataSet)
     }
 
     @Test
-    fun `ByteBufferSerializer primitive data round-trip`() {
+    fun `should round-trip ByteBufferSerializer primitive data`() {
         benchmarkSerializer("ByteBuffer-primitive", DftByteBufferSerializerImpl, primitiveDataSet)
     }
 
     @Test
-    fun `ByteBufferSerializer mixed data round-trip`() {
+    fun `should round-trip ByteBufferSerializer mixed data`() {
         benchmarkSerializer("ByteBuffer-mixed", DftByteBufferSerializerImpl, mixedDataSet)
     }
 
     @Test
-    fun `ByteBufferSerializer collection data round-trip`() {
+    fun `should round-trip ByteBufferSerializer collection data`() {
         benchmarkSerializer("ByteBuffer-collection", DftByteBufferSerializerImpl, collectionDataSet)
     }
 
     @Test
-    fun `CharBufferSerializer primitive data round-trip`() {
+    fun `should round-trip CharBufferSerializer primitive data`() {
         benchmarkSerializer("CharBuffer-primitive", DftCharBufferSerializerImpl, primitiveDataSet)
     }
 
     @Test
-    fun `CharBufferSerializer mixed data round-trip`() {
+    fun `should round-trip CharBufferSerializer mixed data`() {
         benchmarkSerializer("CharBuffer-mixed", DftCharBufferSerializerImpl, mixedDataSet)
     }
 
     @Test
-    fun `CharBufferSerializer collection data round-trip`() {
+    fun `should round-trip CharBufferSerializer collection data`() {
         benchmarkSerializer("CharBuffer-collection", DftCharBufferSerializerImpl, collectionDataSet)
     }
 
     @Test
-    fun `ByteArraySerializer memory allocation`() {
+    fun `should measure ByteArraySerializer memory allocation`() {
         measureMemory("ByteArray-memory", DftByteArraySerializerImpl, primitiveDataSet)
     }
 
     @Test
-    fun `ByteBufferSerializer memory allocation`() {
+    fun `should measure ByteBufferSerializer memory allocation`() {
         measureMemory("ByteBuffer-memory", DftByteBufferSerializerImpl, primitiveDataSet)
     }
 
     @Test
-    fun `CharBufferSerializer memory allocation`() {
+    fun `should measure CharBufferSerializer memory allocation`() {
         measureMemory("CharBuffer-memory", DftCharBufferSerializerImpl, primitiveDataSet)
     }
 
     @Test
-    fun `collection serialization memory allocation`() {
+    fun `should measure collection serialization memory allocation`() {
         listOf(
             "ByteArray-collection-memory" to DftByteArraySerializerImpl,
             "ByteBuffer-collection-memory" to DftByteBufferSerializerImpl,
@@ -117,7 +117,7 @@ internal class SerializerPerformanceTest {
     }
 
     @Test
-    fun `serialized size comparison`() {
+    fun `should compare serialized sizes across serializers`() {
         val sampleData = List(1000) { randomIValue() }
         val baSize = sampleData.sumOf { DftByteArraySerializerImpl.serialize(it).size }
         val bbSize = sampleData.sumOf { DftByteBufferSerializerImpl.serialize(it).limit() }
@@ -129,7 +129,7 @@ internal class SerializerPerformanceTest {
     }
 
     @Test
-    fun `value creation throughput`() {
+    fun `should measure value creation throughput`() {
         repeat(warmupRuns) {
             repeat(valueCreationCount) { i ->
                 IntVal(i.toLong())

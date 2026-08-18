@@ -13,6 +13,7 @@ import kotlin.test.assertTrue
  * - `should default to empty string` — default constructor
  * - `should return true from startsWith when prefix matches` — startsWith match
  * - `should return false from startsWith when prefix does not match` — startsWith mismatch
+ * - `should return true from startsWith with empty prefix` — startsWith empty boundary
  * - `should return substring after delimiter` — substringAfter found
  * - `should return full string when substringAfter delimiter not found` — substringAfter missing
  * - `should return substring before delimiter` — substringBefore found
@@ -29,13 +30,21 @@ import kotlin.test.assertTrue
  * - `should return uppercase StrVal` — uppercase
  * - `should return lowercase StrVal` — lowercase
  * - `should return trimmed StrVal` — trim
+ * - `should return StrVal type from uppercase` — uppercase returns StrVal type
+ * - `should return StrVal type from lowercase` — lowercase returns StrVal type
+ * - `should return StrVal type from trim` — trim returns StrVal type
  * - `should return true from contains when substring present` — contains match
  * - `should return false from contains when substring absent` — contains mismatch
+ * - `should return true from contains with empty substring` — contains empty boundary
  * - `should return char at positive index` — get(Int) positive
+ * - `should return last char at positive index` — get(Int) last element
  * - `should return char at negative index counting from end` — get(Int) negative
- * - `should throw IndexOutOfBoundsException for out-of-range index` — get(Int) error
- * - `should return char at IntVal index` — get(IntVal) positive
- * - `should return char at negative IntVal index` — get(IntVal) negative
+ * - `should return first char at largest negative index` — get(Int) first via negative index
+ * - `should throw IndexOutOfBoundsException for positive out-of-range index` — get(Int) positive OOB
+ * - `should throw IndexOutOfBoundsException for negative out-of-range index` — get(Int) negative OOB
+ * - `should throw IndexOutOfBoundsException for index on empty string` — get(Int) empty string OOB
+ * - `should return char at IntVal positive index` — get(IntVal) positive
+ * - `should return char at IntVal negative index` — get(IntVal) negative
  * - `should throw IndexOutOfBoundsException for out-of-range IntVal index` — get(IntVal) error
  * - `should throw IndexOutOfBoundsException for IntVal index beyond Int range` — get(IntVal) no truncation
  * - `should return correct length` — length property

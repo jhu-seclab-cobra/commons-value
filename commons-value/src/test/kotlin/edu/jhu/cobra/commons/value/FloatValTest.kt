@@ -30,7 +30,6 @@ import kotlin.test.assertTrue
  * - `should truncate toLong` -- toLong on fractional value
  * - `should truncate toIntVal` -- toIntVal returns IntVal with truncated value
  * - `should convert toFloat` -- toFloat narrowing
- * - `should convert compareTo Double` -- compareTo(Double)
  *
  * Extension constructors:
  * - `should construct from Double extension` -- Double.floatVal

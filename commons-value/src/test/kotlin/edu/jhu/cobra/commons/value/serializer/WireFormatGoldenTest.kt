@@ -22,9 +22,9 @@ import kotlin.test.assertEquals
  * refactor; any change to them is a wire-format break, not a test to update.
  *
  * Test list:
- * - `byte array serializer emits pinned bytes for nested sample`
- * - `byte buffer serializer emits pinned bytes for nested sample`
- * - `char buffer serializer emits pinned text for nested sample`
+ * - `should emit pinned bytes for nested sample via byte array serializer`
+ * - `should emit pinned bytes for nested sample via byte buffer serializer`
+ * - `should emit pinned text for nested sample via char buffer serializer`
  */
 internal class WireFormatGoldenTest {
     // One value exercising every container tag (LIST, SET, MAP, RANGE) plus each scalar tag.
@@ -58,19 +58,19 @@ internal class WireFormatGoldenTest {
     private fun ByteArray.toHex(): String = joinToString("") { byte -> "%02x".format(byte) }
 
     @Test
-    fun `byte array serializer emits pinned bytes for nested sample`() {
+    fun `should emit pinned bytes for nested sample via byte array serializer`() {
         assertEquals(goldenByteArrayHex, DftByteArraySerializerImpl.serialize(sample).toHex())
     }
 
     @Test
-    fun `byte buffer serializer emits pinned bytes for nested sample`() {
+    fun `should emit pinned bytes for nested sample via byte buffer serializer`() {
         val buffer = DftByteBufferSerializerImpl.serialize(sample)
         val bytes = ByteArray(buffer.limit()).also { buffer.get(it) }
         assertEquals(goldenByteBufferHex, bytes.toHex())
     }
 
     @Test
-    fun `char buffer serializer emits pinned text for nested sample`() {
+    fun `should emit pinned text for nested sample via char buffer serializer`() {
         assertEquals(goldenCharBufferText, DftCharBufferSerializerImpl.serialize(sample).toString())
     }
 }

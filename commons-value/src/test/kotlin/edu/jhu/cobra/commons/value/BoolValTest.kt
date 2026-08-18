@@ -14,6 +14,8 @@ import kotlin.test.assertTrue
  * - `should return T singleton when invoke with true` — factory identity
  * - `should return F singleton when invoke with false` — factory identity
  * - `should return F when invoke with no arguments` — default factory
+ * - `should return correct core when invoke with true` — factory core value true
+ * - `should return correct core when invoke with false` — factory core value false
  * - `should return true from isTrue when core is true` — isTrue on T
  * - `should return false from isTrue when core is false` — isTrue on F
  * - `should return true from isFalse when core is false` — isFalse on F

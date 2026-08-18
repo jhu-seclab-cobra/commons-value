@@ -27,7 +27,10 @@ import kotlin.test.assertTrue
  * - `should return STR from reified new StrVal` — new<StrVal>()
  * - `should return BOOL from reified new BoolVal` — new<BoolVal>()
  * - `should return ANY from reified new NullVal` — new<NullVal>()
- * - `should return true from contains for valid identifiers` — contains valid
+ * - `should return true from contains for IPrimitiveVal identifier` — contains __IPrimitiveVal__
+ * - `should return true from contains for StrVal identifier` — contains __StrVal__
+ * - `should return true from contains for NumVal identifier` — contains __NumVal__
+ * - `should return true from contains for BoolVal identifier` — contains __BoolVal__
  * - `should return false from contains for invalid string` — contains invalid
  * - `should return false from contains for empty string` — contains boundary
  * - `should implement IPrimitiveVal` — type hierarchy
