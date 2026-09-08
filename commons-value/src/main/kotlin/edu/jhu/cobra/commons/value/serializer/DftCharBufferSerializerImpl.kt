@@ -62,32 +62,52 @@ public object DftCharBufferSerializerImpl : IValSerializer<CharBuffer> {
     ): CharBuffer {
         checkNestingDepth(depth)
         return when (value) {
-            is NullVal -> "${Type.NULL.str}:".asCharBuffer()
-            is Unsure ->
+            is NullVal -> {
+                "${Type.NULL.str}:".asCharBuffer()
+            }
+
+            is Unsure -> {
                 when (value) {
                     Unsure.NUM -> "${Type.UNSURE_NUM.str}:".asCharBuffer()
                     Unsure.STR -> "${Type.UNSURE_STR.str}:".asCharBuffer()
                     Unsure.BOOL -> "${Type.UNSURE_BOOL.str}:".asCharBuffer()
                     else -> "${Type.UNSURE_ANY.str}:".asCharBuffer()
                 }
+            }
+
             is StrVal -> {
                 val hexCnt = value.length.asHexString()
                 val string = "${Type.STR.str}:$hexCnt:${value.core.requireWellFormedUtf16()}"
                 string.asCharBuffer()
             }
-            is BoolVal ->
+
+            is BoolVal -> {
                 if (value.isTrue()) {
                     "${Type.BOOL_TRUE.str}:".asCharBuffer()
                 } else {
                     "${Type.BOOL_FALSE.str}:".asCharBuffer()
                 }
-            is IntVal -> "${Type.INT.str}:${value.core}:".asCharBuffer()
-            is FloatVal -> "${Type.FLOAT.str}:${value.core}:".asCharBuffer()
+            }
 
-            is RangeVal -> "${Type.RANGE.str}:${value.first},${value.last}:".asCharBuffer()
-            is ListVal -> containerToBuffer(Type.LIST, value.map { element -> encode(element, depth + 1) })
+            is IntVal -> {
+                "${Type.INT.str}:${value.core}:".asCharBuffer()
+            }
 
-            is SetVal -> containerToBuffer(Type.SET, value.map { element -> encode(element, depth + 1) })
+            is FloatVal -> {
+                "${Type.FLOAT.str}:${value.core}:".asCharBuffer()
+            }
+
+            is RangeVal -> {
+                "${Type.RANGE.str}:${value.first},${value.last}:".asCharBuffer()
+            }
+
+            is ListVal -> {
+                containerToBuffer(Type.LIST, value.map { element -> encode(element, depth + 1) })
+            }
+
+            is SetVal -> {
+                containerToBuffer(Type.SET, value.map { element -> encode(element, depth + 1) })
+            }
 
             is MapVal -> { // mapType:cnt_hex{key=element, key=element, key=element}
                 val elements = value.map { (k, v) -> encode(StrVal(k), depth + 1) to encode(v, depth + 1) }
@@ -154,7 +174,10 @@ public object DftCharBufferSerializerImpl : IValSerializer<CharBuffer> {
         checkNestingDepth(depth)
         return when (val type = material.getString(':')) {
             // nullType:
-            Type.NULL.str -> NullVal
+            Type.NULL.str -> {
+                NullVal
+            }
+
             // strType:cnt{}
             Type.STR.str -> {
                 val strLength = checkSizePrefix(material.getString(until = ':').asHexInt(), material.remaining(), "string size")
@@ -162,14 +185,38 @@ public object DftCharBufferSerializerImpl : IValSerializer<CharBuffer> {
                 StrVal(core = stringCore)
             }
 
-            Type.BOOL_TRUE.str -> BoolVal.T
-            Type.BOOL_FALSE.str -> BoolVal.F
-            Type.INT.str -> IntVal(material.getString(':').toLong())
-            Type.FLOAT.str -> FloatVal(material.getString(':').toDouble())
-            Type.UNSURE_NUM.str -> Unsure.NUM
-            Type.UNSURE_STR.str -> Unsure.STR
-            Type.UNSURE_BOOL.str -> Unsure.BOOL
-            Type.UNSURE_ANY.str -> Unsure.ANY
+            Type.BOOL_TRUE.str -> {
+                BoolVal.T
+            }
+
+            Type.BOOL_FALSE.str -> {
+                BoolVal.F
+            }
+
+            Type.INT.str -> {
+                IntVal(material.getString(':').toLong())
+            }
+
+            Type.FLOAT.str -> {
+                FloatVal(material.getString(':').toDouble())
+            }
+
+            Type.UNSURE_NUM.str -> {
+                Unsure.NUM
+            }
+
+            Type.UNSURE_STR.str -> {
+                Unsure.STR
+            }
+
+            Type.UNSURE_BOOL.str -> {
+                Unsure.BOOL
+            }
+
+            Type.UNSURE_ANY.str -> {
+                Unsure.ANY
+            }
+
             Type.RANGE.str -> { // range_type:num,num
                 val start = material.getString(',').toLong()
                 val endInclude = material.getString(':').toLong()
@@ -203,7 +250,9 @@ public object DftCharBufferSerializerImpl : IValSerializer<CharBuffer> {
                 container // return the final container of the map out
             }
 
-            else -> throw ValFormatException("Unknown type: $type")
+            else -> {
+                throw ValFormatException("Unknown type: $type")
+            }
         }
     }
 

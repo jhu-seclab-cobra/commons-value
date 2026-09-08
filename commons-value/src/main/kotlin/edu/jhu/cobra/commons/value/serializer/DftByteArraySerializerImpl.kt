@@ -48,7 +48,10 @@ public object DftByteArraySerializerImpl : IValSerializer<ByteArray> {
     ): ByteArray {
         checkNestingDepth(depth)
         return when (value) {
-            is NullVal -> byteArrayOf(Type.NULL.byte)
+            is NullVal -> {
+                byteArrayOf(Type.NULL.byte)
+            }
+
             is StrVal -> {
                 val bytes = value.core.requireWellFormedUtf16().toByteArray()
                 ByteArray(TYPE_TAG_BYTES + bytes.size).also {
@@ -56,17 +59,27 @@ public object DftByteArraySerializerImpl : IValSerializer<ByteArray> {
                     bytes.copyInto(it, TYPE_TAG_BYTES)
                 }
             }
-            is BoolVal -> byteArrayOf(Type.BOOL.byte, if (value.core) 1 else 0)
-            is Unsure ->
+
+            is BoolVal -> {
+                byteArrayOf(Type.BOOL.byte, if (value.core) 1 else 0)
+            }
+
+            is Unsure -> {
                 when (value) {
                     Unsure.NUM -> byteArrayOf(Type.UNSURE_NUM.byte)
                     Unsure.STR -> byteArrayOf(Type.UNSURE_STR.byte)
                     Unsure.BOOL -> byteArrayOf(Type.UNSURE_BOOL.byte)
                     else -> byteArrayOf(Type.UNSURE_ANY.byte)
                 }
+            }
 
-            is IntVal -> longToBytes(Type.INT.byte, value.core)
-            is FloatVal -> longToBytes(Type.FLOAT.byte, value.core.toRawBits())
+            is IntVal -> {
+                longToBytes(Type.INT.byte, value.core)
+            }
+
+            is FloatVal -> {
+                longToBytes(Type.FLOAT.byte, value.core.toRawBits())
+            }
 
             is RangeVal -> {
                 val result = ByteArray(TYPE_TAG_BYTES + SIZE_PREFIX_BYTES + 2 * TAGGED_LONG_BYTES)
@@ -79,9 +92,13 @@ public object DftByteArraySerializerImpl : IValSerializer<ByteArray> {
                 result
             }
 
-            is ListVal -> containerToBytes(Type.LIST.byte, value.map { encode(it, depth + 1) })
+            is ListVal -> {
+                containerToBytes(Type.LIST.byte, value.map { encode(it, depth + 1) })
+            }
 
-            is SetVal -> containerToBytes(Type.SET.byte, value.map { encode(it, depth + 1) })
+            is SetVal -> {
+                containerToBytes(Type.SET.byte, value.map { encode(it, depth + 1) })
+            }
 
             is MapVal -> {
                 val mapEntriesBytes = value.map { (k, v) -> k.requireWellFormedUtf16().toByteArray() to encode(v, depth + 1) }
@@ -185,22 +202,45 @@ public object DftByteArraySerializerImpl : IValSerializer<ByteArray> {
     ): IValue {
         checkNestingDepth(depth)
         return when (buffer.get()) {
-            Type.NULL.byte -> NullVal
+            Type.NULL.byte -> {
+                NullVal
+            }
+
             Type.STR.byte -> {
                 val bytes = ByteArray(buffer.remaining()).also { buffer.get(it) }
                 StrVal(bytes.decodeToString(throwOnInvalidSequence = true))
             }
+
             Type.BOOL.byte -> {
                 val payload = buffer.get()
                 require(payload in 0..1) { "Invalid BOOL payload: $payload" }
                 BoolVal(payload == 1.toByte())
             }
-            Type.UNSURE_ANY.byte -> Unsure.ANY
-            Type.UNSURE_NUM.byte -> Unsure.NUM
-            Type.UNSURE_STR.byte -> Unsure.STR
-            Type.UNSURE_BOOL.byte -> Unsure.BOOL
-            Type.INT.byte -> IntVal(buffer.long)
-            Type.FLOAT.byte -> FloatVal(buffer.double)
+
+            Type.UNSURE_ANY.byte -> {
+                Unsure.ANY
+            }
+
+            Type.UNSURE_NUM.byte -> {
+                Unsure.NUM
+            }
+
+            Type.UNSURE_STR.byte -> {
+                Unsure.STR
+            }
+
+            Type.UNSURE_BOOL.byte -> {
+                Unsure.BOOL
+            }
+
+            Type.INT.byte -> {
+                IntVal(buffer.long)
+            }
+
+            Type.FLOAT.byte -> {
+                FloatVal(buffer.double)
+            }
+
             Type.RANGE.byte -> {
                 val firstSize = checkSizePrefix(buffer.getInt(), buffer.remaining(), "range bound size")
                 val start = decodeWindow(buffer, firstSize, "range start", depth + 1)
@@ -208,8 +248,15 @@ public object DftByteArraySerializerImpl : IValSerializer<ByteArray> {
                 val second = requireDecodedType<IntVal>(deserializeFrom(buffer, depth + 1), "range end")
                 RangeVal(first, second)
             }
-            Type.LIST.byte -> ListVal().also { list -> forEachContainerElement(buffer, depth + 1) { list.plusAssign(it) } }
-            Type.SET.byte -> SetVal().also { set -> forEachContainerElement(buffer, depth + 1) { set.plusAssign(it) } }
+
+            Type.LIST.byte -> {
+                ListVal().also { list -> forEachContainerElement(buffer, depth + 1) { list.plusAssign(it) } }
+            }
+
+            Type.SET.byte -> {
+                SetVal().also { set -> forEachContainerElement(buffer, depth + 1) { set.plusAssign(it) } }
+            }
+
             Type.MAP.byte -> {
                 val map = MapVal()
                 while (buffer.hasRemaining()) {
@@ -221,7 +268,10 @@ public object DftByteArraySerializerImpl : IValSerializer<ByteArray> {
                 }
                 map
             }
-            else -> throw ValFormatException("Unknown value type: ${buffer.get(buffer.position() - 1)}")
+
+            else -> {
+                throw ValFormatException("Unknown value type: ${buffer.get(buffer.position() - 1)}")
+            }
         }
     }
 

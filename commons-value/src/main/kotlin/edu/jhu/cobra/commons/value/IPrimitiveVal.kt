@@ -94,12 +94,24 @@ private fun compareLongToDouble(
     double: Double,
 ): Int =
     when {
-        double.isNaN() -> -1
-        double == Double.POSITIVE_INFINITY -> -1
-        double == Double.NEGATIVE_INFINITY -> 1
+        double.isNaN() -> {
+            -1
+        }
+
+        double == Double.POSITIVE_INFINITY -> {
+            -1
+        }
+
+        double == Double.NEGATIVE_INFINITY -> {
+            1
+        }
+
         long in -DOUBLE_EXACT_LONG_BOUND..DOUBLE_EXACT_LONG_BOUND -> {
             val widened = long.toDouble()
             if (widened == double) 0 else widened.compareTo(double)
         }
-        else -> BigDecimal(long).compareTo(BigDecimal(double))
+
+        else -> {
+            BigDecimal(long).compareTo(BigDecimal(double))
+        }
     }

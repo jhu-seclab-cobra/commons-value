@@ -12,10 +12,16 @@ public val Any?.toVal: IValue
         when (this) {
             // IValue first: collection values are themselves List/Set/Map and must not be re-wrapped.
             is IValue -> this
+
             is List<*> -> listVal
+
             is Map<*, *> -> mapVal
+
             is IntRange -> rangeVal
+
             is LongRange -> rangeVal
+
             is Set<*> -> setVal
+
             else -> primitiveVal
         }

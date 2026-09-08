@@ -47,7 +47,10 @@ public object DftByteBufferSerializerImpl : IValSerializer<ByteBuffer> {
     ): ByteBuffer {
         checkNestingDepth(depth)
         return when (value) {
-            is NullVal -> byteBufferOf(Type.NULL.byte)
+            is NullVal -> {
+                byteBufferOf(Type.NULL.byte)
+            }
+
             is StrVal -> {
                 val strCore = value.core.requireWellFormedUtf16().toByteArray()
                 val bufferLen = TYPE_TAG_BYTES + SIZE_PREFIX_BYTES + strCore.size
@@ -58,8 +61,12 @@ public object DftByteBufferSerializerImpl : IValSerializer<ByteBuffer> {
                     .put(strCore)
                     .flip()
             }
-            is BoolVal -> byteBufferOf(if (value.core) Type.BOOL_TRUE.byte else Type.BOOL_FALSE.byte)
-            is Unsure ->
+
+            is BoolVal -> {
+                byteBufferOf(if (value.core) Type.BOOL_TRUE.byte else Type.BOOL_FALSE.byte)
+            }
+
+            is Unsure -> {
                 byteBufferOf(
                     when (value) {
                         Unsure.NUM -> Type.UNSURE_NUM.byte
@@ -68,19 +75,23 @@ public object DftByteBufferSerializerImpl : IValSerializer<ByteBuffer> {
                         else -> Type.UNSURE_ANY.byte
                     },
                 )
+            }
 
-            is IntVal ->
+            is IntVal -> {
                 ByteBuffer
                     .allocate(TAGGED_LONG_BYTES)
                     .put(Type.INT.byte)
                     .putLong(value.core)
                     .flip()
-            is FloatVal ->
+            }
+
+            is FloatVal -> {
                 ByteBuffer
                     .allocate(TAGGED_LONG_BYTES)
                     .put(Type.FLOAT.byte)
                     .putDouble(value.core)
                     .flip()
+            }
 
             is RangeVal -> {
                 ByteBuffer
@@ -93,9 +104,13 @@ public object DftByteBufferSerializerImpl : IValSerializer<ByteBuffer> {
                     .flip()
             }
 
-            is ListVal -> containerToBuffer(Type.LIST, value.map { element -> encode(element, depth + 1) })
+            is ListVal -> {
+                containerToBuffer(Type.LIST, value.map { element -> encode(element, depth + 1) })
+            }
 
-            is SetVal -> containerToBuffer(Type.SET, value.map { element -> encode(element, depth + 1) })
+            is SetVal -> {
+                containerToBuffer(Type.SET, value.map { element -> encode(element, depth + 1) })
+            }
 
             is MapVal -> { // 1 byte type | count | size_keyN | keyN | size_valueN | valueN
                 val elements = value.map { (k, v) -> k.requireWellFormedUtf16().toByteArray() to encode(v, depth + 1) }
@@ -143,21 +158,53 @@ public object DftByteBufferSerializerImpl : IValSerializer<ByteBuffer> {
     ): IValue {
         checkNestingDepth(depth)
         return when (val type = material.get()) {
-            Type.NULL.byte -> NullVal
-            Type.STR.byte -> StrVal(material.getString())
-            Type.BOOL_TRUE.byte -> BoolVal.T
-            Type.BOOL_FALSE.byte -> BoolVal.F
-            Type.INT.byte -> IntVal(material.getLong())
-            Type.FLOAT.byte -> FloatVal(material.getDouble())
-            Type.UNSURE_ANY.byte -> Unsure.ANY
-            Type.UNSURE_NUM.byte -> Unsure.NUM
-            Type.UNSURE_STR.byte -> Unsure.STR
-            Type.UNSURE_BOOL.byte -> Unsure.BOOL
-            Type.RANGE.byte ->
+            Type.NULL.byte -> {
+                NullVal
+            }
+
+            Type.STR.byte -> {
+                StrVal(material.getString())
+            }
+
+            Type.BOOL_TRUE.byte -> {
+                BoolVal.T
+            }
+
+            Type.BOOL_FALSE.byte -> {
+                BoolVal.F
+            }
+
+            Type.INT.byte -> {
+                IntVal(material.getLong())
+            }
+
+            Type.FLOAT.byte -> {
+                FloatVal(material.getDouble())
+            }
+
+            Type.UNSURE_ANY.byte -> {
+                Unsure.ANY
+            }
+
+            Type.UNSURE_NUM.byte -> {
+                Unsure.NUM
+            }
+
+            Type.UNSURE_STR.byte -> {
+                Unsure.STR
+            }
+
+            Type.UNSURE_BOOL.byte -> {
+                Unsure.BOOL
+            }
+
+            Type.RANGE.byte -> {
                 RangeVal(
                     start = requireDecodedType<IntVal>(decode(material, depth + 1), "range start"),
                     endInclusive = requireDecodedType<IntVal>(decode(material, depth + 1), "range end"),
                 )
+            }
+
             Type.LIST.byte -> { // count | element1 | element2 | ...
                 val count = readContainerCount(material)
                 ListVal(size = count).also { list -> repeat(count) { list.plusAssign(decode(material, depth + 1)) } }
@@ -178,7 +225,9 @@ public object DftByteBufferSerializerImpl : IValSerializer<ByteBuffer> {
                 container // Return the container with all elements
             }
 
-            else -> throw ValFormatException("Unknown type: $type")
+            else -> {
+                throw ValFormatException("Unknown type: $type")
+            }
         }
     }
 
