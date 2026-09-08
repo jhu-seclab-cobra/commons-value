@@ -8,7 +8,7 @@ Type-safe IR value system with serialization for the Cobra static analysis engin
 [![](https://jitpack.io/v/jhu-seclab-cobra/commons-value.svg)](https://jitpack.io/#jhu-seclab-cobra/commons-value)
 [![codecov](https://codecov.io/gh/jhu-seclab-cobra/commons-value/branch/main/graph/badge.svg)](https://codecov.io/gh/jhu-seclab-cobra/commons-value)
 [![license](https://img.shields.io/github/license/jhu-seclab-cobra/commons-value)](./LICENSE)
-![Kotlin JVM](https://img.shields.io/badge/Kotlin%20JVM-2.0.21%20%7C%20JVM%201.8%2B-blue?logo=kotlin)
+![Kotlin JVM](https://img.shields.io/badge/Kotlin%20JVM-2.4.20%20%7C%20JVM%2021-blue?logo=kotlin)
 
 ## Install
 
