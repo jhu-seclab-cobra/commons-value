@@ -247,7 +247,7 @@ public object DftCharBufferSerializerImpl : IValSerializer<CharBuffer> {
                     requireDelimiter(material, if (index == eleCount - 1) ':' else ',')
                     container[key.core] = value
                 }
-                container // return the final container of the map out
+                container
             }
 
             else -> {

@@ -12,6 +12,45 @@ internal const val SIZE_PREFIX_BYTES = 4
 // A tagged long payload: one type byte followed by eight big-endian value bytes.
 internal const val TAGGED_LONG_BYTES = TYPE_TAG_BYTES + Long.SIZE_BYTES
 
+// Builds a tagged long payload: the type byte followed by the big-endian value bytes.
+internal fun longToBytes(
+    type: Byte,
+    value: Long,
+): ByteArray {
+    val bytes = ByteArray(TAGGED_LONG_BYTES)
+    bytes[0] = type
+    longInto(bytes, TYPE_TAG_BYTES, value)
+    return bytes
+}
+
+// Writes a big-endian Int at [offset]; matches ByteBuffer.putInt so all serializers share one layout.
+internal fun intInto(
+    bytes: ByteArray,
+    offset: Int,
+    value: Int,
+) {
+    bytes[offset] = (value shr 24).toByte()
+    bytes[offset + 1] = (value shr 16).toByte()
+    bytes[offset + 2] = (value shr 8).toByte()
+    bytes[offset + 3] = value.toByte()
+}
+
+// Writes a big-endian Long at [offset]; matches ByteBuffer.putLong so all serializers share one layout.
+internal fun longInto(
+    bytes: ByteArray,
+    offset: Int,
+    value: Long,
+) {
+    bytes[offset] = (value shr 56).toByte()
+    bytes[offset + 1] = (value shr 48).toByte()
+    bytes[offset + 2] = (value shr 40).toByte()
+    bytes[offset + 3] = (value shr 32).toByte()
+    bytes[offset + 4] = (value shr 24).toByte()
+    bytes[offset + 5] = (value shr 16).toByte()
+    bytes[offset + 6] = (value shr 8).toByte()
+    bytes[offset + 7] = value.toByte()
+}
+
 /**
  * Converts a hexadecimal string into an integer.
  *
@@ -86,13 +125,11 @@ public fun String.asCharBuffer(): CharBuffer = CharBuffer.wrap(toCharArray())
  * @return A new [CharBuffer] containing the characters read
  */
 public fun CharBuffer.getBuffer(until: Char): CharBuffer {
-    val (curPos, maxPos) = position() to limit()
-    val searchRange = 0 until maxPos - curPos
-    val length = searchRange.firstOrNull { get(it + curPos) == until }
-    val newBuffer = CharBuffer.allocate(length ?: (maxPos - curPos))
-    repeat(newBuffer.limit()) { newBuffer.put(this.get()) }
-    if (length != null) get() // remove the found character
-    return newBuffer.flip()
+    val start = position()
+    val delimiterIndex = (start until limit()).firstOrNull { get(it) == until }
+    val chars = CharArray(if (delimiterIndex == null) remaining() else delimiterIndex - start).also { get(it) }
+    if (delimiterIndex != null) get() // consume the delimiter without returning it
+    return CharBuffer.wrap(chars)
 }
 
 /**
@@ -103,9 +140,8 @@ public fun CharBuffer.getBuffer(until: Char): CharBuffer {
  * @throws IllegalArgumentException if [size] is negative or exceeds the remaining characters
  */
 public fun CharBuffer.getBuffer(size: Int): CharBuffer {
-    val newBuffer = CharBuffer.allocate(checkSizePrefix(size, remaining(), "buffer size"))
-    repeat(newBuffer.limit()) { newBuffer.put(this.get()) }
-    return newBuffer.flip()
+    val chars = CharArray(checkSizePrefix(size, remaining(), "buffer size")).also { get(it) }
+    return CharBuffer.wrap(chars)
 }
 
 /**

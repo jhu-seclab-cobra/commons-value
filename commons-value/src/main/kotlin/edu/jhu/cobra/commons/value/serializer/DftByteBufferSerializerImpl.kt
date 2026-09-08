@@ -222,7 +222,7 @@ public object DftByteBufferSerializerImpl : IValSerializer<ByteBuffer> {
                     val keyString = material.getString()
                     container[keyString] = decode(material, depth + 1)
                 }
-                container // Return the container with all elements
+                container
             }
 
             else -> {

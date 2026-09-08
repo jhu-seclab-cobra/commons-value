@@ -15,12 +15,8 @@ import edu.jhu.cobra.commons.value.checkNestingDepth
 import java.nio.ByteBuffer
 
 /**
- * A serializer implementation of [IValSerializer] for [IValue] instances that provides serialization
- * and deserialization of various value types into byte arrays. This implementation supports primitive values,
- * collections, and complex types, enabling compact and efficient encoding for storage or transmission.
- *
- * This serializer is designed to handle all supported [IValue] subtypes, providing methods to serialize
- * them into byte arrays and reconstruct them from those arrays.
+ * [IValSerializer] that encodes every [IValue] subtype into a compact big-endian byte array and
+ * reconstructs it from that array.
  */
 public object DftByteArraySerializerImpl : IValSerializer<ByteArray> {
     // Serialized RANGE layout: type byte, Int size prefix of the first bound, then two tagged longs.
@@ -28,11 +24,7 @@ public object DftByteArraySerializerImpl : IValSerializer<ByteArray> {
     private const val RANGE_SECOND_TAG_OFFSET = RANGE_FIRST_TAG_OFFSET + TAGGED_LONG_BYTES
 
     /**
-     * Serializes an [IValue] instance into a byte array.
-     *
-     * This method encodes the given value into a format that can be transmitted or stored,
-     * preserving its type and content. Supported types include null, strings, booleans, numeric values,
-     * lists, sets, maps, ranges, and uncertain values.
+     * Serializes an [IValue] instance into a byte array, preserving its type and content.
      *
      * @param value The [IValue] instance to serialize.
      * @return A byte array representing the serialized value.
@@ -101,8 +93,10 @@ public object DftByteArraySerializerImpl : IValSerializer<ByteArray> {
             }
 
             is MapVal -> {
-                val mapEntriesBytes = value.map { (k, v) -> k.requireWellFormedUtf16().toByteArray() to encode(v, depth + 1) }
-                val entriesLength = mapEntriesBytes.sumOf { (k, v) -> SIZE_PREFIX_BYTES + k.size + SIZE_PREFIX_BYTES + v.size }
+                val mapEntriesBytes =
+                    value.map { (key, entry) -> key.requireWellFormedUtf16().toByteArray() to encode(entry, depth + 1) }
+                val entriesLength =
+                    mapEntriesBytes.sumOf { (keyBytes, valueBytes) -> 2 * SIZE_PREFIX_BYTES + keyBytes.size + valueBytes.size }
                 val result = ByteArray(TYPE_TAG_BYTES + entriesLength)
                 result[0] = Type.MAP.byte
                 var offset = TYPE_TAG_BYTES
@@ -138,48 +132,8 @@ public object DftByteArraySerializerImpl : IValSerializer<ByteArray> {
         return result
     }
 
-    private fun longToBytes(
-        type: Byte,
-        v: Long,
-    ): ByteArray {
-        val arr = ByteArray(TAGGED_LONG_BYTES)
-        arr[0] = type
-        longInto(arr, TYPE_TAG_BYTES, v)
-        return arr
-    }
-
-    private fun intInto(
-        arr: ByteArray,
-        offset: Int,
-        v: Int,
-    ) {
-        arr[offset] = (v shr 24).toByte()
-        arr[offset + 1] = (v shr 16).toByte()
-        arr[offset + 2] = (v shr 8).toByte()
-        arr[offset + 3] = v.toByte()
-    }
-
-    private fun longInto(
-        arr: ByteArray,
-        offset: Int,
-        v: Long,
-    ) {
-        arr[offset] = (v shr 56).toByte()
-        arr[offset + 1] = (v shr 48).toByte()
-        arr[offset + 2] = (v shr 40).toByte()
-        arr[offset + 3] = (v shr 32).toByte()
-        arr[offset + 4] = (v shr 24).toByte()
-        arr[offset + 5] = (v shr 16).toByte()
-        arr[offset + 6] = (v shr 8).toByte()
-        arr[offset + 7] = v.toByte()
-    }
-
     /**
-     * Deserializes a byte array into an [IValue] instance.
-     *
-     * This method decodes a byte array previously serialized with [serialize] back into an
-     * [IValue] instance. The type and content of the value are reconstructed based on
-     * the data contained in the byte array.
+     * Deserializes a byte array produced by [serialize] back into an [IValue] instance.
      *
      * @param material The byte array to deserialize.
      * @return The deserialized [IValue] instance.

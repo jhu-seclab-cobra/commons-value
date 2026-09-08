@@ -1,10 +1,13 @@
 package edu.jhu.cobra.commons.value.serializer
 
 /**
- * Enum class representing different data types with their associated byte values and string labels.
+ * Type tags that discriminate value kinds in serialized material.
  *
- * @property byte The byte representation of the type.
- * @property str The string label for the type.
+ * The byte values and string labels are fixed by the wire format: material written by any
+ * release decodes only while these values stay unchanged.
+ *
+ * @property byte The byte representation of the type, used by the binary serializers.
+ * @property str The string label for the type, used by the text serializer.
  */
 public enum class Type(
     public val byte: Byte,
