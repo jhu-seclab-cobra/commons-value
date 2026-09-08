@@ -6,7 +6,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
 /**
- * Tests for the wire-format extension functions specified in design-utils.md.
+ * Tests for the wire-format extension functions specified in design-serializer.md.
  *
  * - `should parse valid hex string via asHexInt` — "FF" parses to 255.
  * - `should parse lowercase hex string via asHexInt` — "ff" parses to 255.

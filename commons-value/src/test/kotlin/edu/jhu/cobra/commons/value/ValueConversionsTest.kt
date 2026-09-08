@@ -7,7 +7,7 @@ import kotlin.test.assertIs
 import kotlin.test.assertSame
 
 /**
- * Tests for the top-level `Any?.toVal` extension property specified in design-utils.md.
+ * Tests for the top-level `Any?.toVal` extension property specified in design-conversions.md.
  *
  * - `should convert null to NullVal` — null input produces NullVal.
  * - `should convert Int to IntVal` — Int input produces IntVal wrapping that Int as Long.
