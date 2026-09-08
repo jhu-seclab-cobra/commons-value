@@ -94,7 +94,7 @@ Part of [commons-value design](design-primitive.md). Specifies the `ICollectionV
 |--------|----------|-------|--------|--------|
 | `deepCopy()` | Recursive structural copy | — | `MapVal` | `IllegalArgumentException` on nesting deeper than `MAX_NESTING_DEPTH` (including cyclic value graphs) |
 
-`keys`/`values`/`entries` are the `MutableMap` properties; the former function forms, `add`, `toPairArray`, and copy-returning `plus`/`minus` are removed.
+`keys`/`values`/`entries` are the `MutableMap` properties; `MapVal` declares no function forms of them and no copy-returning `plus`/`minus`.
 
 ---
 

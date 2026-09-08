@@ -8,7 +8,7 @@ Domain semantics: [model.md](model.md). Software structure: [design-primitive.md
 Static analysis engines operate across multiple modules (parsers, graph builders, constraint solvers, serializers) that must exchange typed data. Passing raw platform types loses type safety and forces each module to handle serialization independently. A shared intermediate representation (IR) for values eliminates duplication, ensures type-safe cross-module data exchange, and centralizes serialization logic.
 
 **System Role**
-commons-value is the IR value type system for the Cobra static analysis engine, providing a sealed type hierarchy that all internal modules use to represent, exchange, and persist analysis data.
+commons-value is the IR value type system for the Cobra static analysis engine, providing a closed type hierarchy that all internal modules use to represent, exchange, and persist analysis data.
 
 **Data Flow**
 - **Inputs:** Language adapter outputs (mapped from source language types), raw platform types from internal modules

@@ -34,7 +34,7 @@ Part of [commons-value design](design-primitive.md). Specifies the `IValSerializ
 
 **Responsibility:** Stateless singleton serializer converting IValue to/from `ByteArray` using binary format with type-byte prefix.
 
-**Serialization Format:** `[type_byte][payload_bytes]`. Collections use length-prefixed elements. Maps encode key bytes and value bytes with size prefixes.
+**Serialization Format:** `[type_byte][payload_bytes]`. Lists and sets use size-prefixed element blocks. Maps encode key bytes and value bytes with size prefixes. Ranges encode a size prefix for the first bound followed by two tagged 8-byte Longs. Strings carry no length prefix: the payload extends to the end of the value's window.
 
 ---
 
@@ -42,7 +42,7 @@ Part of [commons-value design](design-primitive.md). Specifies the `IValSerializ
 
 **Responsibility:** Stateless singleton serializer converting IValue to/from `ByteBuffer` using binary format with type-byte prefix and element count for collections.
 
-**Serialization Format:** `[type_byte][count (for collections)][elements]`. Strings are length-prefixed. Booleans use distinct type bytes (BOOL_TRUE/BOOL_FALSE). IntVal serializes as 8-byte Long. FloatVal serializes as 8-byte Double. Ranges store two Longs directly.
+**Serialization Format:** `[type_byte][count (for collections)][elements]`. Strings are length-prefixed. Booleans use distinct type bytes (BOOL_TRUE/BOOL_FALSE). IntVal serializes as 8-byte Long. FloatVal serializes as 8-byte Double. Ranges store two tagged 8-byte Longs (INT tag before each bound).
 
 ---
 

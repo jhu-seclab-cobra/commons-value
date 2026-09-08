@@ -8,15 +8,15 @@
 
 - `IntVal` is Long-backed. `FloatVal` is Double-backed.
 - `String.intVal` uses `toLongOrNull()` for parsing. `String.floatVal` uses `toDoubleOrNull()`.
-- IR types do not model any specific language's type system. `IntVal` is Long-width, `FloatVal` is Double-width. Language-specific semantics (type juggling, casting, overflow behavior, narrower integer types) belong in the consuming analysis module's adapter layer.
+- IR types model no source language's type system: language-specific semantics (type juggling, casting, overflow behavior, narrower integer types) belong in the consuming analysis module's adapter layer.
 
 ## Design-specific
 
 ### design-collection.md
 
 - **[stdlib]** `class ListVal(...) : ICollectionVal, MutableList<IValue> by core` — delegation does not forward `equals`/`hashCode`/`toString`; keep the explicit overrides.
-- **[stdlib]** With member `plus`/`minus` removed, `listVal += x` resolves to `MutableCollection.plusAssign` (in-place): stdlib `Collection.plus` returns `List<IValue>`, unassignable to a `ListVal` variable, so the ambiguity rule never triggers. Verify with a compile check during implementation.
-- **[stdlib]** Delegated `subList` returns the backing `ArrayList`'s live view (`MutableList<IValue>`), not a copy — semantics change from the removed hand-written copy.
+- **[stdlib]** `listVal += x` resolves to `MutableCollection.plusAssign` (in-place): the collection values declare no member `plus`/`minus`, and stdlib `Collection.plus` returns `List<IValue>`, unassignable to a `ListVal` variable, so the plus/plusAssign ambiguity rule never triggers.
+- **[stdlib]** Delegated `subList` returns the backing `ArrayList`'s live view (`MutableList<IValue>`), not a copy.
 
 ### design-primitive.md / design-collection.md (exact numeric compare)
 

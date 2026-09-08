@@ -4,7 +4,7 @@
 
 Type-safe IR value system with serialization for the Cobra static analysis engine.
 
-[![Release](https://img.shields.io/badge/release-v0.1.0-blue.svg)](https://github.com/jhu-seclab-cobra/commons-value/releases/tag/v0.1.0)
+[![Release](https://img.shields.io/badge/release-v0.1.1-blue.svg)](https://github.com/jhu-seclab-cobra/commons-value/releases/tag/v0.1.1)
 [![](https://jitpack.io/v/jhu-seclab-cobra/commons-value.svg)](https://jitpack.io/#jhu-seclab-cobra/commons-value)
 [![codecov](https://codecov.io/gh/jhu-seclab-cobra/commons-value/branch/main/graph/badge.svg)](https://codecov.io/gh/jhu-seclab-cobra/commons-value)
 [![license](https://img.shields.io/github/license/jhu-seclab-cobra/commons-value)](./LICENSE)
@@ -12,7 +12,7 @@ Type-safe IR value system with serialization for the Cobra static analysis engin
 
 ## Install
 
-Java 8+. Add the JitPack repository and dependency:
+JDK 21+. Add the JitPack repository and dependency:
 
 ```kotlin
 repositories {
@@ -20,7 +20,7 @@ repositories {
 }
 
 dependencies {
-    implementation("com.github.jhu-seclab-cobra:commons-value:v0.1.0")
+    implementation("com.github.jhu-seclab-cobra:commons-value:v0.1.1")
 }
 ```
 
@@ -41,7 +41,7 @@ val restored = serializer.deserialize(bytes) // MapVal
 
 ## API
 
-**Primitives** (`IPrimitiveVal`): `StrVal`, `IntVal`, `FloatVal`, `BoolVal`, `NullVal`, `Unsure` (`NumVal` is deprecated)
+**Primitives** (`IPrimitiveVal`): `StrVal`, `IntVal`, `FloatVal`, `BoolVal`, `NullVal`, `Unsure`
 
 **Collections** (`ICollectionVal`): `ListVal`, `SetVal`, `MapVal` (String keys), `RangeVal`
 

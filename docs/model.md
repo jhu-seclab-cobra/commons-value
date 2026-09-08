@@ -2,12 +2,13 @@
 
 ## Entities
 
-| Entity | Definition |
-|--------|-----------|
-| Primitive Value | Atomic, indivisible data item. Six kinds: string, integer, floating-point, boolean, null, plus uncertain placeholder. |
-| Collection Value | Aggregate structure containing multiple values. Four kinds: ordered list, unique set, string-keyed map, numeric range. |
-| Uncertain Value | Typed placeholder for undetermined content. Four levels: any-primitive, any-string, any-number, any-boolean. |
-| Type Tag | Serialization discriminator identifying each value kind for binary/text encoding. |
+| Entity | Semantic role | Exists when |
+|--------|---------------|-------------|
+| Value | Root of the closed value family; every data item exchanged between modules is a value. | Only as one of its concrete primitive or collection kinds. |
+| Primitive Value | Atomic, indivisible data item. Six kinds: string, integer, floating-point, boolean, null, plus uncertain placeholder. | Created from a platform primitive, parsed from text, or decoded from material. |
+| Collection Value | Aggregate structure containing multiple values. Four kinds: ordered list, unique set, string-keyed map, numeric range. | Created empty, from existing values, or decoded from material; a range exists for any two integer bounds. |
+| Uncertain Value | Typed placeholder for undetermined content. Four levels: any-primitive, any-string, any-number, any-boolean. | Selected by placeholder identifier, inferred from an example primitive, or chosen by kind. |
+| Type Tag | Serialization discriminator identifying each value kind for binary/text encoding. | Fixed set declared by the serialization format; one or more per value kind. |
 
 ## Relations
 

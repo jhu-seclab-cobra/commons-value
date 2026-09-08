@@ -26,11 +26,12 @@ commons-value defines language-agnostic IR types (package root `edu.jhu.cobra.co
 
 ## Conversion Extensions
 
-- [Conversions](llms/conversions.md): Kotlin extension properties and functions for native-to-IR conversion, comparison, and regex.
+- [Conversions](llms/conversions.md): Kotlin extension properties and functions for native-to-IR conversion and regex.
 
 ## Optional
 
 - [Full Reference](llms/full.txt): All L1 docs concatenated for single-load context.
+
 
 ---
 
@@ -104,6 +105,7 @@ when (val v: IValue = list[0]) {
 - `IntVal` stores `Long`, `FloatVal` stores `Double` -- no type ambiguity.
 - `compareTo` is inconsistent with `equals`: `IntVal(1L)` and `FloatVal(1.0)` compare as equivalent but are not equal. Sorted collections (`TreeSet`, `sorted()`) collapse them into one element; hash collections keep both.
 
+
 ---
 
 ## Source: llms/serializers.md
@@ -143,7 +145,7 @@ val restored = serializer.deserialize(bytes) // IntVal(42L)
 
 ### Type Enum
 
-- **`Type(byte: Byte, str: String)`** -- Internal type tag enum. Entries: `NULL`, `STR`, `BOOL`, `BOOL_TRUE`, `BOOL_FALSE`, `UNSURE_ANY`, `UNSURE_STR`, `UNSURE_NUM`, `UNSURE_BOOL`, `INT`, `FLOAT`, `RANGE`, `LIST`, `SET`, `MAP`.
+- **`Type(byte: Byte, str: String)`** -- Type tag enum. Entries: `NULL`, `STR`, `BOOL`, `BOOL_TRUE`, `BOOL_FALSE`, `UNSURE_ANY`, `UNSURE_STR`, `UNSURE_NUM`, `UNSURE_BOOL`, `INT`, `FLOAT`, `RANGE`, `LIST`, `SET`, `MAP`.
 
 ## Gotchas
 
@@ -154,6 +156,7 @@ val restored = serializer.deserialize(bytes) // IntVal(42L)
 - Serializers handle nested collections (e.g., `ListVal` containing `MapVal`) up to 1000 nesting levels.
 - `deserialize` consumes the whole material; a valid encoding followed by extra bytes or chars raises `ValFormatException`.
 - Reject or repair unpaired surrogates before `serialize`; they never round-trip.
+
 
 ---
 
@@ -193,7 +196,7 @@ val list = listOf(1, 2).listVal  // ListVal(IntVal(1L), IntVal(2L))
 - **`Path.strVal: StrVal`** -- Wraps `java.nio.file.Path` as `StrVal`.
 - **`File.strVal: StrVal`** -- Wraps `java.io.File` path as `StrVal`.
 - **`Boolean.boolVal: BoolVal`** -- Returns `BoolVal.T` or `BoolVal.F`.
-- **`Any?.primitiveVal: IPrimitiveVal`** -- Converts `null`, `Number`, `String`, `Char`, `Boolean`, or existing `IPrimitiveVal`. Raises `IllegalArgumentException` on unsupported types.
+- **`Any?.primitiveVal: IPrimitiveVal`** -- Converts `null`, `Long`/`Int`/`Short`/`Byte`, `Double`/`Float`, `String`, `Char`, `Boolean`, or existing `IPrimitiveVal`. Raises `IllegalArgumentException` on unsupported types.
 - **`Any?.toVal: IValue`** -- Converts any supported type including collections (`List`, `Set`, `Map`, `IntRange`, `LongRange`) and existing `IValue`. Raises `IllegalArgumentException` on unsupported types.
 
 ### Collection Conversion Extensions
@@ -232,4 +235,6 @@ val list = listOf(1, 2).listVal  // ListVal(IntVal(1L), IntVal(2L))
 - `Map<*, *>.mapVal` calls `toString()` on keys -- non-string keys lose type information.
 - Primitive comparison is the `Comparable` member on `IPrimitiveVal` (see [core.md](core.md)), not an extension.
 
+
 ---
+

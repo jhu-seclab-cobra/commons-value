@@ -9,11 +9,13 @@ Related design documents:
 
 ## Design Overview
 
-- **Classes**: `StrVal`, `IntVal`, `FloatVal`, `BoolVal`, `NullVal`, `Unsure`
-- **Relationships**: `IPrimitiveVal` extends `IValue` and `Comparable<IPrimitiveVal>`, `ICollectionVal` extends `IValue`
+- **Classes**: `StrVal`, `IntVal`, `FloatVal`, `BoolVal`, `NullVal`, `Unsure`, `ListVal`, `SetVal`, `MapVal`, `RangeVal`, `Type`, `ValFormatException`, `DftByteArraySerializerImpl`, `DftByteBufferSerializerImpl`, `DftCharBufferSerializerImpl`
+- **Relationships**: `IPrimitiveVal` extends `IValue` and `Comparable<IPrimitiveVal>`, `ICollectionVal` extends `IValue`; `ListVal` implements `MutableList<IValue>`, `SetVal` implements `MutableSet<IValue>`, `MapVal` implements `MutableMap<String, IValue>` (each by delegation to its `core`); `RangeVal` contains two `IntVal`; serializers use `Type` and the value types (one-way: no value type uses a serializer)
 - **Abstract**: `IValue` (sealed, implemented by `IPrimitiveVal`, `ICollectionVal`), `IPrimitiveVal` (sealed, implemented by `StrVal`, `IntVal`, `FloatVal`, `BoolVal`, `NullVal`, `Unsure`), `ICollectionVal` (sealed, implemented by `ListVal`, `SetVal`, `MapVal`, `RangeVal`), `IValSerializer<Material>` (implemented by `DftByteArraySerializerImpl`, `DftByteBufferSerializerImpl`, `DftCharBufferSerializerImpl`)
 - **Exceptions**: `IllegalArgumentException` raised by value conversion and serialization on unknown types; `ValFormatException` extends `IllegalArgumentException`, raised by deserialization on malformed material
 - **Dependency roles**: Data holders: all value types, `Type`. Helpers: three serializer singletons (stateless, inputs by argument).
+- **Visibility**: Module `commons-value`, package `edu.jhu.cobra.commons.value` (values, conversions) and `edu.jhu.cobra.commons.value.serializer` (serializers). Every listed type and every extension in [design-conversions.md](design-conversions.md) is public. `MAX_NESTING_DEPTH`, `checkNestingDepth`, the depth-carrying `deepCopy(depth)` overloads, `hashCapacityFor`, and the WireValidation helpers are internal.
+- **Type selection**: `IValue`, `IPrimitiveVal`, `ICollectionVal` are sealed interfaces; `StrVal`, `IntVal`, `FloatVal`, `RangeVal` are data classes; `NullVal` is a data object; `Unsure` and `Type` are enum classes; `BoolVal` is a final class with a private constructor; the three serializers are objects.
 
 ---
 

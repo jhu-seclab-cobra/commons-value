@@ -32,7 +32,7 @@ val list = listOf(1, 2).listVal  // ListVal(IntVal(1L), IntVal(2L))
 - **`Path.strVal: StrVal`** -- Wraps `java.nio.file.Path` as `StrVal`.
 - **`File.strVal: StrVal`** -- Wraps `java.io.File` path as `StrVal`.
 - **`Boolean.boolVal: BoolVal`** -- Returns `BoolVal.T` or `BoolVal.F`.
-- **`Any?.primitiveVal: IPrimitiveVal`** -- Converts `null`, `Number`, `String`, `Char`, `Boolean`, or existing `IPrimitiveVal`. Raises `IllegalArgumentException` on unsupported types.
+- **`Any?.primitiveVal: IPrimitiveVal`** -- Converts `null`, `Long`/`Int`/`Short`/`Byte`, `Double`/`Float`, `String`, `Char`, `Boolean`, or existing `IPrimitiveVal`. Raises `IllegalArgumentException` on unsupported types.
 - **`Any?.toVal: IValue`** -- Converts any supported type including collections (`List`, `Set`, `Map`, `IntRange`, `LongRange`) and existing `IValue`. Raises `IllegalArgumentException` on unsupported types.
 
 ### Collection Conversion Extensions

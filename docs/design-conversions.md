@@ -20,13 +20,13 @@ Part of [commons-value design](design-primitive.md). Specifies extension functio
 
 **`Float.floatVal: FloatVal`** -- Widens Float to Double, wraps as FloatVal.
 
-**`String.intVal: IntVal`** -- Parses string to integer, returns IntVal. Uses `toLongOrNull()`. Throws `NumberFormatException` on invalid input.
+**`String.intVal: IntVal`** -- Parses string as a 64-bit integer, returns IntVal. Throws `NumberFormatException` on invalid input.
 
-**`String.floatVal: FloatVal`** -- Parses string to decimal, returns FloatVal. Uses `toDoubleOrNull()`. Throws `NumberFormatException` on invalid input.
+**`String.floatVal: FloatVal`** -- Parses string as a 64-bit floating-point number, returns FloatVal. Throws `NumberFormatException` on invalid input.
 
 ### NumericRangeChecks (extension properties)
 
-**`Number.isInLongRange / isInIntRange / isInShortRange / isInByteRange: Boolean`** -- Whether the number's exact numeric value lies within the target type's range. Compares via `BigDecimal`, so fractional values are judged by numeric value (2.5 is in Int range; Int.MAX_VALUE + 0.5 is not). Non-finite doubles and floats (NaN, infinities) are `false`. Exact-width integer inputs short-circuit to `true`.
+**`Number.isInLongRange / isInIntRange / isInShortRange / isInByteRange: Boolean`** -- Whether the number's exact numeric value lies within the target type's range. Fractional values are judged by numeric value, never rounded (2.5 is in Int range; Int.MAX_VALUE + 0.5 is not). Non-finite doubles and floats (NaN, infinities) are `false`. Exact-width integer inputs short-circuit to `true`.
 
 ### PatternConversions (extension functions)
 
@@ -46,7 +46,7 @@ Part of [commons-value design](design-primitive.md). Specifies extension functio
 
 **`Boolean.boolVal: BoolVal`** -- Returns `BoolVal.T` for true, `BoolVal.F` for false.
 
-**`Any?.primitiveVal: IPrimitiveVal`** -- Converts null/Long/Double/String/Char/Boolean/IPrimitiveVal to corresponding IPrimitiveVal. Long and Int map to IntVal. Float and Double map to FloatVal. Char maps to StrVal. Throws `IllegalArgumentException` for unsupported types.
+**`Any?.primitiveVal: IPrimitiveVal`** -- Converts to the corresponding IPrimitiveVal: null -> NullVal; Long/Int/Short/Byte -> IntVal; Double/Float -> FloatVal; String/Char -> StrVal; Boolean -> BoolVal; IPrimitiveVal -> identity. Throws `IllegalArgumentException` for unsupported types.
 
 Primitive comparison is the `IPrimitiveVal.compareTo` member: [design-primitive.md](design-primitive.md).
 
@@ -72,7 +72,7 @@ Primitive comparison is the `IPrimitiveVal.compareTo` member: [design-primitive.
 
 ### ValueConversions (top-level extension)
 
-**`Any?.toVal: IValue`** -- Universal converter: null -> NullVal, Long/Int -> IntVal, Double/Float -> FloatVal, String/Char -> StrVal, Boolean -> BoolVal, List -> ListVal, Map -> MapVal, IntRange/LongRange -> RangeVal, Set -> SetVal, IValue -> identity. Throws `IllegalArgumentException` for unsupported types.
+**`Any?.toVal: IValue`** -- Universal converter: IValue -> identity (checked first, so collection values are never re-wrapped), List -> ListVal, Map -> MapVal, IntRange/LongRange -> RangeVal, Set -> SetVal, every other input -> `Any?.primitiveVal`. Throws `IllegalArgumentException` for unsupported types.
 
 Wire-format helper functions (`asHexInt`, buffer readers): [design-serializer.md](design-serializer.md).
 
