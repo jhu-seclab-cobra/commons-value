@@ -52,6 +52,10 @@ Primitive comparison is the `IPrimitiveVal.compareTo` member: [design-primitive.
 
 **`String.startsWith(other: StrVal): Boolean`** -- Checks if string starts with StrVal's content.
 
+### JsonTreeConversions (extension function)
+
+**`IValue.toJsonTree(): Any?`** -- Projects the value onto a JSON tree of plain JVM objects: `null`, `String`, `Long`, `Double`, `Boolean`, `List<Any?>`, `Map<String, Any?>`. Any JSON writer serializes the tree directly; the module carries no JSON dependency. One-way and deterministic: `Unsure` renders as its enum name, `RangeVal` as the two-element list of its bounds, map entries sort by key, set elements sort in the canonical order of their projected trees (kind rank null < Boolean < Number < String < List < Map, then content). Equal values project onto equal trees. Throws `IllegalArgumentException` on nesting deeper than `MAX_NESTING_DEPTH`.
+
 ### CollectionConversions (extension properties)
 
 **`Collection<*>.listVal: ListVal`** — Converts collection to ListVal via `toVal` on each element.

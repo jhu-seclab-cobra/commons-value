@@ -43,6 +43,10 @@ val list = listOf(1, 2).listVal  // ListVal(IntVal(1L), IntVal(2L))
 - **`IntRange.rangeVal: RangeVal`** -- Converts `IntRange` to `RangeVal`.
 - **`LongRange.rangeVal: RangeVal`** -- Converts `LongRange` to `RangeVal`.
 
+### JSON Tree Projection
+
+- **`IValue.toJsonTree(): Any?`** -- Projects the value onto plain JVM objects (`null`, `String`, `Long`, `Double`, `Boolean`, `List`, `Map<String, _>`) for any JSON writer. One-way: `Unsure` -> enum name, `RangeVal` -> `[start, end]`, map keys sorted, set elements in canonical order. Raises `IllegalArgumentException` on nesting deeper than 1000.
+
 ### Null-Safe Defaults
 
 - **`ListVal?.orEmpty(): ListVal`** -- Returns receiver or empty `ListVal`.
