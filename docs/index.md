@@ -2,6 +2,7 @@
 
 | File | Content |
 |------|---------|
+| glossary/glossary.md | Glossary: the value family and its forms |
 | concept.md | Problem context, IR value concepts, and cross-module data exchange scenarios |
 | model.md | Value type hierarchy, relations, invariants, and type constraints |
 | design-primitive.md | Design overview and primitive value type specifications |
