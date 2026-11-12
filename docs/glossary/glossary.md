@@ -4,10 +4,12 @@ Established vocabulary of commons-value. Every term names one concept, and a con
 
 ## Conventions
 
-Source locations are relative to `commons-value/src/main/kotlin/edu/jhu/cobra/commons/value/`. A Source that names a document starts at the repository root.
+Source locations are relative to `commons-value/src/main/kotlin/edu/jhu/cobra/commons/value/`. A Source that names a document starts at the repository root. Citations resolve in `docs/references.bib`.
 
 ## Files
 
 | File | Concern |
 |------|---------|
 | [glossary-values.md](glossary-values.md) | The value family and its primitive, collection and uncertain forms |
+
+[Retired names](glossary-retired.md).

@@ -5,14 +5,11 @@
 ## Quick Start
 
 ```kotlin
-import edu.jhu.cobra.commons.value.*
-
-val n = 42.intVal            // IntVal(42L)
-val f = 3.14.floatVal        // FloatVal(3.14)
-val s = "hello".strVal       // StrVal("hello")
-val b = true.boolVal         // BoolVal.T
-val v = null.toVal           // NullVal
-val list = listOf(1, 2).listVal  // ListVal(IntVal(1L), IntVal(2L))
+import edu.jhu.cobra.commons.value.intVal
+import edu.jhu.cobra.commons.value.listVal
+val number = 42.intVal
+val collection = listOf(1, 2).listVal
+collection.first()
 ```
 
 ## API
@@ -45,7 +42,7 @@ val list = listOf(1, 2).listVal  // ListVal(IntVal(1L), IntVal(2L))
 
 ### JSON Tree Projection
 
-- **`IValue.toJsonTree(): Any?`** -- Projects the value onto plain JVM objects (`null`, `String`, `Long`, `Double`, `Boolean`, `List`, `Map<String, _>`) for any JSON writer. One-way: `Unsure` -> enum name, `RangeVal` -> `[start, end]`, map keys sorted, set elements in canonical order. Raises `IllegalArgumentException` on nesting deeper than 1000.
+- **`IValue.toJsonTree(): Any?`** -- Projects the value onto plain JVM objects (`null`, `String`, `Long`, `Double`, `Boolean`, `List`, `Map<String, _>`) for a JSON writer selected by the caller; NaN and infinities remain non-finite JVM Double values and require a caller-selected policy for strict JSON. One-way: `Unsure` -> enum name, `RangeVal` -> `[start, end]`, map keys sorted, set elements in canonical order. Raises `IllegalArgumentException` on nesting deeper than 1000.
 
 ### Null-Safe Defaults
 
@@ -68,6 +65,10 @@ val list = listOf(1, 2).listVal  // ListVal(IntVal(1L), IntVal(2L))
 ### String Interop
 
 - **`String.startsWith(other: StrVal): Boolean`** -- Checks prefix against `StrVal.core`.
+
+## Configuration
+
+- No configuration is required.
 
 ## Gotchas
 

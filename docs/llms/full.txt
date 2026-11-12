@@ -1,24 +1,24 @@
 # commons-value
 
-> Sealed Intermediate Representation (IR) value types for the Cobra static analysis engine.
+> Language-independent Value types and serializers.
 
-commons-value defines language-agnostic IR types (package root `edu.jhu.cobra.commons.value`, serializers in `edu.jhu.cobra.commons.value.serializer`) used to store and transport values across Cobra analysis modules. IR types attach to graph properties and flow through data-flow analyses. They carry no language-specific semantics -- language adapters in each analysis module handle the mapping from source language constructs to IR values.
+The library exposes a sealed Value hierarchy; source-language semantics belong to consuming adapters.
 
 ## Instructions for Agents
 
-- Use IR types (`StrVal`, `IntVal`, `FloatVal`, `BoolVal`, `NullVal`, `Unsure`, `ListVal`, `SetVal`, `MapVal`, `RangeVal`) for all graph property values.
-- Convert Kotlin natives to IR via extension properties: `42.intVal`, `3.14.floatVal`, `"hello".strVal`, `true.boolVal`, `null.toVal`.
+- Use Value types (`StrVal`, `IntVal`, `FloatVal`, `BoolVal`, `NullVal`, `Unsure`, `ListVal`, `SetVal`, `MapVal`, `RangeVal`) for all graph property values.
+- Convert Kotlin natives to Value via extension properties: `42.intVal`, `3.14.floatVal`, `"hello".strVal`, `true.boolVal`, `null.toVal`.
 - Convert collections via extension properties: `list.listVal`, `set.setVal`, `map.mapVal`, `(1..10).rangeVal`.
 - Use `Any?.toVal` for generic conversion when the source type is unknown at compile time.
-- Dispatch on IR type with exhaustive `when` -- `IValue` is sealed, so the compiler enforces completeness.
+- Dispatch on Value type with exhaustive `when` -- `IValue` is sealed, so the compiler enforces completeness.
 - Use `Unsure` variants (`Unsure.STR`, `Unsure.NUM`, `Unsure.BOOL`, `Unsure.ANY`) to represent unknown-but-typed values in abstract interpretation.
-- Serialize IR values with `DftByteArraySerializerImpl`, `DftByteBufferSerializerImpl`, or `DftCharBufferSerializerImpl`.
+- Serialize Value instances with `DftByteArraySerializerImpl`, `DftByteBufferSerializerImpl`, or `DftCharBufferSerializerImpl`.
 - Never add language-specific semantics (PHP, Java, Python) to this library. Language mapping belongs in analysis modules.
-- Never subclass IR types. The sealed hierarchy is fixed.
+- Never subclass Value types. The sealed hierarchy is fixed.
 
-## Core IR Types
+## Value Types
 
-- [IR Value Types](llms/core.md): Sealed type hierarchy -- `IValue`, `IPrimitiveVal`, `ICollectionVal`, and all concrete types.
+- [Value Types](llms/core.md): Sealed type hierarchy -- `IValue`, `IPrimitiveVal`, `ICollectionVal`, and all concrete types.
 
 ## Serialization
 
@@ -28,140 +28,11 @@ commons-value defines language-agnostic IR types (package root `edu.jhu.cobra.co
 
 - [Conversions](llms/conversions.md): Kotlin extension properties and functions for native-to-IR conversion and regex.
 
+- [Usage index](llms/index.md): All usage modules.
+
 ## Optional
 
 - [Full Reference](llms/full.txt): All L1 docs concatenated for single-load context.
-
-
----
-
-# Referenced Documents
-
-## Source: llms/core.md
-
-# IR Value Types
-
-> Sealed type hierarchy for language-agnostic intermediate representation values.
-
-## Quick Start
-
-```kotlin
-import edu.jhu.cobra.commons.value.*
-
-val s = StrVal("hello")
-val n = 42.intVal              // IntVal(42L)
-val f = 3.14.floatVal          // FloatVal(3.14)
-val b = BoolVal(true)
-val list = ListVal(s, n, f, b)
-
-when (val v: IValue = list[0]) {
-    is StrVal -> v.core
-    is IntVal -> v.toInt()
-    is FloatVal -> v.toLong()
-    is BoolVal -> v.isTrue()
-    is NullVal -> null
-    is Unsure -> v.core
-    is ListVal -> v.size
-    is SetVal -> v.size
-    is MapVal -> v.size
-    is RangeVal -> v.first
-}
-```
-
-## API
-
-### Sealed Interfaces
-
-- **`IValue`** -- Root sealed interface. Property: `val core: Any?`. Method: `deepCopy(): IValue` -- structurally independent copy; primitives return self, collections copy recursively. Throws `IllegalArgumentException` on nesting deeper than 1000 levels, including cyclic value graphs.
-- **`IPrimitiveVal : IValue, Comparable<IPrimitiveVal>`** -- Sealed interface for primitive IR values. `compareTo` is a total order: kinds rank `NullVal < BoolVal < numeric < StrVal < Unsure`; `IntVal` and `FloatVal` compare by exact numeric value; `NaN` orders above every number; `-0.0` is order-equivalent to `0.0`; `StrVal` compares lexicographically; `Unsure` by declaration order. The order is inconsistent with `equals`: equal-valued `IntVal`/`FloatVal` pairs compare as equivalent yet are not equal.
-- **`ICollectionVal : IValue`** -- Sealed interface for collection IR values.
-
-### Primitive Types
-
-- **`StrVal(core: String)`** -- String IR value. Default constructor creates empty string. Methods: `startsWith(String)`, `substringAfter(String)`, `substringBefore(String)`, `contains(String)`, `uppercase()`, `lowercase()`, `trim()`, `equals(String, ignoreCase)`, `equals(IPrimitiveVal, ignoreCase)`, `length`, `get(Int)`, `get(IntVal)`.
-- **`IntVal(core: Long)`** -- Integer IR value. Stores `Long` internally. Default constructor creates `0L`. Methods: `toInt()`, `toDouble()`, `toFloat()`, `compareTo(Int)`, `compareTo(Long)`. Extension constructors: `Int.intVal`, `Long.intVal`, `Short.intVal`, `Byte.intVal`, `String.intVal`.
-- **`FloatVal(core: Double)`** -- Floating-point IR value. Stores `Double` internally. Default constructor creates `0.0`. Methods: `toIntVal()`, `toInt()`, `toLong()`, `toFloat()`, `compareTo(Double)`. Extension constructors: `Double.floatVal`, `Float.floatVal`, `String.floatVal`.
-- **`BoolVal`** -- Boolean IR value. Private constructor; obtain via `BoolVal(true)`, `BoolVal(false)`, `BoolVal.T`, `BoolVal.F`. Methods: `isTrue()`, `isFalse()`.
-- **`NullVal`** -- Singleton data object. `core` is always `null`.
-- **`Unsure`** -- Enum for unknown-but-typed values. Entries: `ANY`, `STR`, `NUM`, `BOOL`. Factory: `Unsure.new(String): Unsure?`, `Unsure.new(IPrimitiveVal): Unsure`, `Unsure.new<T>(): Unsure`. Operator: `String in Unsure`.
-
-### Collection Types
-
-- **`ListVal(core: ArrayList<IValue>) : MutableList<IValue>`** -- Mutable ordered list delegating to `core`; the full `MutableList` API and stdlib collection extensions apply. Constructors: `ListVal()`, `ListVal(size: Int)`, `ListVal(List<IValue>)`, `ListVal(vararg IValue)`. Override: `deepCopy(): ListVal`.
-- **`SetVal(core: LinkedHashSet<IValue>) : MutableSet<IValue>`** -- Mutable insertion-ordered set delegating to `core`; the full `MutableSet` API and stdlib collection extensions apply. Constructors: `SetVal()`, `SetVal(size: Int)`, `SetVal(Collection<IValue>)`, `SetVal(vararg IValue)`, `SetVal(Sequence<IValue>)`. Override: `deepCopy(): SetVal`.
-- **`MapVal(core: LinkedHashMap<String, IValue>) : MutableMap<String, IValue>`** -- Mutable insertion-ordered string-keyed map delegating to `core`; the full `MutableMap` API and stdlib map extensions apply. Constructors: `MapVal()`, `MapVal(size: Int)`, `MapVal(Map<String, IValue>)`, `MapVal(vararg Pair<String, IValue>)`, `MapVal(Sequence<Pair>)`, `MapVal(List<Pair>)`. Override: `deepCopy(): MapVal`.
-- **`RangeVal(start: IntVal, endInclusive: IntVal)`** -- Numeric range. Constructor: `RangeVal(Number, Number)`. Properties: `first: Long`, `last: Long`. Operators: `contains(Number)`, `contains(IntVal)`, `contains(RangeVal)`, `plus(RangeVal)`. Infix: `before(RangeVal)`, `after(RangeVal)` (strict: ranges sharing a boundary point are neither). Methods: `map(transform: (IntVal) -> R): List<R>`.
-
-## Gotchas
-
-- `MapVal` keys are `String`, not `IValue`. Use `StrVal.core` to extract the key.
-- `+=`/`-=` on collection values mutate in place. `+`/`-` are stdlib extensions returning plain `List<IValue>`/`Set<IValue>`/`Map<String, IValue>`, not `ListVal`/`SetVal`/`MapVal`.
-- Collection equality follows the JDK collection contract: a `ListVal`/`SetVal`/`MapVal` equals any `List`/`Set`/`Map` with equal content. `ListVal(IntVal(1L)) == listOf(IntVal(1L))` is `true`.
-- `StrVal.equals(IPrimitiveVal, ignoreCase)` returns `false` for `NullVal`; it never matches the string `"null"`.
-- Sharing a collection value stores the same mutable instance. Use `deepCopy()` for an independent copy.
-- `BoolVal` uses singleton instances. `BoolVal(true) === BoolVal.T` is always `true`.
-- `NullVal` is a `data object`. Identity comparison (`===`) and equality (`==`) both work.
-- `Unsure.new(String)` returns `null` when the string does not match a known `Unsure.core` value.
-- `IntVal` stores `Long`, `FloatVal` stores `Double` -- no type ambiguity.
-- `compareTo` is inconsistent with `equals`: `IntVal(1L)` and `FloatVal(1.0)` compare as equivalent but are not equal. Sorted collections (`TreeSet`, `sorted()`) collapse them into one element; hash collections keep both.
-
-
----
-
-## Source: llms/serializers.md
-
-# Serializers
-
-> Serialize and deserialize `IValue` instances to `ByteArray`, `ByteBuffer`, or `CharBuffer`.
-
-## Quick Start
-
-```kotlin
-import edu.jhu.cobra.commons.value.*
-import edu.jhu.cobra.commons.value.serializer.*
-
-val serializer = DftByteArraySerializerImpl
-val bytes = serializer.serialize(IntVal(42L))
-val restored = serializer.deserialize(bytes) // IntVal(42L)
-```
-
-## API
-
-### Interface
-
-- **`IValSerializer<Material : Any>`** -- Generic serialization interface. Methods: `serialize(IValue): Material`, `deserialize(Material): IValue`.
-- **`ValFormatException : IllegalArgumentException`** -- Raised by `deserialize` on malformed material.
-
-### Implementations
-
-- **`DftByteArraySerializerImpl : IValSerializer<ByteArray>`** -- Singleton. Compact binary encoding to `ByteArray`.
-- **`DftByteBufferSerializerImpl : IValSerializer<ByteBuffer>`** -- Singleton. Binary encoding to `ByteBuffer`.
-- **`DftCharBufferSerializerImpl : IValSerializer<CharBuffer>`** -- Singleton. Human-readable text encoding to `CharBuffer`. Format: `TYPE:value:`.
-
-### Error Contract (all three implementations)
-
-- `serialize` raises `IllegalArgumentException` when value nesting exceeds 1000 levels (including cyclic value graphs) or a string or map key contains an unpaired UTF-16 surrogate.
-- `deserialize` raises `ValFormatException` on malformed material: empty input, truncated or garbage data, invalid size or count prefixes, unknown type tags, malformed UTF-8 in string or key bytes, wrong delimiter characters (`DftCharBufferSerializerImpl`), trailing material after the value, or nesting beyond 1000 levels.
-
-### Type Enum
-
-- **`Type(byte: Byte, str: String)`** -- Type tag enum. Entries: `NULL`, `STR`, `BOOL`, `BOOL_TRUE`, `BOOL_FALSE`, `UNSURE_ANY`, `UNSURE_STR`, `UNSURE_NUM`, `UNSURE_BOOL`, `INT`, `FLOAT`, `RANGE`, `LIST`, `SET`, `MAP`.
-
-## Gotchas
-
-- `DftByteArraySerializerImpl` and `DftByteBufferSerializerImpl` use different binary layouts. Bytes from one cannot be deserialized by the other.
-- `DftByteBufferSerializerImpl` serializes `RangeVal` bounds as two `IntVal` values (`Long`-backed).
-- `DftCharBufferSerializerImpl` uses hex-encoded element counts for collections and string lengths; hex prefixes parse as unsigned, so a negative prefix is rejected as non-hexadecimal.
-- All three serializers are `object` singletons. No instantiation needed.
-- Serializers handle nested collections (e.g., `ListVal` containing `MapVal`) up to 1000 nesting levels.
-- `deserialize` consumes the whole material; a valid encoding followed by extra bytes or chars raises `ValFormatException`.
-- Reject or repair unpaired surrogates before `serialize`; they never round-trip.
-
-
----
-
-## Source: llms/conversions.md
-
 # Conversion Extensions
 
 > Kotlin extension properties and functions for native-to-IR conversion and regex.
@@ -169,14 +40,11 @@ val restored = serializer.deserialize(bytes) // IntVal(42L)
 ## Quick Start
 
 ```kotlin
-import edu.jhu.cobra.commons.value.*
-
-val n = 42.intVal            // IntVal(42L)
-val f = 3.14.floatVal        // FloatVal(3.14)
-val s = "hello".strVal       // StrVal("hello")
-val b = true.boolVal         // BoolVal.T
-val v = null.toVal           // NullVal
-val list = listOf(1, 2).listVal  // ListVal(IntVal(1L), IntVal(2L))
+import edu.jhu.cobra.commons.value.intVal
+import edu.jhu.cobra.commons.value.listVal
+val number = 42.intVal
+val collection = listOf(1, 2).listVal
+collection.first()
 ```
 
 ## API
@@ -209,7 +77,7 @@ val list = listOf(1, 2).listVal  // ListVal(IntVal(1L), IntVal(2L))
 
 ### JSON Tree Projection
 
-- **`IValue.toJsonTree(): Any?`** -- Projects the value onto plain JVM objects (`null`, `String`, `Long`, `Double`, `Boolean`, `List`, `Map<String, _>`) for any JSON writer. One-way: `Unsure` -> enum name, `RangeVal` -> `[start, end]`, map keys sorted, set elements in canonical order. Raises `IllegalArgumentException` on nesting deeper than 1000.
+- **`IValue.toJsonTree(): Any?`** -- Projects the value onto plain JVM objects (`null`, `String`, `Long`, `Double`, `Boolean`, `List`, `Map<String, _>`) for a JSON writer selected by the caller; NaN and infinities remain non-finite JVM Double values and require a caller-selected policy for strict JSON. One-way: `Unsure` -> enum name, `RangeVal` -> `[start, end]`, map keys sorted, set elements in canonical order. Raises `IllegalArgumentException` on nesting deeper than 1000.
 
 ### Null-Safe Defaults
 
@@ -233,12 +101,124 @@ val list = listOf(1, 2).listVal  // ListVal(IntVal(1L), IntVal(2L))
 
 - **`String.startsWith(other: StrVal): Boolean`** -- Checks prefix against `StrVal.core`.
 
+## Configuration
+
+- No configuration is required.
+
 ## Gotchas
 
 - `Any?.toVal` delegates to type-specific extensions. Unsupported types raise `IllegalArgumentException`.
 - `Map<*, *>.mapVal` calls `toString()` on keys -- non-string keys lose type information.
 - Primitive comparison is the `Comparable` member on `IPrimitiveVal` (see [core.md](core.md)), not an extension.
+# Value Types
 
+> Sealed type hierarchy for language-agnostic intermediate representation values.
 
----
+## Quick Start
 
+```kotlin
+import edu.jhu.cobra.commons.value.IntVal
+import edu.jhu.cobra.commons.value.ListVal
+val value = ListVal(IntVal(1L))
+val copy = value.deepCopy()
+copy.single()
+```
+
+## API
+
+### Sealed Interfaces
+
+- **`IValue`** -- Root sealed interface. Property: `val core: Any?`. Method: `deepCopy(): IValue` -- structurally independent copy; primitives return self, collections copy recursively. Throws `IllegalArgumentException` on nesting deeper than 1000 levels, including cyclic value graphs.
+- **`IPrimitiveVal : IValue, Comparable<IPrimitiveVal>`** -- Sealed interface for Primitive Value instances. `compareTo` is a total order: kinds rank `NullVal < BoolVal < numeric < StrVal < Unsure`; `IntVal` and `FloatVal` compare by exact numeric value; `NaN` orders above every number; `-0.0` is order-equivalent to `0.0`; `StrVal` compares lexicographically; `Unsure` by declaration order. The order is inconsistent with `equals`: equal-valued `IntVal`/`FloatVal` pairs compare as equivalent yet are not equal.
+- **`ICollectionVal : IValue`** -- Sealed interface for Collection Value instances.
+
+### Primitive Types
+
+- **`StrVal(core: String)`** -- String Value. Default constructor creates empty string. Methods: `startsWith(String)`, `substringAfter(String)`, `substringBefore(String)`, `contains(String)`, `uppercase()`, `lowercase()`, `trim()`, `equals(String, ignoreCase)`, `equals(IPrimitiveVal, ignoreCase)`, `length`, `get(Int)`, `get(IntVal)`.
+- **`IntVal(core: Long)`** -- Integer Value. Stores `Long` internally. Default constructor creates `0L`. Methods: `toInt()`, `toDouble()`, `toFloat()`, `compareTo(Int)`, `compareTo(Long)`. Extension constructors: `Int.intVal`, `Long.intVal`, `Short.intVal`, `Byte.intVal`, `String.intVal`.
+- **`FloatVal(core: Double)`** -- Floating-point Value. Stores `Double` internally. Default constructor creates `0.0`. Methods: `toIntVal()`, `toInt()`, `toLong()`, `toFloat()`, `compareTo(Double)`. Extension constructors: `Double.floatVal`, `Float.floatVal`, `String.floatVal`.
+- **`BoolVal`** -- Boolea Value. Private constructor; obtain via `BoolVal(true)`, `BoolVal(false)`, `BoolVal.T`, `BoolVal.F`. Methods: `isTrue()`, `isFalse()`.
+- **`NullVal`** -- Singleton data object. `core` is always `null`.
+- **`Unsure`** -- Enum for unknown-but-typed values. Entries: `ANY`, `STR`, `NUM`, `BOOL`. Factory: `Unsure.new(String): Unsure?`, `Unsure.new(IPrimitiveVal): Unsure`, `Unsure.new<T>(): Unsure`. Operator: `String in Unsure`.
+
+### Collection Types
+
+- **`ListVal(core: ArrayList<IValue>) : MutableList<IValue>`** -- Mutable ordered list delegating to `core`; the full `MutableList` API and stdlib collection extensions apply. Constructors: `ListVal()`, `ListVal(size: Int)`, `ListVal(List<IValue>)`, `ListVal(vararg IValue)`. Override: `deepCopy(): ListVal`.
+- **`SetVal(core: LinkedHashSet<IValue>) : MutableSet<IValue>`** -- Mutable insertion-ordered set delegating to `core`; the full `MutableSet` API and stdlib collection extensions apply. Constructors: `SetVal()`, `SetVal(size: Int)`, `SetVal(Collection<IValue>)`, `SetVal(vararg IValue)`, `SetVal(Sequence<IValue>)`. Override: `deepCopy(): SetVal`.
+- **`MapVal(core: LinkedHashMap<String, IValue>) : MutableMap<String, IValue>`** -- Mutable insertion-ordered string-keyed map delegating to `core`; the full `MutableMap` API and stdlib map extensions apply. Constructors: `MapVal()`, `MapVal(size: Int)`, `MapVal(Map<String, IValue>)`, `MapVal(vararg Pair<String, IValue>)`, `MapVal(Sequence<Pair>)`, `MapVal(List<Pair>)`. Override: `deepCopy(): MapVal`.
+- **`RangeVal(start: IntVal, endInclusive: IntVal)`** -- Numeric range. Constructor: `RangeVal(Number, Number)`. Properties: `first: Long`, `last: Long`. Operators: `contains(Number)`, `contains(IntVal)`, `contains(RangeVal)`, `plus(RangeVal)`. Infix: `before(RangeVal)`, `after(RangeVal)` (strict: ranges sharing a boundary point are neither). Methods: `map(transform: (IntVal) -> R): List<R>`.
+
+## Configuration
+
+- No configuration is required.
+
+## Gotchas
+
+- `MapVal` keys are `String`, not `IValue`. Use `StrVal.core` to extract the key.
+- `+=`/`-=` on Collection Value instances mutate in place. `+`/`-` are stdlib extensions returning plain `List<IValue>`/`Set<IValue>`/`Map<String, IValue>`, not `ListVal`/`SetVal`/`MapVal`.
+- Collection equality follows the JDK collection contract: a `ListVal`/`SetVal`/`MapVal` equals any `List`/`Set`/`Map` with equal content. `ListVal(IntVal(1L)) == listOf(IntVal(1L))` is `true`.
+- `StrVal.equals(IPrimitiveVal, ignoreCase)` returns `false` for `NullVal`; it never matches the string `"null"`.
+- Sharing a Collection Value stores the same mutable instance. Use `deepCopy()` for an independent copy.
+- `BoolVal` uses singleton instances. `BoolVal(true) === BoolVal.T` is always `true`.
+- `NullVal` is a `data object`. Identity comparison (`===`) and equality (`==`) both work.
+- `Unsure.new(String)` returns `null` when the string does not match a known `Unsure.core` value.
+- `IntVal` stores `Long`, `FloatVal` stores `Double` -- no type ambiguity.
+- `compareTo` is inconsistent with `equals`: `IntVal(1L)` and `FloatVal(1.0)` compare as equivalent but are not equal. `TreeSet` and `TreeMap` collapse comparator-equivalent keys; `sorted()` and hash collections keep both.
+# commons-value llms — documentation navigation
+
+| File | Content |
+|------|---------|
+| [conversions.md](conversions.md) | Conversions reference |
+| [core.md](core.md) | Core reference |
+| [full.txt](full.txt) | Concatenated agent index and usage modules |
+| [serializers.md](serializers.md) | Serializers reference |
+# Serializers
+
+> Serialize and deserialize `IValue` instances to `ByteArray`, `ByteBuffer`, or `CharBuffer`.
+
+## Quick Start
+
+```kotlin
+import edu.jhu.cobra.commons.value.IntVal
+import edu.jhu.cobra.commons.value.serializer.DftByteArraySerializerImpl
+
+val serializer = DftByteArraySerializerImpl
+val bytes = serializer.serialize(IntVal(42L))
+val restored = serializer.deserialize(bytes)
+```
+
+## API
+
+### Interface
+
+- **`IValSerializer<Material : Any>`** -- Generic serialization interface. Methods: `serialize(IValue): Material`, `deserialize(Material): IValue`.
+- **`ValFormatException : IllegalArgumentException`** -- Raised by `deserialize` on malformed material.
+
+### Implementations
+
+- **`DftByteArraySerializerImpl : IValSerializer<ByteArray>`** -- Singleton. Compact binary encoding to `ByteArray`.
+- **`DftByteBufferSerializerImpl : IValSerializer<ByteBuffer>`** -- Singleton. Binary encoding to `ByteBuffer`.
+- **`DftCharBufferSerializerImpl : IValSerializer<CharBuffer>`** -- Singleton. Human-readable text encoding to `CharBuffer`. Format: `TYPE:value:`.
+
+### Error Contract (all three implementations)
+
+- `serialize` raises `IllegalArgumentException` when value nesting exceeds 1000 levels (including cyclic value graphs) or a string or map key contains an unpaired UTF-16 surrogate.
+- `deserialize` raises `ValFormatException` on malformed material: empty input, truncated or garbage data, invalid size or count prefixes, unknown Type Tag values, malformed UTF-8 in string or key bytes, wrong delimiter characters (`DftCharBufferSerializerImpl`), trailing material after the value, or nesting beyond 1000 levels.
+
+### Type Enum
+
+- **`Type(byte: Byte, str: String)`** -- Type Tag enum. Entries: `NULL`, `STR`, `BOOL`, `BOOL_TRUE`, `BOOL_FALSE`, `UNSURE_ANY`, `UNSURE_STR`, `UNSURE_NUM`, `UNSURE_BOOL`, `INT`, `FLOAT`, `RANGE`, `LIST`, `SET`, `MAP`.
+
+## Configuration
+
+- No configuration is required.
+
+## Gotchas
+
+- `DftByteArraySerializerImpl` and `DftByteBufferSerializerImpl` use different binary layouts. Some primitive encodings coincide, but the formats are not interchangeable; use the serializer that owns the material.
+- `DftByteBufferSerializerImpl` serializes `RangeVal` bounds as two `IntVal` values (`Long`-backed).
+- `DftCharBufferSerializerImpl` uses hex-encoded element counts for collections and string lengths; hex prefixes parse as unsigned Int bit patterns; size validation rejects a decoded negative size or count.
+- All three serializers are `object` singletons. No instantiation needed.
+- Serializers handle nested collections (e.g., `ListVal` containing `MapVal`) up to 1000 nesting levels.
+- `deserialize` consumes the whole material; a valid encoding followed by extra bytes or chars raises `ValFormatException`.
+- Reject or repair unpaired surrogates before `serialize`; they never round-trip.

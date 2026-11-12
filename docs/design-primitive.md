@@ -1,6 +1,6 @@
 # commons-value Design -- Primitive Types
 
-IR value type system for the Cobra static analysis engine.
+Value type system for the Cobra static analysis engine.
 
 Related design documents:
 - [Collection types](design-collection.md)
@@ -23,7 +23,7 @@ Related design documents:
 
 ### IValue
 
-**Responsibility:** Root sealed interface for all IR value types.
+**Responsibility:** Root sealed interface for all Value types.
 
 **State/Fields:**
 - `core: Any?` -- The actual data content of the value.
@@ -32,7 +32,7 @@ Related design documents:
 
 | Method | Behavior | Input | Output | Errors |
 |--------|----------|-------|--------|--------|
-| `deepCopy()` | Returns a structurally independent copy: immutable values return themselves; mutable collections copy recursively | -- | `IValue` (covariant overrides return the concrete type) | -- |
+| `deepCopy()` | Returns a structurally independent copy; immutable values return themselves and mutable containers copy recursively | -- | `IValue` (covariant overrides return the concrete type) | `IllegalArgumentException` when collection nesting exceeds the supported depth, including cycles |
 
 ---
 
@@ -52,7 +52,7 @@ Related design documents:
 
 ### StrVal
 
-**Responsibility:** Wraps a `String` as an IR value with string manipulation utilities.
+**Responsibility:** Wraps a `String` as a Value with string manipulation utilities.
 
 **State/Fields:**
 - `core: String` -- The actual string content.
@@ -78,7 +78,7 @@ Related design documents:
 | `get(index: IntVal)` | Returns char at IntVal index; a core outside Int range is out of bounds, never truncated | `index: IntVal` | `Char` | `IndexOutOfBoundsException` |
 
 **Properties:**
-- `length: Int` -- Number of characters in the string.
+- `length: Int` -- Number of UTF-16 code units in the string.
 
 ---
 
@@ -130,7 +130,7 @@ Related design documents:
 
 ### BoolVal
 
-**Responsibility:** Wraps a `Boolean` as an IR value. Singleton-enforced: private constructor prevents external instantiation.
+**Responsibility:** Wraps a `Boolean` as a Value. Singleton-enforced: private constructor prevents external instantiation.
 
 **State/Fields:**
 - `core: Boolean` -- The actual boolean content.

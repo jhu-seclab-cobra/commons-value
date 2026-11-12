@@ -1,24 +1,24 @@
 # commons-value
 
-> Sealed Intermediate Representation (IR) value types for the Cobra static analysis engine.
+> Language-independent Value types and serializers.
 
-commons-value defines language-agnostic IR types (package root `edu.jhu.cobra.commons.value`, serializers in `edu.jhu.cobra.commons.value.serializer`) used to store and transport values across Cobra analysis modules. IR types attach to graph properties and flow through data-flow analyses. They carry no language-specific semantics -- language adapters in each analysis module handle the mapping from source language constructs to IR values.
+The library exposes a sealed Value hierarchy; source-language semantics belong to consuming adapters.
 
 ## Instructions for Agents
 
-- Use IR types (`StrVal`, `IntVal`, `FloatVal`, `BoolVal`, `NullVal`, `Unsure`, `ListVal`, `SetVal`, `MapVal`, `RangeVal`) for all graph property values.
-- Convert Kotlin natives to IR via extension properties: `42.intVal`, `3.14.floatVal`, `"hello".strVal`, `true.boolVal`, `null.toVal`.
+- Use Value types (`StrVal`, `IntVal`, `FloatVal`, `BoolVal`, `NullVal`, `Unsure`, `ListVal`, `SetVal`, `MapVal`, `RangeVal`) for all graph property values.
+- Convert Kotlin natives to Value via extension properties: `42.intVal`, `3.14.floatVal`, `"hello".strVal`, `true.boolVal`, `null.toVal`.
 - Convert collections via extension properties: `list.listVal`, `set.setVal`, `map.mapVal`, `(1..10).rangeVal`.
 - Use `Any?.toVal` for generic conversion when the source type is unknown at compile time.
-- Dispatch on IR type with exhaustive `when` -- `IValue` is sealed, so the compiler enforces completeness.
+- Dispatch on Value type with exhaustive `when` -- `IValue` is sealed, so the compiler enforces completeness.
 - Use `Unsure` variants (`Unsure.STR`, `Unsure.NUM`, `Unsure.BOOL`, `Unsure.ANY`) to represent unknown-but-typed values in abstract interpretation.
-- Serialize IR values with `DftByteArraySerializerImpl`, `DftByteBufferSerializerImpl`, or `DftCharBufferSerializerImpl`.
+- Serialize Value instances with `DftByteArraySerializerImpl`, `DftByteBufferSerializerImpl`, or `DftCharBufferSerializerImpl`.
 - Never add language-specific semantics (PHP, Java, Python) to this library. Language mapping belongs in analysis modules.
-- Never subclass IR types. The sealed hierarchy is fixed.
+- Never subclass Value types. The sealed hierarchy is fixed.
 
-## Core IR Types
+## Value Types
 
-- [IR Value Types](llms/core.md): Sealed type hierarchy -- `IValue`, `IPrimitiveVal`, `ICollectionVal`, and all concrete types.
+- [Value Types](llms/core.md): Sealed type hierarchy -- `IValue`, `IPrimitiveVal`, `ICollectionVal`, and all concrete types.
 
 ## Serialization
 
@@ -27,6 +27,8 @@ commons-value defines language-agnostic IR types (package root `edu.jhu.cobra.co
 ## Conversion Extensions
 
 - [Conversions](llms/conversions.md): Kotlin extension properties and functions for native-to-IR conversion and regex.
+
+- [Usage index](llms/index.md): All usage modules.
 
 ## Optional
 

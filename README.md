@@ -10,7 +10,7 @@
 
 > Common value: a value shared across analysis modules.
 
-Kotlin value types and serializers for representing primitive and collection values.
+Kotlin value types and serializers for representing primitive and Collection Value instances.
 
 ## Install
 
@@ -66,7 +66,8 @@ It requests that every project using the library cite the project's associated p
 
 ## Documentation
 
-- [Concepts](docs/concept.md): the value family and its role.
+- [Concepts](docs/concept.md): the Value family and its role.
+- [Design](docs/design-primitive.md): Value types, hierarchy and public interfaces.
 - [Conversions](docs/design-conversions.md): conversion operations.
 
 ## For Agents

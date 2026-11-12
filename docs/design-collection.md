@@ -4,6 +4,10 @@ Part of [commons-value design](design-primitive.md). Specifies the `ICollectionV
 
 ---
 
+## Design Overview
+
+Public collection types in module commons-value implement ICollectionVal; mutable containers delegate to core and RangeVal stores immutable bounds. The copy algorithm is [structural copying](spec-copy.md).
+
 ## Class / Type Specifications
 
 ### ICollectionVal
@@ -17,7 +21,7 @@ Part of [commons-value design](design-primitive.md). Specifies the `ICollectionV
 ### Mutable Collection Contract (ListVal, SetVal, MapVal)
 
 - Each class implements the matching Kotlin mutable collection interface by delegating to `core`; all interface members and stdlib collection extensions apply. No hand-written re-implementations of interface members exist.
-- The primary constructor adopts the passed container (shared ownership: later external mutation of the container mutates the value). Every secondary constructor copies its input.
+- The primary constructor adopts the passed container (shared ownership: later external mutation of the container mutates the value). Secondary constructors copy the outer container and share its elements; `deepCopy()` recursively copies mutable descendants.
 - `equals`/`hashCode` follow the JDK collection contract: a value equals any `List`/`Set`/`Map` with equal content (matching `AbstractList`/`AbstractSet`/`AbstractMap` semantics), so equality is symmetric with plain collections.
 - No copy-returning `plus`/`minus` members: `+=` resolves to the stdlib `plusAssign` (in-place); copies are taken via the copying constructors or `deepCopy()`.
 - Mutable-element caveat (JDK set semantics): mutating a collection while it is an element of a `SetVal` corrupts membership. Documented, not enforced.
@@ -27,7 +31,7 @@ Part of [commons-value design](design-primitive.md). Specifies the `ICollectionV
 
 ### ListVal
 
-**Responsibility:** Mutable ordered collection value; `MutableList<IValue>` by delegation to `core`.
+**Responsibility:** Mutable ordered Collection Value; `MutableList<IValue>` by delegation to `core`.
 
 **State/Fields:**
 - `core: ArrayList<IValue>` — The internal list storage.
@@ -100,7 +104,7 @@ Part of [commons-value design](design-primitive.md). Specifies the `ICollectionV
 
 ### RangeVal
 
-**Responsibility:** Represents an inclusive integer range as a collection value.
+**Responsibility:** Represents an inclusive integer range as a Collection Value.
 
 **State/Fields:**
 - `start: IntVal` -- Starting value of the range.
@@ -116,15 +120,23 @@ Part of [commons-value design](design-primitive.md). Specifies the `ICollectionV
 
 | Method | Behavior | Input | Output | Errors |
 |--------|----------|-------|--------|--------|
-| `contains(num: Number)` | Checks if number is within range; compares the exact numeric value for every `Number` kind (no `Double` rounding for `BigInteger`/`BigDecimal`/`AtomicLong`) | `num: Number` | `Boolean` | -- |
+| `contains(num: Number)` | Checks if number is within range; compares the exact numeric value for every `Number` kind (no `Double` rounding for `BigInteger`/`BigDecimal`/`AtomicLong`) | `num: Number` | `Boolean` | `NumberFormatException` for a custom Number with a nonnumeric rendering |
 | `contains(num: Long)` | Checks if long is within range | `num: Long` | `Boolean` | -- |
 | `contains(num: IntVal)` | Checks if IntVal is within range | `num: IntVal` | `Boolean` | -- |
 | `contains(range: RangeVal)` | Checks if sub-range is fully contained | `range: RangeVal` | `Boolean` | -- |
 | `infix before(range: RangeVal)` | Checks if this range ends strictly before other starts (`last < range.first`; a shared boundary point is not before) | `range: RangeVal` | `Boolean` | -- |
 | `infix after(range: RangeVal)` | Checks if this range starts strictly after other ends (`first > range.last`; a shared boundary point is not after) | `range: RangeVal` | `Boolean` | -- |
-| `plus(range: RangeVal)` | Combines two ranges into their union bounds | `range: RangeVal` | `RangeVal` | -- |
+| `plus(range: RangeVal)` | Returns the smallest inclusive interval containing both operands, including a gap between disjoint intervals | `range: RangeVal` | `RangeVal` | -- |
 | `map(transform)` | Transforms start and end values | `transform: (IntVal) -> R` | `List<R>` | -- |
 
 **Properties:**
 - `first: Long` -- Start of range (delegates to `start.core`).
 - `last: Long` -- End of range inclusive (delegates to `endInclusive.core`).
+
+## Exception / Error Types
+
+See [the shared error contract](design-conversions.md#exception--error-types) for construction, conversion and material failures.
+
+## Open Gaps
+
+- The model's uniform nesting limit counts every Value occurrence; `IValue.deepCopy(depth)` returns immutable leaves without calling `checkNestingDepth`, while container overrides validate their own depth. A primitive leaf at depth 1001 can therefore be copied beneath a container at depth 1000 although serialization rejects it; [the copy specification](spec-copy.md#implementation-mapping) describes this implementation difference.

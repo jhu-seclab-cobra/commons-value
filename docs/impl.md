@@ -2,7 +2,7 @@
 
 ## Libraries
 
-- No runtime dependencies. Kotlin stdlib and the JDK cover all parsing and buffer handling.
+- No runtime dependencies beyond Kotlin stdlib and the JDK; they cover parsing and buffers.
 
 ## Developer Instructions
 
@@ -14,16 +14,16 @@
 
 ### design-collection.md
 
-- **[stdlib]** `class ListVal(...) : ICollectionVal, MutableList<IValue> by core` — delegation does not forward `equals`/`hashCode`/`toString`; keep the explicit overrides.
-- **[stdlib]** `listVal += x` resolves to `MutableCollection.plusAssign` (in-place): the collection values declare no member `plus`/`minus`, and stdlib `Collection.plus` returns `List<IValue>`, unassignable to a `ListVal` variable, so the plus/plusAssign ambiguity rule never triggers.
-- **[stdlib]** Delegated `subList` returns the backing `ArrayList`'s live view (`MutableList<IValue>`), not a copy.
+- [@kotlin] `class ListVal(...) : ICollectionVal, MutableList<IValue> by core` — delegation does not forward `equals`/`hashCode`/`toString`; keep the explicit overrides.
+- [@kotlin] `listVal += x` resolves to `MutableCollection.plusAssign` (in-place): the Collection Value instances declare no member `plus`/`minus`, and stdlib `Collection.plus` returns `List<IValue>`, unassignable to a `ListVal` variable, so the plus/plusAssign ambiguity rule never triggers.
+- [@kotlin] Delegated `subList` returns the backing `ArrayList`'s live view (`MutableList<IValue>`), not a copy.
 
 ### design-primitive.md / design-collection.md (exact numeric compare)
 
-- **[jdk]** `BigDecimal(long)` / `BigDecimal(double)` + `compareTo` — exact cross-kind comparison; fast path `Long.toDouble()` is lossless when `abs(long) <= 2^53`.
-- **[jdk]** `BigDecimal(Double)` throws `NumberFormatException` on NaN/infinity — branch on `Double.isFinite` first.
+- [@jdk] `BigDecimal(long)` / `BigDecimal(double)` + `compareTo` — exact cross-kind comparison; fast path `Long.toDouble()` is lossless when `abs(long) <= 2^53`.
+- [@jdk] `BigDecimal(Double)` throws `NumberFormatException` on NaN/infinity — branch on `Double.isFinite` first.
 
 ### design-serializer.md
 
-- **[jdk]** `Char.isHighSurrogate()` / `Char.isLowSurrogate()` — linear scan detects unpaired surrogates; `String.encodeToByteArray()` silently replaces them with `?` (0x3F), which is why serialization must reject first.
-- **[jdk]** `ByteBuffer.get` throws `BufferUnderflowException` (extends `RuntimeException`, not `IllegalArgumentException`) — wrap at the `deserialize` boundary into `ValFormatException`.
+- [@jdk] `Char.isHighSurrogate()` / `Char.isLowSurrogate()` — linear scan detects unpaired surrogates; `String.encodeToByteArray()` silently replaces them with `?` (0x3F), which is why serialization must reject first.
+- [@jdk] `ByteBuffer.get` throws `BufferUnderflowException` (extends `RuntimeException`, not `IllegalArgumentException`) — wrap at the `deserialize` boundary into `ValFormatException`.

@@ -4,6 +4,10 @@ Part of [commons-value design](design-primitive.md). Specifies extension functio
 
 ---
 
+## Design Overview
+
+Public extension functions in edu.jhu.cobra.commons.value convert native inputs to Value instances and project Value instances to JVM objects. They own no language-specific coercion policy.
+
 ## Function Specifications
 
 ### NumericConversions (extension properties)
@@ -54,15 +58,15 @@ Primitive comparison is the `IPrimitiveVal.compareTo` member: [design-primitive.
 
 ### JsonTreeConversions (extension function)
 
-**`IValue.toJsonTree(): Any?`** -- Projects the value onto a JSON tree of plain JVM objects: `null`, `String`, `Long`, `Double`, `Boolean`, `List<Any?>`, `Map<String, Any?>`. Any JSON writer serializes the tree directly; the module carries no JSON dependency. One-way and deterministic: `Unsure` renders as its enum name, `RangeVal` as the two-element list of its bounds, map entries sort by key, set elements sort in the canonical order of their projected trees (kind rank null < Boolean < Number < String < List < Map, then content). Equal values project onto equal trees. Throws `IllegalArgumentException` on nesting deeper than `MAX_NESTING_DEPTH`.
+**`IValue.toJsonTree(): Any?`** -- Projects the value onto a JSON tree of plain JVM objects: `null`, `String`, `Long`, `Double`, `Boolean`, `List<Any?>`, `Map<String, Any?>`. Non-finite Double values remain NaN or infinities in the JVM projection; the caller chooses rejection, replacement or a writer-specific representation before strict JSON encoding. The module carries no JSON dependency. One-way and deterministic: `Unsure` renders as its enum name, `RangeVal` as the two-element list of its bounds, map entries sort by key, set elements sort in the canonical order of their projected trees (kind rank null < Boolean < Number < String < List < Map, then content). Equal values project onto equal trees. Throws `IllegalArgumentException` on nesting deeper than `MAX_NESTING_DEPTH`.
 
 ### CollectionConversions (extension properties)
 
-**`Collection<*>.listVal: ListVal`** — Converts collection to ListVal via `toVal` on each element.
+**`Collection<*>.listVal: ListVal`** — Converts each element with `toVal`; an unsupported nested input raises `IllegalArgumentException`.
 
-**`Collection<*>.setVal: SetVal`** — Converts collection to SetVal via `toVal` on each element.
+**`Collection<*>.setVal: SetVal`** — Converts each element with `toVal` and removes duplicates; an unsupported nested input raises `IllegalArgumentException`.
 
-**`Map<*, *>.mapVal: MapVal`** — Converts map to MapVal; keys toString'd, values via `toVal`.
+**`Map<*, *>.mapVal: MapVal`** — Converts keys with `toString()` and values with `toVal`; a later entry replaces an earlier entry with the same stringified key.
 
 **`IntRange.rangeVal: RangeVal`** — Converts IntRange to RangeVal.
 
@@ -76,7 +80,7 @@ Primitive comparison is the `IPrimitiveVal.compareTo` member: [design-primitive.
 
 ### ValueConversions (top-level extension)
 
-**`Any?.toVal: IValue`** -- Universal converter: IValue -> identity (checked first, so collection values are never re-wrapped), List -> ListVal, Map -> MapVal, IntRange/LongRange -> RangeVal, Set -> SetVal, every other input -> `Any?.primitiveVal`. Throws `IllegalArgumentException` for unsupported types.
+**`Any?.toVal: IValue`** -- Universal converter: IValue -> identity (checked first, so Collection Value instances are never re-wrapped), List -> ListVal, Map -> MapVal, IntRange/LongRange -> RangeVal, Set -> SetVal, every other input -> `Any?.primitiveVal`. Throws `IllegalArgumentException` for unsupported types.
 
 Wire-format helper functions (`asHexInt`, buffer readers): [design-serializer.md](design-serializer.md).
 
@@ -91,3 +95,13 @@ Wire-format helper functions (`asHexInt`, buffer readers): [design-serializer.md
 | `IndexOutOfBoundsException` | `ListVal.get`/`set`/`subList` with out-of-range index; `StrVal.get` with out-of-range index |
 | `NumberFormatException` | `String.intVal` / `String.floatVal` / `String.asHexInt()` on invalid input |
 | `BufferUnderflowException` | WireFormat ByteBuffer/CharBuffer read helpers when insufficient data remains (never leaked by `deserialize`) |
+
+## Caller Examples
+
+```kotlin
+import edu.jhu.cobra.commons.value.listVal
+import edu.jhu.cobra.commons.value.toJsonTree
+val value = listOf(1, 2).listVal
+val projected = value.toJsonTree()
+projected
+```

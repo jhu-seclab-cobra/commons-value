@@ -4,6 +4,10 @@ Part of [commons-value design](design-primitive.md). Specifies the `IValSerializ
 
 ---
 
+## Design Overview
+
+Public IValSerializer implementations and Type are in edu.jhu.cobra.commons.value.serializer, module commons-value. The three stateless objects own distinct material formats and use internal WireValidation helpers. The algorithm owner is [serialization](spec-serialization.md).
+
 ## Class / Type Specifications
 
 ### IValSerializer\<Material : Any\>
@@ -50,7 +54,7 @@ Part of [commons-value design](design-primitive.md). Specifies the `IValSerializ
 
 **Responsibility:** Stateless singleton serializer converting IValue to/from `CharBuffer` using human-readable text format.
 
-**Serialization Format:** `TypeStr:payload:`. Strings use hex length prefix. Collections use hex element count. Maps encode keys as serialized StrVal with `=` delimiter.
+**Serialization Format:** Null, boolean and uncertain forms are tag-only; numbers and ranges are delimiter-terminated; strings have hexadecimal UTF-16-code-unit lengths; collections have hexadecimal element counts. Maps encode keys as serialized StrVal with an `=` delimiter.
 
 ---
 
@@ -59,7 +63,7 @@ Part of [commons-value design](design-primitive.md). Specifies the `IValSerializ
 **Responsibility:** Enum mapping each value type to a unique byte tag and string label for serialization.
 
 **State/Fields:**
-- `byte: Byte` — Binary type tag.
+- `byte: Byte` — Binary Type Tag.
 - `str: String` — String type label.
 
 **Entries:** NULL(10), STR(20), BOOL(30), BOOL_TRUE(31), BOOL_FALSE(32), UNSURE_ANY(40), UNSURE_STR(41), UNSURE_NUM(42), UNSURE_BOOL(43), INT(57, "IntV"), FLOAT(58, "FloatV"), RANGE(60), LIST(70), SET(71), MAP(80).
@@ -76,7 +80,7 @@ Part of [commons-value design](design-primitive.md). Specifies the `IValSerializ
 
 Internal validation helpers shared by the serializer implementations.
 
-**`MAX_NESTING_DEPTH` (internal const, value 1000)** -- Maximum value-tree nesting accepted by `deepCopy`, serialize, and deserialize. Declared in the value package (`IValue.kt`) with `checkNestingDepth(depth: Int): Int`; serializers import both. Bounds stack use and rejects cyclic value graphs. Constant tier: algorithm invariant (`code/constants.md`).
+**`MAX_NESTING_DEPTH` (internal const, value 1000)** -- Maximum value-tree nesting accepted by `deepCopy`, serialize, and deserialize. Declared in the value package (`IValue.kt`) with `checkNestingDepth(depth: Int): Int`; serializers import both. Bounds stack use and rejects cyclic value graphs. The value is a fixed protocol bound shared by copying and serialization.
 
 **`String.requireWellFormedUtf16(): String`** -- Returns the receiver; throws `IllegalArgumentException` when the string contains an unpaired UTF-16 surrogate. Called by all three serializers before encoding string content.
 
@@ -107,3 +111,22 @@ Buffer and encoding helpers shared by the serializer implementations.
 **`CharBuffer.getBuffer(until: Char): CharBuffer` / `CharBuffer.getString(until: Char): String`** -- Reads characters up to `until` (delimiter consumed, excluded from result); reads all remaining characters when the delimiter is absent.
 
 **`CharBuffer.getBuffer(size: Int): CharBuffer` / `CharBuffer.getString(size: Int): String`** -- Reads exactly `size` characters. Throws `IllegalArgumentException` when `size` is negative or exceeds remaining characters.
+
+## Exception / Error Types
+
+See [the shared error contract](design-conversions.md#exception--error-types) for construction, conversion and material failures.
+
+## Caller Examples
+
+```kotlin
+import edu.jhu.cobra.commons.value.IntVal
+import edu.jhu.cobra.commons.value.serializer.DftByteArraySerializerImpl
+val material = DftByteArraySerializerImpl.serialize(IntVal(1L))
+val result = DftByteArraySerializerImpl.deserialize(material)
+result
+```
+
+## Open Gaps
+
+- The serializers recurse through nested containers and may retain intermediate material at multiple depths; [the specification](spec-serialization.md#complexity) bounds this work in terms of expanded occurrences and bytes, rather than distinct object identities.
+- SerializerPerformanceTest discards timed results and uses heap deltas after GC; those measurements do not establish allocation per operation or a current throughput comparison.
