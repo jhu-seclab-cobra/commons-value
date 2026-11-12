@@ -1,5 +1,13 @@
 # commons-value
 
+[![codecov](https://codecov.io/gh/jhu-seclab-cobra/commons-value/branch/main/graph/badge.svg)](https://codecov.io/gh/jhu-seclab-cobra/commons-value)
+![Kotlin JVM](https://img.shields.io/badge/Kotlin%20JVM-2.4.20%20%7C%20JVM%2021%2B-blue?logo=kotlin)
+[![Release](https://img.shields.io/badge/release-v0.2.0-blue.svg)](https://github.com/jhu-seclab-cobra/commons-value/releases/tag/v0.2.0)
+[![last commit](https://img.shields.io/github/last-commit/jhu-seclab-cobra/commons-value)](https://github.com/jhu-seclab-cobra/commons-value/commits/main)
+[![JitPack](https://jitpack.io/v/jhu-seclab-cobra/commons-value.svg)](https://jitpack.io/#jhu-seclab-cobra/commons-value)
+![Repo Size](https://img.shields.io/github/repo-size/jhu-seclab-cobra/commons-value)
+[![license](https://img.shields.io/github/license/jhu-seclab-cobra/commons-value)](./LICENSE)
+
 > Common value: a value shared across analysis modules.
 
 Kotlin value types and serializers for representing primitive and collection values.
