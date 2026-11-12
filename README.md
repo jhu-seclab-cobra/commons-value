@@ -42,15 +42,6 @@ val restored = DftByteArraySerializerImpl.deserialize(bytes)
 See the [value](docs/design-primitive.md), [collection](docs/design-collection.md), and
 [serializer](docs/design-serializer.md) specifications for the public types and operations.
 
-## Documentation
-
-- [Concepts](docs/concept.md): the value family and its role.
-- [Conversions](docs/design-conversions.md): conversion operations.
-
-## For Agents
-
-Agent-consumable documentation index at [docs/llms.txt](docs/llms.txt) (llmstxt.org format).
-
 ## Citation
 
 It requests that every project using the library cite the project's associated paper.
@@ -64,6 +55,15 @@ It requests that every project using the library cite the project's associated p
   address   = {Rio de Janeiro, Brazil}
 }
 ```
+
+## Documentation
+
+- [Concepts](docs/concept.md): the value family and its role.
+- [Conversions](docs/design-conversions.md): conversion operations.
+
+## For Agents
+
+Agent-consumable documentation index at [docs/llms.txt](docs/llms.txt) (llmstxt.org format).
 
 ## License
 
