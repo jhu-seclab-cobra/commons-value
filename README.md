@@ -1,18 +1,12 @@
-# COBRA.COMMONS.VALUE
+# commons-value
 
-> Common value -- the intermediate representation that gives analysis modules a shared language.
+> Common value: a value shared across analysis modules.
 
-Type-safe IR value system with serialization for the Cobra static analysis engine.
-
-[![Release](https://img.shields.io/badge/release-v0.1.1-blue.svg)](https://github.com/jhu-seclab-cobra/commons-value/releases/tag/v0.1.1)
-[![](https://jitpack.io/v/jhu-seclab-cobra/commons-value.svg)](https://jitpack.io/#jhu-seclab-cobra/commons-value)
-[![codecov](https://codecov.io/gh/jhu-seclab-cobra/commons-value/branch/main/graph/badge.svg)](https://codecov.io/gh/jhu-seclab-cobra/commons-value)
-[![license](https://img.shields.io/github/license/jhu-seclab-cobra/commons-value)](./LICENSE)
-![Kotlin JVM](https://img.shields.io/badge/Kotlin%20JVM-2.4.20%20%7C%20JVM%2021-blue?logo=kotlin)
+Kotlin value types and serializers for representing primitive and collection values.
 
 ## Install
 
-JDK 21+. Add the JitPack repository and dependency:
+Requires JDK 21 and a Gradle Kotlin DSL project. Add JitPack and the dependency to the project build:
 
 ```kotlin
 repositories {
@@ -27,53 +21,36 @@ dependencies {
 ## Usage
 
 ```kotlin
-import edu.jhu.cobra.commons.value.*
-import edu.jhu.cobra.commons.value.serializer.*
+import edu.jhu.cobra.commons.value.IntVal
+import edu.jhu.cobra.commons.value.MapVal
+import edu.jhu.cobra.commons.value.StrVal
+import edu.jhu.cobra.commons.value.serializer.DftByteArraySerializerImpl
 
-val map = MapVal("name" to StrVal("Alice"), "age" to IntVal(30L))
-val list = ListVal(StrVal("a"), IntVal(1L), BoolVal.T)
-val range = RangeVal(1, 100)
-
-val serializer = DftByteArraySerializerImpl
-val bytes = serializer.serialize(map)
-val restored = serializer.deserialize(bytes) // MapVal
+val value = MapVal("name" to StrVal("Alice"), "age" to IntVal(30L))
+val bytes = DftByteArraySerializerImpl.serialize(value)
+val restored = DftByteArraySerializerImpl.deserialize(bytes)
 ```
 
 ## API
 
-**Primitives** (`IPrimitiveVal`): `StrVal`, `IntVal`, `FloatVal`, `BoolVal`, `NullVal`, `Unsure`
+- `IValue` provides `core: Any?` and `deepCopy(): IValue`.
+- `IPrimitiveVal` includes `StrVal`, `IntVal`, `FloatVal`, `BoolVal`, `NullVal`, and `Unsure`.
+- `ICollectionVal` includes `ListVal`, `SetVal`, `MapVal`, and `RangeVal`.
+- `IValSerializer<Material>` provides `serialize(value: IValue): Material` and
+  `deserialize(material: Material): IValue`. Implementations use `ByteArray`, `ByteBuffer`, or `CharBuffer`.
 
-**Collections** (`ICollectionVal`): `ListVal`, `SetVal`, `MapVal` (String keys), `RangeVal`
-
-**Serializers** (`IValSerializer<Material : Any>`): `DftByteArraySerializerImpl` (ByteArray), `DftByteBufferSerializerImpl` (ByteBuffer), `DftCharBufferSerializerImpl` (CharBuffer)
-
-Full type specifications and method details in [docs/design-primitive.md](./docs/design-primitive.md).
+See the [value](docs/design-primitive.md), [collection](docs/design-collection.md), and
+[serializer](docs/design-serializer.md) specifications for the public types and operations.
 
 ## Documentation
 
-- [docs/concept.md](./docs/concept.md) -- concepts, terminology, and system role
-- [docs/design-primitive.md](./docs/design-primitive.md) -- primitive type specifications (IntVal, FloatVal, StrVal, BoolVal, NullVal, Unsure)
-- [docs/design-collection.md](./docs/design-collection.md) -- collection type specifications (ListVal, SetVal, MapVal, RangeVal)
-- [docs/design-serializer.md](./docs/design-serializer.md) -- serializer interface and implementations
+- [Concepts](docs/concept.md): the value family and its role.
+- [Conversions](docs/design-conversions.md): conversion operations.
 
 ## For Agents
 
-Agent-consumable documentation index at [docs/llms.txt](./docs/llms.txt) (llmstxt.org format).
-
-## Citation
-
-If you use this repository in your research, please cite our paper:
-
-```bibtex
-@inproceedings{xu2026cobra,
-  title     = {CoBrA: Context-, Branch-sensitive Static Analysis for Detecting Taint-style Vulnerabilities in PHP Web Applications},
-  author    = {Xu, Yichao and Kang, Mingqing and Thimmaiah, Neil and Gjomemo, Rigel and Venkatakrishnan, V. N. and Cao, Yinzhi},
-  booktitle = {Proceedings of the 48th IEEE/ACM International Conference on Software Engineering (ICSE)},
-  year      = {2026},
-  address   = {Rio de Janeiro, Brazil}
-}
-```
+Agent-consumable documentation index at [docs/llms.txt](docs/llms.txt) (llmstxt.org format).
 
 ## License
 
-[GPL-2.0](./LICENSE)
+[GPL-2.0](LICENSE)
