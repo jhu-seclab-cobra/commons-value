@@ -51,6 +51,20 @@ See the [value](docs/design-primitive.md), [collection](docs/design-collection.m
 
 Agent-consumable documentation index at [docs/llms.txt](docs/llms.txt) (llmstxt.org format).
 
+## Citation
+
+It requests that every project using the library cite the project's associated paper.
+
+```bibtex
+@inproceedings{xu2026cobra,
+  title     = {CoBrA: Context-, Branch-sensitive Static Analysis for Detecting Taint-style Vulnerabilities in PHP Web Applications},
+  author    = {Xu, Yichao and Kang, Mingqing and Thimmaiah, Neil and Gjomemo, Rigel and Venkatakrishnan, V. N. and Cao, Yinzhi},
+  booktitle = {Proceedings of the 48th IEEE/ACM International Conference on Software Engineering (ICSE)},
+  year      = {2026},
+  address   = {Rio de Janeiro, Brazil}
+}
+```
+
 ## License
 
 [GPL-2.0](LICENSE)
