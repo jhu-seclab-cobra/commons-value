@@ -84,7 +84,7 @@ Related design documents:
 
 ### IntVal
 
-**Responsibility:** Wraps a `Long` as an IR integer value. All integer types (Byte, Short, Int, Long) are normalized to Long at construction.
+**Responsibility:** Wraps a `Long` as an integer Primitive Value. All integer types (Byte, Short, Int, Long) are normalized to Long at construction.
 
 **State/Fields:**
 - `core: Long` -- The 64-bit integer content.
@@ -107,7 +107,7 @@ Related design documents:
 
 ### FloatVal
 
-**Responsibility:** Wraps a `Double` as an IR floating-point value. All floating types (Float, Double) are normalized to Double at construction.
+**Responsibility:** Wraps a `Double` as a floating-point Primitive Value. All floating types (Float, Double) are normalized to Double at construction.
 
 **State/Fields:**
 - `core: Double` -- The IEEE 754 64-bit float content.
@@ -154,7 +154,7 @@ Related design documents:
 
 ### NullVal
 
-**Responsibility:** Singleton representing a null value in the IR.
+**Responsibility:** Singleton representing a null Primitive Value.
 
 **State/Fields:**
 - `core: null` -- Always null.

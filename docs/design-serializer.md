@@ -80,7 +80,7 @@ Public IValSerializer implementations and Type are in edu.jhu.cobra.commons.valu
 
 Internal validation helpers shared by the serializer implementations.
 
-**`MAX_NESTING_DEPTH` (internal const, value 1000)** -- Maximum value-tree nesting accepted by `deepCopy`, serialize, and deserialize. Declared in the value package (`IValue.kt`) with `checkNestingDepth(depth: Int): Int`; serializers import both. Bounds stack use and rejects cyclic value graphs. The value is a fixed protocol bound shared by copying and serialization.
+**`MAX_NESTING_DEPTH` (internal const, value 1000)** -- Maximum supported Value-occurrence depth, with the root at depth zero. Declared in `IValue.kt` with `checkNestingDepth(depth: Int): Int`; serializers check every occurrence and copy traversal checks mutable containers. The accepted bound is shared by copying and serialization; [collection Open Gaps](design-collection.md#open-gaps) records the copy implementation difference at immutable leaves. The bound limits recursive stack use and rejects cyclic Value graphs.
 
 **`String.requireWellFormedUtf16(): String`** -- Returns the receiver; throws `IllegalArgumentException` when the string contains an unpaired UTF-16 surrogate. Called by all three serializers before encoding string content.
 

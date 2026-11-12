@@ -26,7 +26,7 @@ The library exposes a sealed Value hierarchy; source-language semantics belong t
 
 ## Conversion Extensions
 
-- [Conversions](llms/conversions.md): Kotlin extension properties and functions for native-to-IR conversion and regex.
+- [Conversions](llms/conversions.md): Kotlin extension properties and functions for native-to-Value conversion and regex.
 
 - [Usage index](llms/index.md): All usage modules.
 

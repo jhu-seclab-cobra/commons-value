@@ -1,6 +1,6 @@
 # Conversion Extensions
 
-> Kotlin extension properties and functions for native-to-IR conversion and regex.
+> Kotlin extension properties and functions for native-to-Value conversion and regex.
 
 ## Quick Start
 

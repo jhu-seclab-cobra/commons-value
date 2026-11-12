@@ -8,7 +8,7 @@
 
 - `IntVal` is Long-backed. `FloatVal` is Double-backed.
 - `String.intVal` uses `toLongOrNull()` for parsing. `String.floatVal` uses `toDoubleOrNull()`.
-- IR types model no source language's type system: language-specific semantics (type juggling, casting, overflow behavior, narrower integer types) belong in the consuming analysis module's adapter layer.
+- Value instances model no source language's type system: language-specific semantics (type juggling, casting, overflow behavior, narrower integer types) belong in the consuming analysis module's adapter layer.
 
 ## Design-specific
 

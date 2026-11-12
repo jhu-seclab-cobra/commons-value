@@ -22,7 +22,7 @@
 
 - The value hierarchy is closed: every value is either a Primitive Value or a Collection Value.
 - The primitive family has exactly six kinds: string, integer, floating-point, boolean, null, uncertain.
-- The collection family has exactly four kinds: ordered list, unique set, string-keyed map, numeric range.
+- The collection family has exactly four kinds: ordered list, unique set, string-keyed map, integer range.
 - Boolean values have exactly two instances (true, false). The null value has exactly one instance.
 - Integer values are 64-bit signed integers. Floating-point values are 64-bit IEEE 754 floats. No other numeric widths exist.
 - Map keys are strings only. Map values are any value (recursive nesting).

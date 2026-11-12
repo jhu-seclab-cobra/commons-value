@@ -10,7 +10,7 @@
 
 > Common value: a value shared across analysis modules.
 
-Kotlin value types and serializers for representing primitive and Collection Value instances.
+Kotlin value types and serializers for representing Primitive Value and Collection Value instances.
 
 ## Install
 

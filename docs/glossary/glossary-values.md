@@ -28,7 +28,7 @@ The value family: the closed set of data items the library represents, serialize
 
 ### Collection Value
 - **Is a:** Value
-- **Definition:** A Value that aggregates other Value instances in one of four forms, an ordered list, a set, a string-keyed map or a integer range, whose elements may themselves be Collection Value instances.
+- **Definition:** A Value that aggregates other Value instances in one of four forms, an ordered list, a set, a string-keyed map or an integer range, whose elements may themselves be Collection Value instances.
 - **Example:** `ListVal(StrVal("a"), IntVal(1))` → a Collection Value of the list form holding two Primitive Value instances.
 - **Source:** `ICollectionVal.kt` `ICollectionVal`; `ListVal.kt` `ListVal`; `SetVal.kt` `SetVal`; `MapVal.kt` `MapVal`; `RangeVal.kt` `RangeVal`
 
