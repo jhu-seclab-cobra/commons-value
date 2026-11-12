@@ -1,5 +1,30 @@
 # Release Notes
 
+## Version 0.2.0
+
+Requires JDK 21. Install with `implementation("com.github.jhu-seclab-cobra:commons-value:v0.2.0")` from JitPack.
+
+### Added
+
+- `IValue.deepCopy()`: a recursive copy of a value; it rejects a cyclic value graph.
+- `IValue.toJsonTree()`: a JSON projection of a value.
+- Conversion of `Char` and `LongRange` to values.
+
+### Changed (incompatible with 0.1.1)
+
+- The value packages are flat: the public types live in `edu.jhu.cobra.commons.value` and the serializers in `edu.jhu.cobra.commons.value.serializer`; unused declarations are removed.
+- Collection values delegate to their core containers, and their `equals` follows the JDK collection contract.
+- Primitive values have an exact total order.
+- The serializers share their container codecs; unused wire tags are removed.
+- The build uses explicit API mode.
+
+### Fixed
+
+- `MapVal` keeps insertion order; `MapVal` plus and minus return copies.
+- `RangeVal` compares numbers without `Double` rounding, rejects NaN and fractional values in integer range checks, and treats shared boundaries strictly in `before` and `after`.
+- `StrVal` and `NullVal` no longer compare equal across types.
+- The serializers reject malformed material with `ValFormatException`: invalid UTF-8, unpaired surrogates, invalid length prefixes, trailing material, wrong nested value types, corrupt `BOOL` payloads and an exhausted buffer. Value nesting is bounded at 1000 levels.
+
 ## Version 0.1.0
 
 [![](https://jitpack.io/v/jhu-seclab-cobra/commons-value.svg)](https://jitpack.io/#jhu-seclab-cobra/commons-value)

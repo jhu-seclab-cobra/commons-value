@@ -14,7 +14,7 @@ repositories {
 }
 
 dependencies {
-    implementation("com.github.jhu-seclab-cobra:commons-value:v0.1.1")
+    implementation("com.github.jhu-seclab-cobra:commons-value:v0.2.0")
 }
 ```
 
