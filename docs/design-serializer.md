@@ -6,7 +6,7 @@ Part of [commons-value design](design-primitive.md). Specifies the `IValSerializ
 
 ## Design Overview
 
-Public IValSerializer implementations and Type are in edu.jhu.cobra.commons.value.serializer, module commons-value. The three stateless objects own distinct material formats and use internal WireValidation helpers. The algorithm owner is [serialization](spec-serialization.md).
+Public IValSerializer implementations and Type are in edu.jhu.cobra.commons.value.serializer, module commons-value. The three stateless objects own distinct material formats and use internal WireValidation helpers. The algorithm owner is [serialization](spec-serialization.md). Graph and consumer adapters own conversion of their immutable structural records to and from `IValue`, including schema/version checks and reference interpretation; the serializers retain their existing tags and material formats. Structural records do not become Value subclasses. Adapters reject malformed shapes before making decoded records visible.
 
 ## Class / Type Specifications
 
@@ -127,6 +127,8 @@ result
 ```
 
 ## Open Gaps
+
+- **Adapter round trips.** Exercise empty, nested and shared mutable legacy values, every existing type tag, depth limits and malformed material through each serializer and the consuming schema adapter. Count encoded/decoded occurrences and bytes, allocations and retained intermediate material. Pass when values, type tags and schema-defined references round-trip exactly and malformed inputs fail before visibility; stop on changed content, a lost reference, accepted malformed material or an alias exposed by conversion. No adapter saving is established by the existing serializer timings.
 
 - The serializers recurse through nested containers and may retain intermediate material at multiple depths; [the specification](spec-serialization.md#complexity) bounds this work in terms of expanded occurrences and bytes, rather than distinct object identities.
 - SerializerPerformanceTest discards timed results and uses heap deltas after GC; those measurements do not establish allocation per operation or a current throughput comparison.

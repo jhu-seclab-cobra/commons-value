@@ -6,7 +6,7 @@ The library exposes a sealed Value hierarchy; source-language semantics belong t
 
 ## Instructions for Agents
 
-- Use Value types (`StrVal`, `IntVal`, `FloatVal`, `BoolVal`, `NullVal`, `Unsure`, `ListVal`, `SetVal`, `MapVal`, `RangeVal`) for all graph property values.
+- Use `IValue` for language-neutral value content and supported interchange formats; graph structural records may use registered immutable schema types.
 - Convert Kotlin natives to Value via extension properties: `42.intVal`, `3.14.floatVal`, `"hello".strVal`, `true.boolVal`, `null.toVal`.
 - Convert collections via extension properties: `list.listVal`, `set.setVal`, `map.mapVal`, `(1..10).rangeVal`.
 - Use `Any?.toVal` for generic conversion when the source type is unknown at compile time.
@@ -15,6 +15,8 @@ The library exposes a sealed Value hierarchy; source-language semantics belong t
 - Serialize Value instances with `DftByteArraySerializerImpl`, `DftByteBufferSerializerImpl`, or `DftCharBufferSerializerImpl`.
 - Never add language-specific semantics (PHP, Java, Python) to this library. Language mapping belongs in analysis modules.
 - Never subclass Value types. The sealed hierarchy is fixed.
+- Keep the mutable collection interfaces and constructor ownership contracts; capture mutable content when a consuming boundary requires fixed content.
+- Keep logging facades out of this library.
 
 ## Value Types
 

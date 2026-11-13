@@ -1,6 +1,6 @@
 # commons-value Design -- Primitive Types
 
-Value type system for the Cobra static analysis engine.
+Language-neutral Value types and serializers for consuming analysis modules.
 
 Related design documents:
 - [Collection types](design-collection.md)
@@ -20,6 +20,8 @@ Related design documents:
 ---
 
 ## Class / Type Specifications
+
+`IValue` represents literal content, uncertain primitive values, generic external data and supported interchange formats. Graph or consumer schemas own immutable structural records and their graph-reference meaning; they do not extend the sealed Value hierarchy. Mutable content ownership follows [collection capture](design-collection.md#mutable-collection-contract-listval-setval-mapval); adapter conversion follows [serializer design](design-serializer.md#design-overview). The library has no logging facade.
 
 ### IValue
 

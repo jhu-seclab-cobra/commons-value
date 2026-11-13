@@ -46,7 +46,8 @@ copy.single()
 - `+=`/`-=` on Collection Value instances mutate in place. `+`/`-` are stdlib extensions returning plain `List<IValue>`/`Set<IValue>`/`Map<String, IValue>`, not `ListVal`/`SetVal`/`MapVal`.
 - Collection equality follows the JDK collection contract: a `ListVal`/`SetVal`/`MapVal` equals any `List`/`Set`/`Map` with equal content. `ListVal(IntVal(1L)) == listOf(IntVal(1L))` is `true`.
 - `StrVal.equals(IPrimitiveVal, ignoreCase)` returns `false` for `NullVal`; it never matches the string `"null"`.
-- Sharing a Collection Value stores the same mutable instance. Use `deepCopy()` for an independent copy.
+- Sharing a Collection Value stores the same mutable instance. Primary constructors adopt the passed container; copying constructors copy only its outer container. Use `deepCopy()` for independent mutable descendants.
+- A read-only Kotlin collection interface does not freeze caller aliases. Capture fixed content in the consuming graph/schema adapter; return independent mutable copies from compatibility reads. Keep structural record types outside the sealed `IValue` hierarchy.
 - `BoolVal` uses singleton instances. `BoolVal(true) === BoolVal.T` is always `true`.
 - `NullVal` is a `data object`. Identity comparison (`===`) and equality (`==`) both work.
 - `Unsure.new(String)` returns `null` when the string does not match a known `Unsure.core` value.

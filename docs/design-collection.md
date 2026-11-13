@@ -24,6 +24,7 @@ Public collection types in module commons-value implement ICollectionVal; mutabl
 - The primary constructor adopts the passed container (shared ownership: later external mutation of the container mutates the value). Secondary constructors copy the outer container and share its elements; `deepCopy()` recursively copies mutable descendants.
 - `equals`/`hashCode` follow the JDK collection contract: a value equals any `List`/`Set`/`Map` with equal content (matching `AbstractList`/`AbstractSet`/`AbstractMap` semantics), so equality is symmetric with plain collections.
 - No copy-returning `plus`/`minus` members: `+=` resolves to the stdlib `plusAssign` (in-place); copies are taken via the copying constructors or `deepCopy()`.
+- At a boundary retaining fixed content, the caller captures mutable descendants into private ownership. A read-only Kotlin collection interface does not prevent mutation through aliases. Legacy public reads return an independent copy when they expose mutable content; graph schema adapters may instead capture an immutable record. Existing mutable interfaces, adopting primary constructors and outer-copying secondary constructors remain unchanged.
 - Mutable-element caveat (JDK set semantics): mutating a collection while it is an element of a `SetVal` corrupts membership. Documented, not enforced.
 - Value graphs must stay acyclic. Construction does not prevent cycles; `deepCopy` and serialization reject them at the `MAX_NESTING_DEPTH` bound.
 
@@ -138,5 +139,7 @@ Public collection types in module commons-value implement ICollectionVal; mutabl
 See [the shared error contract](design-conversions.md#exception--error-types) for construction, conversion and material failures.
 
 ## Open Gaps
+
+- **Boundary ownership cost.** On small and large nested values with shared descendants, vary expanded payload and alias mutations after capture. Count copied occurrences, allocations, repeated hash/equality visits and retained shared payload bytes. Pass when captured content survives caller mutation, legacy copies remain independent, and equal values retain their equality/hash contract; stop on an alias escape or changed equality. Capture and equal-input comparison remain O(expanded payload); their allocation and retained-sharing costs remain unmeasured.
 
 - The model's uniform nesting limit counts every Value occurrence; `IValue.deepCopy(depth)` returns immutable leaves without calling `checkNestingDepth`, while container overrides validate their own depth. A primitive leaf at depth 1001 can therefore be copied beneath a container at depth 1000 although serialization rejects it; [the copy specification](spec-copy.md#implementation-mapping) describes this implementation difference.

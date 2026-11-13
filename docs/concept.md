@@ -8,7 +8,7 @@ Domain semantics: [model.md](model.md). Software structure: [design-primitive.md
 Static analysis engines operate across multiple modules (parsers, graph builders, constraint solvers, serializers) that must exchange typed data. Passing raw platform types loses type safety and forces each module to handle serialization independently. Modules exchange Value instances and serialize them through the shared serializer interfaces.
 
 **System Role**
-commons-value is the Value type system for the Cobra static analysis engine, providing a closed type hierarchy that all internal modules use to represent, exchange, and persist analysis data.
+commons-value is the Value type system for the Cobra static analysis engine, providing a closed type hierarchy for language-neutral value content and supported interchange formats.
 
 **Data Flow**
 - **Inputs:** Language adapter outputs (mapped from source language types), raw platform types from internal modules
@@ -17,7 +17,7 @@ commons-value is the Value type system for the Cobra static analysis engine, pro
 
 **Scope Boundaries**
 - **Owned:** Value type definitions, inter-value-type conversions, platform-type-to-Value conversions, value serialization and deserialization
-- **Not Owned:** Source language type systems, language-specific type juggling/casting, language adapter layers (owned by each analysis module), business logic, storage engines, network transport protocols
+- **Not Owned:** Source language type systems, language-specific type juggling/casting, language adapter layers (owned by each analysis module), business logic, graph structural schemas, storage engines, network transport protocols
 
 ## 2. Concepts
 
@@ -85,7 +85,7 @@ Source Language                  commons-value Value                    Cross-Mo
 **Data Contracts**
 
 - **With Language Adapters:** Provides the Value sealed hierarchy as Value family. Adapters map source language types to Value instances using conversion. Language-specific semantics (type juggling, implicit casting, overflow) are the adapter's responsibility.
-- **With Cross-Module Consumers:** Provides Value as the unified data exchange type. Consumers operate through the sealed hierarchy without knowledge of originating source language.
+- **With Cross-Module Consumers:** Provides Value for language-neutral content and interchange. Graph structural records belong to graph or consumer schemas; their adapters convert to Value at compatibility and serialization boundaries.
 - **With Storage/Transport Layer:** Provides serializer to encode values into binary or text materials for persistence or transmission.
 
 **Internal Processing Flow**
