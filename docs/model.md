@@ -35,6 +35,7 @@
 - Supported Value graphs are acyclic and may share descendants; copying and serialization visit each occurrence and do not preserve sharing identity.
 - Supported expanded Value occurrences have depth at most 1000, counting the root as zero; serialization, deserialization and structural copy reject deeper inputs. The copy implementation difference is recorded in [collection Open Gaps](design-collection.md#open-gaps).
 - A string value is canonical: each well-formed UTF-8 sequence of its bytes is its character, and each other byte 80..FF is one unpaired unit U+DC80..U+DCFF. `StrVal` construction canonicalizes, and `toByteArray()` and `ByteArray.strVal` convert between a string value and its bytes.
+- An unpaired surrogate outside U+DC80..U+DCFF in a constructor argument stays in the string value; `toByteArray()` gives the three bytes of its generalized UTF-8 form, and `ByteArray.strVal` never gives such a surrogate. Serialization rejects a string value holding one.
 - Map keys are well-formed UTF-16 text: serialization rejects a key holding an unpaired surrogate.
 - Deserialization consumes its material exactly: a well-formed encoding followed by trailing content is malformed.
 

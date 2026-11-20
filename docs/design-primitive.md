@@ -57,10 +57,10 @@ Related design documents:
 **Responsibility:** Wraps a `String` as a Value that stands for a byte sequence, with string manipulation utilities.
 
 **State/Fields:**
-- `core: String` -- The canonical text of the string's bytes ([model invariants](model.md#invariants)): each well-formed UTF-8 sequence is its character, and each other byte `XX` in 80..FF is the unpaired unit U+DCXX. Equality, `hashCode` and `toString` (`StrVal{<core>}`) read `core`.
+- `core: String` -- The canonical text of the string's bytes ([model invariants](model.md#invariants)): each well-formed UTF-8 sequence is its character, each other byte `XX` in 80..FF is the unpaired unit U+DCXX, and each unpaired surrogate outside U+DC80..U+DCFF is the unit the constructor received. Equality, `hashCode` and `toString` (`StrVal{<core>}`) read `core`.
 
 **Constructors:**
-- `StrVal(core: String)` -- Primary constructor; total, never throws. It stores `core` unchanged when `core` holds no unit in D800..DFFF, which allocates nothing. Otherwise it keeps each valid surrogate pair, re-decodes each run of units U+DC80..U+DCFF from its bytes, so units that form a well-formed UTF-8 sequence become that character, and maps each other unpaired surrogate to the three bytes of its generalized UTF-8 form, which are three units U+DC80..U+DCFF. Example: `StrVal("\uDCC3\uDCA9").core` is `"é"`, and `StrVal("\uD800").core` is `"\uDCED\uDCA0\uDC80"`.
+- `StrVal(core: String)` -- Primary constructor; total, never throws. It stores `core` unchanged when `core` holds no unit in D800..DFFF. Otherwise it keeps each valid surrogate pair and each unpaired surrogate outside U+DC80..U+DCFF, and re-decodes each run of unpaired units U+DC80..U+DCFF from its bytes, so units that form a well-formed UTF-8 sequence become that character. Example: `StrVal("\uDCC3\uDCA9").core` is `"é"`, and `StrVal("\uD83D").core` is `"\uD83D"`. A text cut at a UTF-16 index that splits a pair gives such an unpaired surrogate; joining the two halves again gives the pair.
 - `StrVal()` -- Default constructor creating empty string.
 
 **Methods:**
@@ -85,8 +85,8 @@ The methods above are text operations on `core`; a byte operation reads `toByteA
 - `length: Int` -- Number of UTF-16 code units in the string.
 
 **Extension functions:**
-- `StrVal.toByteArray(): ByteArray` -- The byte sequence the string stands for: the UTF-8 bytes of each character and byte `XX` for each unpaired unit U+DCXX. `bytes.strVal.toByteArray()` equals `bytes` for every byte array, and `value.toByteArray().strVal` equals `value` for every `StrVal`.
-- `String.indexOfByteOutsideUtf8(startIndex: Int = 0): Int` -- The index of the first unpaired unit U+DC80..U+DCFF at or after `startIndex`, or -1 when there is none. A high surrogate followed by a low surrogate is one pair, so the low unit DC80 of U+1F480 (D83D DC80) is never returned; `startIndex` is the index of a character's first unit. One scan of the UTF-16 units, without allocation. Applied to a `core`, it finds the units that stand for a byte outside UTF-8.
+- `StrVal.toByteArray(): ByteArray` -- The byte sequence the string stands for: the UTF-8 bytes of each character, byte `XX` for each unpaired unit U+DCXX, and the three bytes of the generalized UTF-8 form of each other unpaired surrogate (`ED A0 BD` for U+D83D). `bytes.strVal.toByteArray()` equals `bytes` for every byte array. `value.toByteArray().strVal` equals `value` for every `StrVal` without an unpaired surrogate outside U+DC80..U+DCFF; for one with such a surrogate it is the value of the same bytes, which holds three units U+DC80..U+DCFF in its place (`StrVal("\uD83D")` and `StrVal("\uDCED\uDCA0\uDCBD")` share the bytes `ED A0 BD`).
+- `String.indexOfByteOutsideUtf8(startIndex: Int = 0): Int` -- The index of the first unpaired unit U+DC80..U+DCFF at or after `startIndex`, or -1 when there is none. A high surrogate followed by a low surrogate is one pair, so the low unit DC80 of U+1F480 (D83D DC80) is never returned; `startIndex` is the index of a character's first unit. Applied to a `core`, it finds the units that stand for a byte outside UTF-8.
 
 ---
 

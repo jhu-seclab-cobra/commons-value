@@ -24,7 +24,11 @@ import kotlin.test.assertTrue
  * - `should return false from holdsByteOutsideUtf8 for well-formed text` — ASCII, BMP, supplementary
  *   characters and U+FFFD hold no unit.
  * - `should return true from holdsByteOutsideUtf8 for a string holding a unit` — A unit alone, after ASCII,
- *   after a surrogate pair, and the units of a canonicalized lone high surrogate.
+ *   and after a surrogate pair.
+ * - `should return STR from stringTag for a string without a unit` — Text and pairs, U+1F480 included, take STR.
+ * - `should return STR_BYTES from stringTag for a string holding a unit` — A unit alone, after ASCII, after a pair.
+ * - `should throw IllegalArgumentException from stringTag for a surrogate outside DC80 to DCFF` — A kept lone
+ *   high or low surrogate, alone or beside a unit, is rejected.
  * - `should return block result from decodeMaterial on success` — A successful body's value is returned.
  * - `should rethrow ValFormatException unchanged from decodeMaterial` — An existing ValFormatException is not
  *   wrapped.
@@ -63,9 +67,29 @@ internal class WireValidationTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = ["\uDCFF", "a\uDC80", "😀\uDCC3", "\uD800"])
+    @ValueSource(strings = ["\uDCFF", "a\uDC80", "😀\uDCC3"])
     fun `should return true from holdsByteOutsideUtf8 for a string holding a unit`(text: String) {
         assertTrue(StrVal(text).holdsByteOutsideUtf8())
+    }
+
+    // --- StrVal.stringTag ---
+
+    @ParameterizedTest
+    @ValueSource(strings = ["", "ascii", "é", "😀", "💀", "�"])
+    fun `should return STR from stringTag for a string without a unit`(text: String) {
+        assertEquals(Type.STR, StrVal(text).stringTag())
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = ["\uDCFF", "a\uDC80", "😀\uDCC3"])
+    fun `should return STR_BYTES from stringTag for a string holding a unit`(text: String) {
+        assertEquals(Type.STR_BYTES, StrVal(text).stringTag())
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = ["\uD800", "\uDE00", "a\uDCFF\uD83D", "\uDC00\uDCFF"])
+    fun `should throw IllegalArgumentException from stringTag for a surrogate outside DC80 to DCFF`(text: String) {
+        assertFailsWith<IllegalArgumentException> { StrVal(text).stringTag() }
     }
 
     // --- decodeMaterial ---

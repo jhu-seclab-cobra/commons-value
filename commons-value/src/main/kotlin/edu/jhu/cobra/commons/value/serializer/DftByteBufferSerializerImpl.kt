@@ -54,13 +54,12 @@ public object DftByteBufferSerializerImpl : IValSerializer<ByteBuffer> {
             }
 
             is StrVal -> {
-                // A core without a unit U+DC80..U+DCFF is canonical well-formed UTF-16.
-                val holdsByte = value.holdsByteOutsideUtf8()
-                val strCore = if (holdsByte) value.toByteArray() else value.core.toByteArray()
+                val tag = value.stringTag()
+                val strCore = value.toByteArray()
                 val bufferLen = TYPE_TAG_BYTES + SIZE_PREFIX_BYTES + strCore.size
                 ByteBuffer
                     .allocate(bufferLen)
-                    .put(if (holdsByte) Type.STR_BYTES.byte else Type.STR.byte)
+                    .put(tag.byte)
                     .putInt(strCore.size)
                     .put(strCore)
                     .flip()
@@ -167,7 +166,7 @@ public object DftByteBufferSerializerImpl : IValSerializer<ByteBuffer> {
             }
 
             Type.STR.byte -> {
-                StrVal(material.getString())
+                material.getArray(material.getInt()).strVal.requireWellFormedUtf8()
             }
 
             Type.STR_BYTES.byte -> {

@@ -28,7 +28,7 @@ val restored = serializer.deserialize(bytes)
 
 ### Error Contract (all three implementations)
 
-- `serialize` raises `IllegalArgumentException` when value nesting exceeds 1000 levels (including cyclic value graphs) or a map key contains an unpaired UTF-16 surrogate.
+- `serialize` raises `IllegalArgumentException` when value nesting exceeds 1000 levels (including cyclic value graphs), a map key contains an unpaired UTF-16 surrogate, or a `StrVal` holds an unpaired surrogate outside U+DC80..U+DCFF.
 - `deserialize` raises `ValFormatException` on malformed material: empty input, truncated or garbage data, invalid size or count prefixes, unknown Type Tag values, malformed UTF-8 in string or key bytes, a `STR_BYTES` payload whose bytes are all well-formed UTF-8, wrong delimiter characters (`DftCharBufferSerializerImpl`), trailing material after the value, or nesting beyond 1000 levels.
 
 ### Type Enum
@@ -47,4 +47,4 @@ val restored = serializer.deserialize(bytes)
 - All three serializers are `object` singletons. No instantiation needed.
 - Serializers handle nested collections (e.g., `ListVal` containing `MapVal`) up to 1000 nesting levels.
 - `deserialize` consumes the whole material; a valid encoding followed by extra bytes or chars raises `ValFormatException`.
-- A `StrVal` holding an unpaired unit U+DC80..U+DCFF (a byte outside UTF-8) serializes under `STR_BYTES` and round-trips; reject or repair unpaired surrogates in map keys before `serialize`.
+- A `StrVal` holding an unpaired unit U+DC80..U+DCFF (a byte outside UTF-8) serializes under `STR_BYTES` and round-trips; reject or repair unpaired surrogates in map keys, and other unpaired surrogates in a `StrVal`, before `serialize`.

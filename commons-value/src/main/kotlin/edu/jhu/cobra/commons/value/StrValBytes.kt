@@ -10,7 +10,6 @@ private const val LAST_BYTE_UNIT = 0xDCFF
 // UTF-16 units D800..DFFF are exactly the units with these five high bits.
 private const val SURROGATE_MASK = 0xF800
 private const val SURROGATE_BITS = 0xD800
-private const val LOW_SURROGATE_START = 0xDC00
 
 private const val ASCII_END = 0x80
 private const val TWO_BYTE_END = 0x800
@@ -49,51 +48,66 @@ internal fun decodeBytes(bytes: ByteArray): String {
 }
 
 /**
- * The canonical text of the bytes [text] stands for. Every `StrVal` constructor argument passes here;
- * text without a unit in D800..DFFF is returned unchanged.
+ * The canonical text of [text]: each maximal run of unpaired units U+DC80..U+DCFF is replaced by the
+ * decoding of the bytes it stands for, and every other unit is kept. Every `StrVal` constructor argument
+ * passes here; text without a unit in D800..DFFF is returned unchanged.
  */
 internal fun canonical(text: String): String {
     var index = 0
     while (index < text.length) {
         if (text[index].code and SURROGATE_MASK == SURROGATE_BITS) {
-            return if (text.isCanonicalFrom(index)) text else decodeBytes(text.encodeBytes())
+            return if (text.isCanonicalFrom(index)) text else text.redecodeUnitRuns(index)
         }
         index++
     }
     return text
 }
 
-// Canonical text holds surrogates only as valid pairs and as runs of units from which no
-// well-formed UTF-8 sequence starts; a sequence never extends past its run, because the next
-// character's first byte is ASCII or a lead byte, never a continuation byte.
+// Canonical text holds runs of unpaired units U+DC80..U+DCFF from which no well-formed UTF-8 sequence
+// starts; a sequence never extends past its run, because the next character's first byte is ASCII or a
+// lead byte, never a continuation byte, and a kept surrogate is not re-decoded.
 private fun String.isCanonicalFrom(from: Int): Boolean {
     var index = from
     while (index < length) {
-        val code = this[index].code
-        when {
-            code and SURROGATE_MASK != SURROGATE_BITS -> {
-                index++
-            }
-
-            code < LOW_SURROGATE_START -> {
-                if (index + 1 >= length || !this[index + 1].isLowSurrogate()) return false
-                index += 2
-            }
-
-            code !in FIRST_BYTE_UNIT..LAST_BYTE_UNIT -> {
-                return false
-            }
-
-            else -> {
-                var end = index
-                while (end < length && this[end].isByteOutsideUtf8()) end++
-                if (unitRunStartsSequence(index, end)) return false
-                index = end
-            }
+        val end = unitRunEnd(index)
+        if (end > index) {
+            if (unitRunStartsSequence(index, end)) return false
+            index = end
+        } else {
+            index += pairOrUnitLength(index)
         }
     }
     return true
 }
+
+private fun String.redecodeUnitRuns(from: Int): String {
+    val text = StringBuilder(length).append(this, 0, from)
+    var index = from
+    while (index < length) {
+        val end = unitRunEnd(index)
+        if (end > index) {
+            text.append(decodeBytes(ByteArray(end - index) { (this[index + it].code - BYTE_UNIT_BASE).toByte() }))
+            index = end
+        } else {
+            val next = index + pairOrUnitLength(index)
+            text.append(this, index, next)
+            index = next
+        }
+    }
+    return text.toString()
+}
+
+// End of the run of units U+DC80..U+DCFF that starts at [start], or [start] when none does. A unit
+// that a high surrogate before it pairs with is consumed by pairOrUnitLength and never starts a run.
+private fun String.unitRunEnd(start: Int): Int {
+    var end = start
+    while (end < length && this[end].isByteOutsideUtf8()) end++
+    return end
+}
+
+// 2 for a high surrogate followed by a low surrogate, 1 for any other unit.
+private fun String.pairOrUnitLength(index: Int): Int =
+    if (this[index].isHighSurrogate() && index + 1 < length && this[index + 1].isLowSurrogate()) 2 else 1
 
 // Whether a well-formed UTF-8 sequence starts in the run of units [start, end); runs only on text
 // that holds units.

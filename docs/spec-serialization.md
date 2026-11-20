@@ -4,13 +4,13 @@
 
 Input: a supported acyclic [Value](glossary/glossary-values.md#value) graph for encoding, or one complete serialized material for decoding.
 Output: material preserving Value form and content, or the reconstructed Value under [model invariants](model.md#invariants).
-Material errors raise ValFormatException; unsupported nesting or a map key holding an unpaired surrogate at encoding raise IllegalArgumentException.
+Material errors raise ValFormatException; unsupported nesting, a map key holding an unpaired surrogate, or a string value holding an unpaired surrogate outside U+DC80..U+DCFF at encoding raise IllegalArgumentException.
 
 ## Steps
 
 1. Start at depth zero and reject a Value occurrence deeper than 1000.
 2. For encoding, select the material-specific Type Tag and encode a primitive payload or range bounds according to [the format design](design-serializer.md).
-3. Validate map keys as well-formed UTF-16. A string value holding an unpaired unit U+DC80..U+DCFF encodes its bytes under the string-bytes tag; any other string value encodes under the string tag, as UTF-8 in byte formats.
+3. Validate map keys as well-formed UTF-16, and reject a string value holding an unpaired surrogate outside U+DC80..U+DCFF. A string value holding an unpaired unit U+DC80..U+DCFF encodes its bytes under the string-bytes tag; any other string value encodes under the string tag, as its bytes, which are UTF-8, in byte formats.
 4. Encode container children at depth plus one in iteration order and place their counts or length-prefixed windows in the material-specific container layout.
 5. For decoding, read the Type Tag and reject unknown tags or truncated payloads.
 6. Validate every count, size and nested expected Value form before constructing that container or member; string and key decoding rejects invalid UTF-8; string-bytes decoding rejects a payload whose bytes are all well-formed UTF-8.

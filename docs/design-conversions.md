@@ -42,7 +42,7 @@ Public extension functions in edu.jhu.cobra.commons.value convert native inputs 
 
 **`String.strVal: StrVal`** -- Wraps String as StrVal.
 
-**`ByteArray.strVal: StrVal`** -- The string value of the byte sequence: each well-formed UTF-8 sequence decodes to its character, and each other byte `XX` to the unit U+DCXX. Inverse of `StrVal.toByteArray()` ([design-primitive.md](design-primitive.md#strval)).
+**`ByteArray.strVal: StrVal`** -- The string value of the byte sequence: each well-formed UTF-8 sequence decodes to its character, and each other byte `XX` to the unit U+DCXX. `bytes.strVal.toByteArray()` equals `bytes`; `value.toByteArray().strVal` equals `value` for a value without an unpaired surrogate outside U+DC80..U+DCFF ([design-primitive.md](design-primitive.md#strval)).
 
 **`Char.strVal: StrVal`** -- Wraps Char (as String) as StrVal.
 
@@ -92,7 +92,7 @@ Wire-format helper functions (`asHexInt`, buffer readers): [design-serializer.md
 
 | Exception | When Raised |
 |-----------|------------|
-| `IllegalArgumentException` | `Any?.toVal` / `Any?.primitiveVal` called on unsupported type; serializer encounters unknown IValue subtype, nesting deeper than `MAX_NESTING_DEPTH`, or a map key with unpaired surrogates |
+| `IllegalArgumentException` | `Any?.toVal` / `Any?.primitiveVal` called on unsupported type; serializer encounters unknown IValue subtype, nesting deeper than `MAX_NESTING_DEPTH`, a map key with unpaired surrogates, or a string value holding an unpaired surrogate outside U+DC80..U+DCFF |
 | `ValFormatException` (extends `IllegalArgumentException`) | Any malformed material passed to `deserialize`: unknown tag, truncated payload, invalid size/count prefix, unparsable number, excessive nesting, empty material, trailing material ([design-serializer.md](design-serializer.md)) |
 | `IndexOutOfBoundsException` | `ListVal.get`/`set`/`subList` with out-of-range index; `StrVal.get` with out-of-range index |
 | `NumberFormatException` | `String.intVal` / `String.floatVal` / `String.asHexInt()` on invalid input |

@@ -77,7 +77,7 @@ public object DftCharBufferSerializerImpl : IValSerializer<CharBuffer> {
             }
 
             is StrVal -> {
-                if (value.holdsByteOutsideUtf8()) strBytesFrame(value) else strFrame(value.core)
+                if (value.stringTag() == Type.STR_BYTES) strBytesFrame(value) else strFrame(value.core)
             }
 
             is BoolVal -> {

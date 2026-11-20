@@ -18,7 +18,7 @@ Public IValSerializer implementations and Type are in edu.jhu.cobra.commons.valu
 
 | Method | Behavior | Input | Output | Errors |
 |--------|----------|-------|--------|--------|
-| `serialize(value: IValue)` | Encodes value into material format | `value: IValue` | `Material` | `IllegalArgumentException` on nesting deeper than `MAX_NESTING_DEPTH` or a map key with unpaired surrogates |
+| `serialize(value: IValue)` | Encodes value into material format | `value: IValue` | `Material` | `IllegalArgumentException` on nesting deeper than `MAX_NESTING_DEPTH`, a map key with unpaired surrogates, or a string value holding an unpaired surrogate outside U+DC80..U+DCFF |
 | `deserialize(material: Material)` | Decodes material into IValue; consumes the material exactly | `material: Material` | `IValue` | `ValFormatException` on any malformed material |
 
 **Deserialization contract (all implementations):**
@@ -38,7 +38,7 @@ Public IValSerializer implementations and Type are in edu.jhu.cobra.commons.valu
 
 **Responsibility:** Stateless singleton serializer converting IValue to/from `ByteArray` using binary format with type-byte prefix.
 
-**Serialization Format:** `[type_byte][payload_bytes]`. Lists and sets use size-prefixed element blocks. Maps encode key bytes and value bytes with size prefixes. Ranges encode a size prefix for the first bound followed by two tagged 8-byte Longs. Strings carry no length prefix: the payload extends to the end of the value's window. A string without an unpaired unit U+DC80..U+DCFF is `[STR][UTF-8 bytes]`; a string holding one is `[STR_BYTES][bytes of StrVal.toByteArray()]`.
+**Serialization Format:** `[type_byte][payload_bytes]`. Lists and sets use size-prefixed element blocks. Maps encode key bytes and value bytes with size prefixes. Ranges encode a size prefix for the first bound followed by two tagged 8-byte Longs. Strings carry no length prefix: the payload extends to the end of the value's window. A string payload is the bytes of `StrVal.toByteArray()`, read back by `ByteArray.strVal`: a string without an unpaired unit U+DC80..U+DCFF is `[STR][payload]`, its UTF-8 bytes, and a string holding one is `[STR_BYTES][payload]`.
 
 ---
 
@@ -46,7 +46,7 @@ Public IValSerializer implementations and Type are in edu.jhu.cobra.commons.valu
 
 **Responsibility:** Stateless singleton serializer converting IValue to/from `ByteBuffer` using binary format with type-byte prefix and element count for collections.
 
-**Serialization Format:** `[type_byte][count (for collections)][elements]`. Strings are length-prefixed: a string without an unpaired unit U+DC80..U+DCFF is `[STR][Int length][UTF-8 bytes]`; a string holding one is `[STR_BYTES][Int length][bytes of StrVal.toByteArray()]`. Booleans use distinct type bytes (BOOL_TRUE/BOOL_FALSE). IntVal serializes as 8-byte Long. FloatVal serializes as 8-byte Double. Ranges store two tagged 8-byte Longs (INT tag before each bound).
+**Serialization Format:** `[type_byte][count (for collections)][elements]`. Strings are length-prefixed, and a string payload is the bytes of `StrVal.toByteArray()`, read back by `ByteArray.strVal`: a string without an unpaired unit U+DC80..U+DCFF is `[STR][Int length][payload]`, its UTF-8 bytes, and a string holding one is `[STR_BYTES][Int length][payload]`. Booleans use distinct type bytes (BOOL_TRUE/BOOL_FALSE). IntVal serializes as 8-byte Long. FloatVal serializes as 8-byte Double. Ranges store two tagged 8-byte Longs (INT tag before each bound).
 
 ---
 
@@ -84,7 +84,9 @@ Internal validation helpers shared by the serializer implementations.
 
 **`String.requireWellFormedUtf16(): String`** -- Returns the receiver; throws `IllegalArgumentException` when the string contains an unpaired UTF-16 surrogate. Called by all three serializers before encoding a map key, and by the char-buffer serializer on each decoded `Str` payload.
 
-**`StrVal.holdsByteOutsideUtf8(): Boolean`** -- Whether `core` holds an unpaired unit U+DC80..U+DCFF, `core.indexOfByteOutsideUtf8() >= 0`; one scan of the UTF-16 units. The three serializers select the `STR_BYTES` frame when it is `true` and the `STR` frame otherwise; decoding a `STR_BYTES` payload rejects a value for which it is `false`.
+**`StrVal.stringTag(): Type`** -- The tag of a string value's frame: `STR_BYTES` when `core` holds an unpaired unit U+DC80..U+DCFF and `STR` otherwise; throws `IllegalArgumentException` when `core` holds an unpaired surrogate outside U+DC80..U+DCFF, whose bytes read back as another value. The three serializers select the frame of every string value through it.
+
+**`StrVal.holdsByteOutsideUtf8(): Boolean`** -- Whether `core` holds an unpaired unit U+DC80..U+DCFF, `core.indexOfByteOutsideUtf8() >= 0`. Decoding a `STR_BYTES` payload rejects a value for which it is `false`, and decoding a binary `STR` payload rejects a value for which it is `true`, so each value has one material per format.
 
 **`decodeMaterial(block: () -> T): T`** -- Runs a deserialization body and rethrows every decoding failure (`BufferUnderflowException`, `NumberFormatException`, `CharacterCodingException`, `IllegalArgumentException`) as `ValFormatException` with the original cause. Wraps the body of every `deserialize` implementation.
 

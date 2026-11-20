@@ -44,7 +44,9 @@ import kotlin.test.assertFailsWith
  *   rejected at serialize instead of overflowing the stack.
  * - `should round-trip StrVal with surrogate pair` — Well-formed surrogate pair round-trips.
  * - `should round-trip StrVal holding units` — Strings holding units U+DC80..U+DCFF, alone and among
- *   characters, and a lone high surrogate canonicalized to units, round-trip.
+ *   characters, round-trip.
+ * - `should throw IllegalArgumentException when serializing StrVal holding a surrogate outside DC80 to DCFF` — A
+ *   kept lone high or low surrogate, at the top, in a list and as a map value, is rejected at serialize.
  * - `should round-trip StrVal holding units inside containers` — Units and `?` round-trip as list
  *   elements, set elements and a map value.
  * - `should throw IllegalArgumentException when serializing unpaired surrogate in map key` — A lone high
@@ -242,7 +244,19 @@ internal class IValSerializerCollectionTest {
     fun `should round-trip StrVal holding units`(serializer: IValSerializer<*>) {
         assertRoundTrip(serializer, StrVal("\uDCFF"))
         assertRoundTrip(serializer, StrVal("a\uDCC3b😀\uDCFFé"))
-        assertRoundTrip(serializer, StrVal("broken: \uD800"))
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    @ParameterizedTest
+    @MethodSource("serializers")
+    fun `should throw IllegalArgumentException when serializing StrVal holding a surrogate outside DC80 to DCFF`(
+        serializer: IValSerializer<*>,
+    ) {
+        val s = serializer as IValSerializer<Any>
+        assertFailsWith<IllegalArgumentException> { s.serialize(StrVal("broken: \uD800")) }
+        assertFailsWith<IllegalArgumentException> { s.serialize(StrVal("\uDC00\uDCFF")) }
+        assertFailsWith<IllegalArgumentException> { s.serialize(ListVal(StrVal("😀".substring(0, 1)))) }
+        assertFailsWith<IllegalArgumentException> { s.serialize(MapVal("k" to StrVal("\uDE00"))) }
     }
 
     @ParameterizedTest

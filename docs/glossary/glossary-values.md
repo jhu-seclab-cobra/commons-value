@@ -19,7 +19,7 @@ The value family: the closed set of data items the library represents, serialize
 
 | Member | Definition | Reference | Literature | Tools |
 |--------|------------|-----------|------------|-------|
-| `StrVal` | A byte string; its text holds each well-formed UTF-8 sequence as a character and each other byte as one unit U+DC80..U+DCFF. | none | none | none |
+| `StrVal` | A byte string; its text holds each well-formed UTF-8 sequence as a character, each other byte as one unit U+DC80..U+DCFF, and each unpaired surrogate outside U+DC80..U+DCFF its constructor received unchanged. | none | none | none |
 | `IntVal` | A signed 64-bit integer. | none | none | none |
 | `FloatVal` | An IEEE 754 binary64 floating-point number. | none | none | none |
 | `BoolVal` | A boolean. | none | none | none |

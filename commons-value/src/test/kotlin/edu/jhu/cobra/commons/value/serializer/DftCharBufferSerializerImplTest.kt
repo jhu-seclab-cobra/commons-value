@@ -35,7 +35,8 @@ import kotlin.test.assertTrue
  * - `should throw ValFormatException when string material is not the one material of its value` — A `StrB`
  *   payload that is well-formed UTF-8 or empty, holds uppercase or non-hex digits, or is shorter than its
  *   byte count; a `StrB` byte count spelled other than `Int.asHexString()` emits it (`01`, `+1`, `A`); a `Str`
- *   payload holding an unpaired surrogate; a map key in the `StrB` frame.
+ *   payload holding an unpaired surrogate; a map key in the `StrB` frame; a map key in the `Str` frame holding a
+ *   unit.
  */
 internal class DftCharBufferSerializerImplTest {
     @Test
@@ -151,6 +152,7 @@ internal class DftCharBufferSerializerImplTest {
             "Str:1:\uDCFF",
             "Str:1:\uD800",
             "Map:1:StrB:1:ff=Null::",
+            "Map:1:Str:1:\uDCFF=Null::",
         ],
     )
     fun `should throw ValFormatException when string material is not the one material of its value`(material: String) {

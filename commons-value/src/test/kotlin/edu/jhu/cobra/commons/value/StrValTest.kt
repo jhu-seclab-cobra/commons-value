@@ -15,18 +15,22 @@ import kotlin.test.assertTrue
  * - `should store string core` — primary constructor
  * - `should default to empty string` — default constructor
  * - `should store text without unpaired surrogate as the same instance` — fast path keeps the argument
- * - `should store canonical text holding units as the same instance` — canonical units are kept
+ * - `should store canonical text holding units unchanged` — canonical units are kept
  * - `should combine units forming well-formed UTF-8 into the character` — run re-decoding
  * - `should combine units after a unit that starts no sequence` — run re-decoding from a later position
  * - `should keep units that form no well-formed UTF-8` — invalid runs stay units
- * - `should map lone high surrogate to three units` — generalized UTF-8 of D800
- * - `should map low surrogate below DC80 to three units` — generalized UTF-8 of DC00
+ * - `should keep a lone high surrogate` — D800 and the first half of a split pair stay
+ * - `should keep a low surrogate outside DC80 to DCFF` — DC00 and the second half of a split pair stay
+ * - `should re-decode the runs of units on each side of a kept surrogate` — a kept surrogate ends a run
+ * - `should give its own core for a canonical core` — construction is idempotent
+ * - `should join the two halves of a split pair into the character` — concatenated halves are the pair
  * - `should keep well-formed surrogate pair` — supplementary characters stay
  * - `should equal and hash by canonical core` — equality after canonicalization
  * - `should render core in toString` — toString form
  * - `should canonicalize concatenated cores of single units` — join of byte units
  * - `should encode characters as UTF-8 and units as their bytes` — toByteArray mapping
- * - `should encode lone high surrogate as ED A0 80` — toByteArray of a non-canonical argument
+ * - `should encode lone high surrogate as ED A0 80` — toByteArray of a kept surrogate
+ * - `should share the bytes of a kept surrogate with the value of those bytes` — U+D83D and DCED DCA0 DCBD
  * - `should encode concatenation as concatenated bytes` — homomorphism over concatenation
  * - `should encode a pair whose low unit is in DC80 to DCFF as its four bytes` — U+1F480 is F0 9F 92 80
  * - `should find no byte outside UTF-8 in text and pairs` — indexOfByteOutsideUtf8 reads a pair as one character
@@ -94,9 +98,9 @@ internal class StrValTest {
     }
 
     @Test
-    fun `should store canonical text holding units as the same instance`() {
+    fun `should store canonical text holding units unchanged`() {
         val text = "a\uDCFF\uDCC3b\uDCA9"
-        assertSame(text, StrVal(text).core)
+        assertEquals(text, StrVal(text).core)
     }
 
     @Test
@@ -119,14 +123,39 @@ internal class StrValTest {
     }
 
     @Test
-    fun `should map lone high surrogate to three units`() {
-        assertEquals("\uDCED\uDCA0\uDC80", StrVal("\uD800").core)
-        assertEquals("a\uDCED\uDCA0\uDC80b", StrVal("a\uD800b").core)
+    fun `should keep a lone high surrogate`() {
+        assertEquals("\uD800", StrVal("\uD800").core)
+        assertEquals("a\uD83Db", StrVal("a\uD83Db").core)
+        assertEquals("\uD83D", StrVal("😀".substring(0, 1)).core)
     }
 
     @Test
-    fun `should map low surrogate below DC80 to three units`() {
-        assertEquals("\uDCED\uDCB0\uDC80", StrVal("\uDC00").core)
+    fun `should keep a low surrogate outside DC80 to DCFF`() {
+        assertEquals("\uDC00", StrVal("\uDC00").core)
+        assertEquals("\uDE00", StrVal("😀".substring(1)).core)
+    }
+
+    @Test
+    fun `should re-decode the runs of units on each side of a kept surrogate`() {
+        assertEquals("\uDCC3\uDC00\uDCA9", StrVal("\uDCC3\uDC00\uDCA9").core)
+        assertEquals("\uDC00é", StrVal("\uDC00\uDCC3\uDCA9").core)
+        assertEquals("é\uD800", StrVal("\uDCC3\uDCA9\uD800").core)
+    }
+
+    @Test
+    fun `should give its own core for a canonical core`() {
+        val inputs = listOf("\uD83D", "\uDCC3\uDCA9", "\uDCC3\uDC00\uDCA9", "a\uDCFF𐃃\uDCA9", "😀\uDCFF")
+        for (input in inputs) {
+            val core = StrVal(input).core
+            assertEquals(core, StrVal(core).core, input)
+        }
+    }
+
+    @Test
+    fun `should join the two halves of a split pair into the character`() {
+        val emoji = "😀"
+        val halves = StrVal(emoji.substring(0, 1)).core + StrVal(emoji.substring(1)).core
+        assertEquals(StrVal(emoji), StrVal(halves))
     }
 
     @Test
@@ -165,6 +194,16 @@ internal class StrValTest {
     @Test
     fun `should encode lone high surrogate as ED A0 80`() {
         assertContentEquals(bytesOf(0xED, 0xA0, 0x80), StrVal("\uD800").toByteArray())
+    }
+
+    @Test
+    fun `should share the bytes of a kept surrogate with the value of those bytes`() {
+        val kept = StrVal("\uD83D")
+        val units = StrVal("\uDCED\uDCA0\uDCBD")
+        assertContentEquals(bytesOf(0xED, 0xA0, 0xBD), kept.toByteArray())
+        assertContentEquals(kept.toByteArray(), units.toByteArray())
+        assertNotEquals(kept, units)
+        assertEquals(units, kept.toByteArray().strVal)
     }
 
     @Test
@@ -210,7 +249,6 @@ internal class StrValTest {
     fun `should not report surrogates outside DC80 to DCFF`() {
         assertEquals(-1, "\uD800".indexOfByteOutsideUtf8())
         assertEquals(-1, "\uDC00\uDD00".indexOfByteOutsideUtf8())
-        assertEquals(1, "𐂀".indexOfByteOutsideUtf8(startIndex = 1))
     }
 
     // --- startsWith ---
