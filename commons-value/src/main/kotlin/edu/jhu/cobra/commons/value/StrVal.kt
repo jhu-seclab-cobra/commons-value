@@ -158,8 +158,10 @@ public class StrVal : IPrimitiveVal {
 }
 
 /**
- * Returns the byte sequence this string stands for: the UTF-8 bytes of each character, and byte `XX`
- * for each unpaired unit U+DCXX. [ByteArray.strVal] is the inverse.
+ * Returns the byte sequence this string stands for: the UTF-8 bytes of each character, byte `XX`
+ * for each unpaired unit U+DCXX, and the three bytes of the generalized UTF-8 form of each other
+ * unpaired surrogate. [ByteArray.strVal] gives back this value only when it holds no unpaired
+ * surrogate outside U+DC80..U+DCFF; for `StrVal("\uD83D")` it gives `StrVal("\uDCED\uDCA0\uDCBD")`.
  *
  * @return The bytes of this string
  */

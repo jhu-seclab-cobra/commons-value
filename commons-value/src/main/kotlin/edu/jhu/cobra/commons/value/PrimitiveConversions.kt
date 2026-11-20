@@ -15,7 +15,8 @@ public val String.strVal: StrVal get() = StrVal(this)
  * Converts this byte sequence to the [StrVal] that stands for it.
  *
  * Each well-formed UTF-8 sequence becomes its character, and each other byte `XX` becomes the unit
- * U+DCXX; [StrVal.toByteArray] is the inverse.
+ * U+DCXX. `bytes.strVal.toByteArray()` equals `bytes`; `value.toByteArray().strVal` equals `value`
+ * only for a value with no unpaired surrogate outside U+DC80..U+DCFF.
  *
  * @return The [StrVal] whose bytes are this array
  */
