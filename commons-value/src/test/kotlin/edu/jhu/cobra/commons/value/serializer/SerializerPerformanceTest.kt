@@ -8,8 +8,11 @@ import edu.jhu.cobra.commons.value.ListVal
 import edu.jhu.cobra.commons.value.MapVal
 import edu.jhu.cobra.commons.value.SetVal
 import edu.jhu.cobra.commons.value.StrVal
+import edu.jhu.cobra.commons.value.strVal
+import edu.jhu.cobra.commons.value.toByteArray
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
+import java.lang.management.ManagementFactory
 import kotlin.random.Random
 import kotlin.test.assertEquals
 
@@ -31,6 +34,10 @@ import kotlin.test.assertEquals
  * - `should measure collection serialization memory allocation` — Memory per-op for collections across all serializers.
  * - `should compare serialized sizes across serializers` — Output size comparison across all three serializers.
  * - `should measure value creation throughput` — Throughput for creating value type instances.
+ * - `should measure string construction per input class` — Time and allocated bytes per [StrVal] construction for
+ *   ASCII, BMP outside ASCII, supplementary and byte-unit content at lengths 8, 64, 512 and 4096 UTF-16 units.
+ * - `should measure string construction from bytes per input class` — The same measurement for `ByteArray.strVal`
+ *   over the bytes of each of those strings.
  */
 @Tag("performance")
 internal class SerializerPerformanceTest {
@@ -38,6 +45,11 @@ internal class SerializerPerformanceTest {
         // Indices into randomIValue: 0=Null, 1=Str, 2=Bool, 3=Unsure, 4=List, 5=Set, 6=Map, 7=Range, 8=Int, 9=Float
         private val PRIMITIVE_TYPES = intArrayOf(0, 1, 2, 3, 8, 9)
         private val COLLECTION_TYPES = intArrayOf(4, 5, 6, 7)
+
+        // String construction: UTF-16 lengths, UTF-16 units constructed per measured run, retained-result ring size.
+        private val STRING_LENGTHS = intArrayOf(8, 64, 512, 4096)
+        private const val STRING_UNITS_PER_RUN = 1 shl 24
+        private const val STRING_SINK_SIZE = 1024
     }
 
     private val primitiveDataSet =
@@ -166,6 +178,52 @@ internal class SerializerPerformanceTest {
             }
         val totalOps = valueCreationCount.toLong() * 6
         printStats("ValueCreation", times, totalOps)
+    }
+
+    @Test
+    fun `should measure string construction per input class`() {
+        measureStringConstruction("StrVal-construct", { it }) { StrVal(it) }
+    }
+
+    @Test
+    fun `should measure string construction from bytes per input class`() {
+        measureStringConstruction("StrVal-from-bytes", { StrVal(it).toByteArray() }) { it.strVal }
+    }
+
+    // Each class repeats one unit: ASCII 'a', BMP 'é' (U+00E9), the pair of U+1F600, the byte unit U+DCFF. [prepare]
+    // turns the text of a class and length into the input [construct] takes.
+    private fun <T> measureStringConstruction(
+        prefix: String,
+        prepare: (String) -> T,
+        construct: (T) -> StrVal,
+    ) {
+        val threads = ManagementFactory.getThreadMXBean() as com.sun.management.ThreadMXBean
+        val classes = listOf("ascii" to "a", "bmp" to "é", "supplementary" to "😀", "byte-unit" to "\uDCFF")
+        // A ring of retained results keeps every constructed value escaping, so allocation is not optimized away.
+        val sink = arrayOfNulls<StrVal>(STRING_SINK_SIZE)
+        var consumed = 0L
+        for ((label, unit) in classes) {
+            for (length in STRING_LENGTHS) {
+                val input = prepare(unit.repeat(length / unit.length))
+                val ops = STRING_UNITS_PER_RUN / length
+                repeat(warmupRuns) { repeat(ops) { sink[it and (STRING_SINK_SIZE - 1)] = construct(input) } }
+                val times = mutableListOf<Double>()
+                val allocated = mutableListOf<Long>()
+                repeat(measureRuns) {
+                    val bytesBefore = threads.currentThreadAllocatedBytes
+                    val start = System.nanoTime()
+                    repeat(ops) { sink[it and (STRING_SINK_SIZE - 1)] = construct(input) }
+                    times += (System.nanoTime() - start).toDouble() / ops
+                    allocated += (threads.currentThreadAllocatedBytes - bytesBefore) / ops
+                    consumed += sink.sumOf { value -> value?.core?.length ?: 0 }
+                }
+                println(
+                    "[$prefix-$label-$length] avg=%.2f ns/op, min=%.2f ns/op, max=%.2f ns/op, allocated=%d bytes/op"
+                        .format(times.average(), times.min(), times.max(), allocated.min()),
+                )
+            }
+        }
+        println("[$prefix] consumed=$consumed")
     }
 
     private fun <T : Any> benchmarkSerializer(

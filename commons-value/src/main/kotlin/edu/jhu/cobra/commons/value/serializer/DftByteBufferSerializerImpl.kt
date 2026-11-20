@@ -12,6 +12,8 @@ import edu.jhu.cobra.commons.value.SetVal
 import edu.jhu.cobra.commons.value.StrVal
 import edu.jhu.cobra.commons.value.Unsure
 import edu.jhu.cobra.commons.value.checkNestingDepth
+import edu.jhu.cobra.commons.value.strVal
+import edu.jhu.cobra.commons.value.toByteArray
 import java.nio.ByteBuffer
 
 /**
@@ -36,7 +38,7 @@ public object DftByteBufferSerializerImpl : IValSerializer<ByteBuffer> {
      * @param value The [IValue] instance to serialize.
      * @return A [ByteBuffer] containing the serialized representation of the value.
      * @throws IllegalArgumentException If value nesting exceeds the supported depth (including cyclic
-     *   value graphs), or a string contains an unpaired UTF-16 surrogate.
+     *   value graphs), or a map key contains an unpaired UTF-16 surrogate.
      */
     override fun serialize(value: IValue): ByteBuffer = encode(value, depth = 0)
 
@@ -52,11 +54,13 @@ public object DftByteBufferSerializerImpl : IValSerializer<ByteBuffer> {
             }
 
             is StrVal -> {
-                val strCore = value.core.requireWellFormedUtf16().toByteArray()
+                // A core without a unit U+DC80..U+DCFF is canonical well-formed UTF-16.
+                val holdsByte = value.holdsByteOutsideUtf8()
+                val strCore = if (holdsByte) value.toByteArray() else value.core.toByteArray()
                 val bufferLen = TYPE_TAG_BYTES + SIZE_PREFIX_BYTES + strCore.size
                 ByteBuffer
                     .allocate(bufferLen)
-                    .put(Type.STR.byte)
+                    .put(if (holdsByte) Type.STR_BYTES.byte else Type.STR.byte)
                     .putInt(strCore.size)
                     .put(strCore)
                     .flip()
@@ -164,6 +168,10 @@ public object DftByteBufferSerializerImpl : IValSerializer<ByteBuffer> {
 
             Type.STR.byte -> {
                 StrVal(material.getString())
+            }
+
+            Type.STR_BYTES.byte -> {
+                material.getArray(material.getInt()).strVal.requireByteOutsideUtf8()
             }
 
             Type.BOOL_TRUE.byte -> {

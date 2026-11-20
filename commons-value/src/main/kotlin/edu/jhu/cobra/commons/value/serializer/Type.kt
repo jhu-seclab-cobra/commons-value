@@ -15,6 +15,7 @@ public enum class Type(
 ) {
     NULL(10, "Null"),
     STR(20, "Str"),
+    STR_BYTES(21, "StrB"),
     BOOL(30, "Bool"),
     BOOL_TRUE(31, "True"),
     BOOL_FALSE(32, "False"),

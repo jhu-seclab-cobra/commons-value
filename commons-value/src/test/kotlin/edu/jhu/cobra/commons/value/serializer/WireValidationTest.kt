@@ -10,7 +10,9 @@ import java.nio.charset.MalformedInputException
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
 import kotlin.test.assertSame
+import kotlin.test.assertTrue
 
 /*
  * Tests for the wire-validation helpers specified in design-serializer.md (Wire Format Helpers).
@@ -19,6 +21,10 @@ import kotlin.test.assertSame
  *   paired-surrogate strings pass through unchanged.
  * - `should throw IllegalArgumentException from requireWellFormedUtf16 for unpaired surrogate` — Lone high,
  *   lone low, high followed by non-low, and low-before-high are rejected.
+ * - `should return false from holdsByteOutsideUtf8 for well-formed text` — ASCII, BMP, supplementary
+ *   characters and U+FFFD hold no unit.
+ * - `should return true from holdsByteOutsideUtf8 for a string holding a unit` — A unit alone, after ASCII,
+ *   after a surrogate pair, and the units of a canonicalized lone high surrogate.
  * - `should return block result from decodeMaterial on success` — A successful body's value is returned.
  * - `should rethrow ValFormatException unchanged from decodeMaterial` — An existing ValFormatException is not
  *   wrapped.
@@ -46,6 +52,20 @@ internal class WireValidationTest {
     @ValueSource(strings = ["\uD83D", "\uDE00", "\uD83Dx", "\uDE00\uD83D"])
     fun `should throw IllegalArgumentException from requireWellFormedUtf16 for unpaired surrogate`(text: String) {
         assertFailsWith<IllegalArgumentException> { text.requireWellFormedUtf16() }
+    }
+
+    // --- StrVal.holdsByteOutsideUtf8 ---
+
+    @ParameterizedTest
+    @ValueSource(strings = ["", "ascii", "é", "😀", "􏿿", "�"])
+    fun `should return false from holdsByteOutsideUtf8 for well-formed text`(text: String) {
+        assertFalse(StrVal(text).holdsByteOutsideUtf8())
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = ["\uDCFF", "a\uDC80", "😀\uDCC3", "\uD800"])
+    fun `should return true from holdsByteOutsideUtf8 for a string holding a unit`(text: String) {
+        assertTrue(StrVal(text).holdsByteOutsideUtf8())
     }
 
     // --- decodeMaterial ---

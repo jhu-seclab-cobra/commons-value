@@ -1,8 +1,10 @@
 package edu.jhu.cobra.commons.value.serializer
 
 import edu.jhu.cobra.commons.value.MAX_NESTING_DEPTH
+import edu.jhu.cobra.commons.value.StrVal
 import java.nio.ByteBuffer
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
@@ -28,6 +30,11 @@ import kotlin.test.assertTrue
  * - `should throw ValFormatException when STR payload contains invalid UTF-8` — Malformed byte sequence
  *   rejected instead of silently decoding to U+FFFD.
  * - `should throw ValFormatException when map key contains invalid UTF-8` — Malformed key bytes rejected.
+ * - `should throw ValFormatException when STR payload encodes a surrogate` — ED B3 BF, the generalized
+ *   UTF-8 of a unit, is invalid in the STR frame.
+ * - `should throw ValFormatException when STR_BYTES payload is well-formed UTF-8` — A string without a
+ *   byte outside UTF-8 has only the STR material.
+ * - `should decode STR_BYTES payload to its units` — `[21] FF 61` decodes to the unit U+DCFF and `a`.
  */
 internal class DftByteArraySerializerImplTest {
     @Test
@@ -137,5 +144,27 @@ internal class DftByteArraySerializerImplTest {
         assertFailsWith<ValFormatException> {
             DftByteArraySerializerImpl.deserialize(corruptBytes)
         }
+    }
+
+    @Test
+    fun `should throw ValFormatException when STR payload encodes a surrogate`() {
+        val corruptBytes = byteArrayOf(Type.STR.byte, 0xED.toByte(), 0xB3.toByte(), 0xBF.toByte())
+        assertFailsWith<ValFormatException> {
+            DftByteArraySerializerImpl.deserialize(corruptBytes)
+        }
+    }
+
+    @Test
+    fun `should throw ValFormatException when STR_BYTES payload is well-formed UTF-8`() {
+        val corruptBytes = byteArrayOf(Type.STR_BYTES.byte, 0xC3.toByte(), 0xA9.toByte())
+        assertFailsWith<ValFormatException> {
+            DftByteArraySerializerImpl.deserialize(corruptBytes)
+        }
+    }
+
+    @Test
+    fun `should decode STR_BYTES payload to its units`() {
+        val material = byteArrayOf(Type.STR_BYTES.byte, 0xFF.toByte(), 0x61)
+        assertEquals(StrVal("\uDCFFa"), DftByteArraySerializerImpl.deserialize(material))
     }
 }

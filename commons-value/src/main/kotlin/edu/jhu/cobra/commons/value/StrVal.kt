@@ -1,18 +1,41 @@
 package edu.jhu.cobra.commons.value
 
 /**
- * Represents a string value in the storage system.
+ * Represents a string value that stands for a byte sequence.
  *
- * Provides utility methods for string manipulation and comparison.
- * @property core The actual string value.
+ * Provides utility methods for string manipulation and comparison; they are text operations on [core],
+ * and a byte operation reads [toByteArray].
  */
-public data class StrVal(
-    override val core: String,
-) : IPrimitiveVal {
+public class StrVal : IPrimitiveVal {
+    /**
+     * The canonical text of the string's bytes: each well-formed UTF-8 sequence is its character, and
+     * each other byte `XX` in 80..FF is the unpaired unit U+DCXX.
+     */
+    override val core: String
+
+    /**
+     * Creates a `StrVal` of the bytes [core] stands for.
+     *
+     * @param core The string content; the constructor stores its canonical form.
+     */
+    public constructor(core: String) {
+        this.core = canonical(core)
+    }
+
     /**
      * Creates a `StrVal` initialized to an empty string.
      */
     public constructor() : this("")
+
+    // The decoding of bytes is canonical already, so this constructor skips the canonical scan.
+    private constructor(bytes: ByteArray) {
+        core = decodeBytes(bytes)
+    }
+
+    internal companion object {
+        /** The `StrVal` whose bytes are [bytes], decoded once. */
+        internal fun ofBytes(bytes: ByteArray): StrVal = StrVal(bytes)
+    }
 
     /**
      * Determines whether this string starts with the specified [other] string.
@@ -127,5 +150,38 @@ public data class StrVal(
         return get(position.toInt())
     }
 
+    override fun equals(other: Any?): Boolean = this === other || (other is StrVal && core == other.core)
+
+    override fun hashCode(): Int = core.hashCode()
+
     override fun toString(): String = "StrVal{$core}"
+}
+
+/**
+ * Returns the byte sequence this string stands for: the UTF-8 bytes of each character, and byte `XX`
+ * for each unpaired unit U+DCXX. [ByteArray.strVal] is the inverse.
+ *
+ * @return The bytes of this string
+ */
+public fun StrVal.toByteArray(): ByteArray = core.encodeBytes()
+
+/**
+ * Returns the index of the first unpaired unit U+DC80..U+DCFF at or after [startIndex], or -1 when
+ * there is none.
+ *
+ * A high surrogate followed by a low surrogate is one pair, so the low unit DC80 of U+1F480
+ * (D83D DC80) is not returned when [startIndex] is a character's first unit. Applied to a
+ * [StrVal.core] from such an index, the result is the next unit that stands for a byte outside UTF-8.
+ *
+ * @param startIndex The index of a character's first unit; a negative index reads as 0
+ * @return The index of the unit, or -1
+ */
+public fun String.indexOfByteOutsideUtf8(startIndex: Int = 0): Int {
+    var index = startIndex.coerceAtLeast(0)
+    while (index < length) {
+        val char = this[index]
+        if (char.isByteOutsideUtf8()) return index
+        index += if (char.isHighSurrogate() && index + 1 < length && this[index + 1].isLowSurrogate()) 2 else 1
+    }
+    return -1
 }

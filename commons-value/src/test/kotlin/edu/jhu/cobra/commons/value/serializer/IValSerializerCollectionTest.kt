@@ -43,10 +43,12 @@ import kotlin.test.assertFailsWith
  * - `should throw IllegalArgumentException when serializing cyclic value graph` — Self-referencing list
  *   rejected at serialize instead of overflowing the stack.
  * - `should round-trip StrVal with surrogate pair` — Well-formed surrogate pair round-trips.
- * - `should throw IllegalArgumentException when serializing unpaired surrogate in string` — Lone high
- *   surrogate in StrVal rejected at serialize instead of corrupting silently.
- * - `should throw IllegalArgumentException when serializing unpaired surrogate in map key` — Lone high
- *   surrogate in a map key rejected at serialize instead of corrupting silently.
+ * - `should round-trip StrVal holding units` — Strings holding units U+DC80..U+DCFF, alone and among
+ *   characters, and a lone high surrogate canonicalized to units, round-trip.
+ * - `should round-trip StrVal holding units inside containers` — Units and `?` round-trip as list
+ *   elements, set elements and a map value.
+ * - `should throw IllegalArgumentException when serializing unpaired surrogate in map key` — A lone high
+ *   surrogate or a unit in a map key rejected at serialize instead of corrupting silently.
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 internal class IValSerializerCollectionTest {
@@ -235,14 +237,25 @@ internal class IValSerializerCollectionTest {
         assertRoundTrip(serializer, StrVal("emoji: 😀"))
     }
 
-    @Suppress("UNCHECKED_CAST")
     @ParameterizedTest
     @MethodSource("serializers")
-    fun `should throw IllegalArgumentException when serializing unpaired surrogate in string`(serializer: IValSerializer<*>) {
-        val s = serializer as IValSerializer<Any>
-        assertFailsWith<IllegalArgumentException> {
-            s.serialize(StrVal("broken: \uD800"))
-        }
+    fun `should round-trip StrVal holding units`(serializer: IValSerializer<*>) {
+        assertRoundTrip(serializer, StrVal("\uDCFF"))
+        assertRoundTrip(serializer, StrVal("a\uDCC3b😀\uDCFFé"))
+        assertRoundTrip(serializer, StrVal("broken: \uD800"))
+    }
+
+    @ParameterizedTest
+    @MethodSource("serializers")
+    fun `should round-trip StrVal holding units inside containers`(serializer: IValSerializer<*>) {
+        val value =
+            ListVal(
+                StrVal("\uDCFE"),
+                StrVal("\uDCFF"),
+                SetVal(StrVal("\uDCC3"), StrVal("?")),
+                MapVal("k" to StrVal("x\uDCA9")),
+            )
+        assertRoundTrip(serializer, value)
     }
 
     @Suppress("UNCHECKED_CAST")
@@ -252,6 +265,9 @@ internal class IValSerializerCollectionTest {
         val s = serializer as IValSerializer<Any>
         assertFailsWith<IllegalArgumentException> {
             s.serialize(MapVal("broken: \uD800" to NullVal))
+        }
+        assertFailsWith<IllegalArgumentException> {
+            s.serialize(MapVal("\uDCFF" to NullVal))
         }
     }
 }

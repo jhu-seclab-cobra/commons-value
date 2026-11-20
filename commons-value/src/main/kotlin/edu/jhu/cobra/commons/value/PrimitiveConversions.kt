@@ -12,6 +12,16 @@ import kotlin.io.path.pathString
 public val String.strVal: StrVal get() = StrVal(this)
 
 /**
+ * Converts this byte sequence to the [StrVal] that stands for it.
+ *
+ * Each well-formed UTF-8 sequence becomes its character, and each other byte `XX` becomes the unit
+ * U+DCXX; [StrVal.toByteArray] is the inverse.
+ *
+ * @return The [StrVal] whose bytes are this array
+ */
+public val ByteArray.strVal: StrVal get() = StrVal.ofBytes(this)
+
+/**
  * Converts this character to a [StrVal].
  *
  * @return A [StrVal] containing this character as a one-character string

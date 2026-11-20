@@ -38,7 +38,8 @@ public object DftCharBufferSerializerImpl : IValSerializer<CharBuffer> {
      *
      * The serialization format is type-specific; length and count prefixes are hexadecimal:
      * - Null values: `Null:`
-     * - Strings: `Str:<hex length>:<value>`
+     * - Strings: `Str:<hex length>:<value>`; a string holding a unit U+DC80..U+DCFF is
+     *   `StrB:<hex byte count>:<two lowercase hex digits per byte>`
      * - Booleans: `True:` or `False:`
      * - Integers: `IntV:<value>:`
      * - Floats: `FloatV:<value>:`
@@ -51,7 +52,7 @@ public object DftCharBufferSerializerImpl : IValSerializer<CharBuffer> {
      * @param value The [IValue] instance to serialize.
      * @return A [CharBuffer] containing the serialized representation of the value.
      * @throws IllegalArgumentException If value nesting exceeds the supported depth (including cyclic
-     *   value graphs), or a string contains an unpaired UTF-16 surrogate.
+     *   value graphs), or a map key contains an unpaired UTF-16 surrogate.
      */
     override fun serialize(value: IValue): CharBuffer = encode(value, depth = 0)
 
@@ -76,9 +77,7 @@ public object DftCharBufferSerializerImpl : IValSerializer<CharBuffer> {
             }
 
             is StrVal -> {
-                val hexCnt = value.length.asHexString()
-                val string = "${Type.STR.str}:$hexCnt:${value.core.requireWellFormedUtf16()}"
-                string.asCharBuffer()
+                if (value.holdsByteOutsideUtf8()) strBytesFrame(value) else strFrame(value.core)
             }
 
             is BoolVal -> {
@@ -110,7 +109,7 @@ public object DftCharBufferSerializerImpl : IValSerializer<CharBuffer> {
             }
 
             is MapVal -> { // mapType:cnt_hex{key=element, key=element, key=element}
-                val elements = value.map { (k, v) -> encode(StrVal(k), depth + 1) to encode(v, depth + 1) }
+                val elements = value.map { (k, v) -> strFrame(k.requireWellFormedUtf16()) to encode(v, depth + 1) }
                 val eleCount = value.size.asHexString() // the counter for ele
                 val eleLength = elements.sumOf { (k, v) -> k.length + v.length + ENTRY_DELIMITER_CHARS }
                 val charBuffer = CharBuffer.allocate(Type.MAP.str.length + HEADER_DELIMITER_CHARS + eleCount.length + eleLength)
@@ -130,6 +129,9 @@ public object DftCharBufferSerializerImpl : IValSerializer<CharBuffer> {
             }
         }
     }
+
+    // Text without a unit U+DC80..U+DCFF, as a string value or a map key: Str:len_hex:text
+    private fun strFrame(text: String): CharBuffer = "${Type.STR.str}:${text.length.asHexString()}:$text".asCharBuffer()
 
     // LIST and SET share one container layout: type:cnt_hex:element,element,...:
     private fun containerToBuffer(
@@ -180,9 +182,12 @@ public object DftCharBufferSerializerImpl : IValSerializer<CharBuffer> {
 
             // strType:cnt{}
             Type.STR.str -> {
-                val strLength = checkSizePrefix(material.getString(until = ':').asHexInt(), material.remaining(), "string size")
-                val stringCore = material.getString(size = strLength)
-                StrVal(core = stringCore)
+                StrVal(core = readStrText(material))
+            }
+
+            // strBytesType:byte_cnt_hex:hex_pairs
+            Type.STR_BYTES.str -> {
+                readStrBytesBody(material)
             }
 
             Type.BOOL_TRUE.str -> {
@@ -241,11 +246,13 @@ public object DftCharBufferSerializerImpl : IValSerializer<CharBuffer> {
                 val eleCount = checkSizePrefix(material.getString(':').asHexInt(), material.remaining(), "entry count")
                 val container = MapVal(size = eleCount)
                 repeat(eleCount) { index ->
-                    val key = requireDecodedType<StrVal>(decode(material, depth + 1), "map key")
+                    val keyType = material.getString(':')
+                    require(keyType == Type.STR.str) { "Invalid map key type $keyType: expected ${Type.STR.str}" }
+                    val key = readStrText(material)
                     requireDelimiter(material, '=')
                     val value = decode(material, depth + 1)
                     requireDelimiter(material, if (index == eleCount - 1) ':' else ',')
-                    container[key.core] = value
+                    container[key] = value
                 }
                 container
             }
@@ -254,6 +261,12 @@ public object DftCharBufferSerializerImpl : IValSerializer<CharBuffer> {
                 throw ValFormatException("Unknown type: $type")
             }
         }
+    }
+
+    // The body of a Str frame after its tag: len_hex:text, where the text is well-formed UTF-16.
+    private fun readStrText(material: CharBuffer): String {
+        val strLength = checkSizePrefix(material.getString(until = ':').asHexInt(), material.remaining(), "string size")
+        return material.getString(size = strLength).requireWellFormedUtf16()
     }
 
     // LIST and SET decode share one validated hex element-count prefix.

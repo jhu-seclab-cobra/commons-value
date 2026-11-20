@@ -1,6 +1,8 @@
 package edu.jhu.cobra.commons.value.serializer
 
 import edu.jhu.cobra.commons.value.IValue
+import edu.jhu.cobra.commons.value.StrVal
+import edu.jhu.cobra.commons.value.indexOfByteOutsideUtf8
 import java.nio.BufferUnderflowException
 import java.nio.charset.CharacterCodingException
 
@@ -38,6 +40,28 @@ private fun String.requireSurrogatesPaired(from: Int): String {
             index++
         }
     }
+    return this
+}
+
+/**
+ * Whether this string holds an unpaired unit U+DC80..U+DCFF, the unit of one byte outside UTF-8.
+ *
+ * The serializers encode such a string under [Type.STR_BYTES] and any other string under [Type.STR];
+ * decoding a [Type.STR_BYTES] payload rejects a string for which this is `false`, so each string has
+ * one material per format.
+ *
+ * @return `true` if [StrVal.core] holds an unpaired unit U+DC80..U+DCFF
+ */
+internal fun StrVal.holdsByteOutsideUtf8(): Boolean = core.indexOfByteOutsideUtf8() >= 0
+
+/**
+ * Validates that a decoded string-bytes payload holds a byte outside UTF-8.
+ *
+ * @return The validated string
+ * @throws IllegalArgumentException if every byte of the payload is part of well-formed UTF-8
+ */
+internal fun StrVal.requireByteOutsideUtf8(): StrVal {
+    require(holdsByteOutsideUtf8()) { "${Type.STR_BYTES} payload is well-formed UTF-8: expected ${Type.STR}" }
     return this
 }
 

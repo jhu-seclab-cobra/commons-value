@@ -1,9 +1,12 @@
 package edu.jhu.cobra.commons.value
 
 import org.junit.jupiter.api.Test
+import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
+import kotlin.test.assertNotEquals
+import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
 /**
@@ -11,6 +14,24 @@ import kotlin.test.assertTrue
  *
  * - `should store string core` — primary constructor
  * - `should default to empty string` — default constructor
+ * - `should store text without unpaired surrogate as the same instance` — fast path keeps the argument
+ * - `should store canonical text holding units as the same instance` — canonical units are kept
+ * - `should combine units forming well-formed UTF-8 into the character` — run re-decoding
+ * - `should combine units after a unit that starts no sequence` — run re-decoding from a later position
+ * - `should keep units that form no well-formed UTF-8` — invalid runs stay units
+ * - `should map lone high surrogate to three units` — generalized UTF-8 of D800
+ * - `should map low surrogate below DC80 to three units` — generalized UTF-8 of DC00
+ * - `should keep well-formed surrogate pair` — supplementary characters stay
+ * - `should equal and hash by canonical core` — equality after canonicalization
+ * - `should render core in toString` — toString form
+ * - `should canonicalize concatenated cores of single units` — join of byte units
+ * - `should encode characters as UTF-8 and units as their bytes` — toByteArray mapping
+ * - `should encode lone high surrogate as ED A0 80` — toByteArray of a non-canonical argument
+ * - `should encode concatenation as concatenated bytes` — homomorphism over concatenation
+ * - `should encode a pair whose low unit is in DC80 to DCFF as its four bytes` — U+1F480 is F0 9F 92 80
+ * - `should find no byte outside UTF-8 in text and pairs` — indexOfByteOutsideUtf8 reads a pair as one character
+ * - `should find unpaired units in DC80 to DCFF from the start index` — indexOfByteOutsideUtf8 hits and start index
+ * - `should not report surrogates outside DC80 to DCFF` — other unpaired surrogates are not byte units
  * - `should return true from startsWith when prefix matches` — startsWith match
  * - `should return false from startsWith when prefix does not match` — startsWith mismatch
  * - `should return true from startsWith with empty prefix` — startsWith empty boundary
@@ -62,6 +83,134 @@ internal class StrValTest {
     @Test
     fun `should default to empty string`() {
         assertEquals("", StrVal().core)
+    }
+
+    // --- Canonical form ---
+
+    @Test
+    fun `should store text without unpaired surrogate as the same instance`() {
+        val text = "café 😀 �"
+        assertSame(text, StrVal(text).core)
+    }
+
+    @Test
+    fun `should store canonical text holding units as the same instance`() {
+        val text = "a\uDCFF\uDCC3b\uDCA9"
+        assertSame(text, StrVal(text).core)
+    }
+
+    @Test
+    fun `should combine units forming well-formed UTF-8 into the character`() {
+        assertEquals("é", StrVal("\uDCC3\uDCA9").core)
+        assertEquals("x€y", StrVal("x\uDCE2\uDC82\uDCACy").core)
+        assertEquals("😀", StrVal("\uDCF0\uDC9F\uDC98\uDC80").core)
+    }
+
+    @Test
+    fun `should combine units after a unit that starts no sequence`() {
+        assertEquals("\uDCFFé", StrVal("\uDCFF\uDCC3\uDCA9").core)
+        assertEquals("é\uDCA9", StrVal("\uDCC3\uDCA9\uDCA9").core)
+    }
+
+    @Test
+    fun `should keep units that form no well-formed UTF-8`() {
+        val text = "\uDCC0\uDCAF\uDCED\uDCA0\uDC80\uDCF5\uDC80"
+        assertEquals(text, StrVal(text).core)
+    }
+
+    @Test
+    fun `should map lone high surrogate to three units`() {
+        assertEquals("\uDCED\uDCA0\uDC80", StrVal("\uD800").core)
+        assertEquals("a\uDCED\uDCA0\uDC80b", StrVal("a\uD800b").core)
+    }
+
+    @Test
+    fun `should map low surrogate below DC80 to three units`() {
+        assertEquals("\uDCED\uDCB0\uDC80", StrVal("\uDC00").core)
+    }
+
+    @Test
+    fun `should keep well-formed surrogate pair`() {
+        assertEquals("😀\uDCFF", StrVal("😀\uDCFF").core)
+    }
+
+    @Test
+    fun `should equal and hash by canonical core`() {
+        val joined = StrVal("\uDCC3\uDCA9")
+        assertEquals(StrVal("é"), joined)
+        assertEquals(StrVal("é").hashCode(), joined.hashCode())
+        assertNotEquals(StrVal("\uDCFE"), StrVal("\uDCFF"))
+        assertNotEquals(StrVal("?"), StrVal("\uDCFF"))
+    }
+
+    @Test
+    fun `should render core in toString`() {
+        assertEquals("StrVal{ab}", StrVal("ab").toString())
+    }
+
+    @Test
+    fun `should canonicalize concatenated cores of single units`() {
+        assertEquals("é".strVal, (StrVal("\uDCC3").core + StrVal("\uDCA9").core).strVal)
+    }
+
+    // --- toByteArray ---
+
+    @Test
+    fun `should encode characters as UTF-8 and units as their bytes`() {
+        val expected = bytesOf(0x61, 0xC3, 0xA9, 0xFF, 0xF0, 0x9F, 0x98, 0x80)
+        assertContentEquals(expected, StrVal("aé\uDCFF😀").toByteArray())
+        assertContentEquals("�".toByteArray(Charsets.UTF_8), StrVal("�").toByteArray())
+    }
+
+    @Test
+    fun `should encode lone high surrogate as ED A0 80`() {
+        assertContentEquals(bytesOf(0xED, 0xA0, 0x80), StrVal("\uD800").toByteArray())
+    }
+
+    @Test
+    fun `should encode concatenation as concatenated bytes`() {
+        val parts = listOf("a", "é", "\uDCC3", "\uDCA9", "\uDCFF", "😀", "\uDCF0\uDC9F", "\uDC98\uDC80", "")
+        for (left in parts) {
+            for (right in parts) {
+                val joined = StrVal(StrVal(left).core + StrVal(right).core)
+                val expected = StrVal(left).toByteArray() + StrVal(right).toByteArray()
+                assertContentEquals(expected, joined.toByteArray(), "$left + $right")
+            }
+        }
+    }
+
+    @Test
+    fun `should encode a pair whose low unit is in DC80 to DCFF as its four bytes`() {
+        assertContentEquals(bytesOf(0xF0, 0x9F, 0x92, 0x80), StrVal("💀").toByteArray())
+        assertContentEquals(bytesOf(0xF0, 0x9F, 0x92, 0x80, 0x80), StrVal("💀\uDC80").toByteArray())
+    }
+
+    private fun bytesOf(vararg values: Int): ByteArray = ByteArray(values.size) { values[it].toByte() }
+
+    // --- indexOfByteOutsideUtf8 ---
+
+    @Test
+    fun `should find no byte outside UTF-8 in text and pairs`() {
+        assertEquals(-1, "".indexOfByteOutsideUtf8())
+        assertEquals(-1, "aé😀".indexOfByteOutsideUtf8())
+        assertEquals(-1, "💀".indexOfByteOutsideUtf8())
+        assertEquals(-1, "􏳿".indexOfByteOutsideUtf8())
+    }
+
+    @Test
+    fun `should find unpaired units in DC80 to DCFF from the start index`() {
+        assertEquals(2, "💀\uDC80".indexOfByteOutsideUtf8())
+        assertEquals(1, "a\uDCFFb\uDC80".indexOfByteOutsideUtf8())
+        assertEquals(3, "a\uDCFFb\uDC80".indexOfByteOutsideUtf8(startIndex = 2))
+        assertEquals(-1, "a\uDCFFb".indexOfByteOutsideUtf8(startIndex = 2))
+        assertEquals(1, "\uDCFF\uDCFE".indexOfByteOutsideUtf8(startIndex = 1))
+    }
+
+    @Test
+    fun `should not report surrogates outside DC80 to DCFF`() {
+        assertEquals(-1, "\uD800".indexOfByteOutsideUtf8())
+        assertEquals(-1, "\uDC00\uDD00".indexOfByteOutsideUtf8())
+        assertEquals(1, "𐂀".indexOfByteOutsideUtf8(startIndex = 1))
     }
 
     // --- startsWith ---

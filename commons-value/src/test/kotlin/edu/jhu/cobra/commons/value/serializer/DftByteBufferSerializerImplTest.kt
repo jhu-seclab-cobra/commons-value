@@ -3,6 +3,7 @@ package edu.jhu.cobra.commons.value.serializer
 import edu.jhu.cobra.commons.value.IntVal
 import edu.jhu.cobra.commons.value.MAX_NESTING_DEPTH
 import edu.jhu.cobra.commons.value.RangeVal
+import edu.jhu.cobra.commons.value.StrVal
 import java.nio.ByteBuffer
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -28,6 +29,10 @@ import kotlin.test.assertTrue
  * - `should throw ValFormatException when STR payload contains invalid UTF-8` — Malformed byte sequence
  *   rejected instead of silently decoding to U+FFFD.
  * - `should round-trip RangeVal with Long MAX_VALUE bounds` — Long bounds survive serialization without truncation.
+ * - `should throw ValFormatException when STR_BYTES payload is well-formed UTF-8` — A string without a
+ *   byte outside UTF-8 has only the STR material.
+ * - `should decode STR_BYTES payload to its units` — `[21][2] FF 61` decodes to the unit U+DCFF and `a`.
+ * - `should throw ValFormatException when STR_BYTES length exceeds remaining bytes` — Corrupt length prefix rejected.
  */
 internal class DftByteBufferSerializerImplTest {
     @Test
@@ -174,5 +179,36 @@ internal class DftByteBufferSerializerImplTest {
             restored.first,
             "RangeVal Long bounds should survive ByteBuffer round-trip without truncation",
         )
+    }
+
+    @Test
+    fun `should throw ValFormatException when STR_BYTES payload is well-formed UTF-8`() {
+        val corruptBuffer = stringBytesMaterial(length = 1, 0x61)
+        assertFailsWith<ValFormatException> {
+            DftByteBufferSerializerImpl.deserialize(corruptBuffer)
+        }
+    }
+
+    @Test
+    fun `should decode STR_BYTES payload to its units`() {
+        val material = stringBytesMaterial(length = 2, 0xFF, 0x61)
+        assertEquals(StrVal("\uDCFFa"), DftByteBufferSerializerImpl.deserialize(material))
+    }
+
+    @Test
+    fun `should throw ValFormatException when STR_BYTES length exceeds remaining bytes`() {
+        val corruptBuffer = stringBytesMaterial(length = 3, 0xFF, 0x61)
+        assertFailsWith<ValFormatException> {
+            DftByteBufferSerializerImpl.deserialize(corruptBuffer)
+        }
+    }
+
+    private fun stringBytesMaterial(
+        length: Int,
+        vararg payload: Int,
+    ): ByteBuffer {
+        val buffer = ByteBuffer.allocate(TYPE_TAG_BYTES + SIZE_PREFIX_BYTES + payload.size).put(Type.STR_BYTES.byte).putInt(length)
+        payload.forEach { buffer.put(it.toByte()) }
+        return buffer.flip()
     }
 }

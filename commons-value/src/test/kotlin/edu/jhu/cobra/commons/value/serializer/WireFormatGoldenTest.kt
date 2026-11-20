@@ -11,6 +11,7 @@ import edu.jhu.cobra.commons.value.RangeVal
 import edu.jhu.cobra.commons.value.SetVal
 import edu.jhu.cobra.commons.value.StrVal
 import edu.jhu.cobra.commons.value.Unsure
+import java.nio.ByteBuffer
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -25,6 +26,8 @@ import kotlin.test.assertEquals
  * - `should emit pinned bytes for nested sample via byte array serializer`
  * - `should emit pinned bytes for nested sample via byte buffer serializer`
  * - `should emit pinned text for nested sample via char buffer serializer`
+ * - `should emit pinned STR material for text outside ASCII`
+ * - `should emit pinned STR_BYTES material for a string holding a unit`
  */
 internal class WireFormatGoldenTest {
     // One value exercising every container tag (LIST, SET, MAP, RANGE) plus each scalar tag.
@@ -55,7 +58,13 @@ internal class WireFormatGoldenTest {
         "List:a:IntV:7:,Str:2:ab,True:,False:,Null:,UnNUM:,FloatV:1.5:,Range:1,3:," +
             "Set:2:IntV:1:,Str:1:x:,Map:1:Str:1:k=Str:1:v::"
 
+    // A string outside ASCII without units keeps the STR frame; one holding a unit takes STR_BYTES.
+    private val text = StrVal("é😀")
+    private val textWithUnit = StrVal("\uDCFFa")
+
     private fun ByteArray.toHex(): String = joinToString("") { byte -> "%02x".format(byte) }
+
+    private fun ByteBuffer.toHex(): String = ByteArray(limit()).also { get(it) }.toHex()
 
     @Test
     fun `should emit pinned bytes for nested sample via byte array serializer`() {
@@ -64,13 +73,25 @@ internal class WireFormatGoldenTest {
 
     @Test
     fun `should emit pinned bytes for nested sample via byte buffer serializer`() {
-        val buffer = DftByteBufferSerializerImpl.serialize(sample)
-        val bytes = ByteArray(buffer.limit()).also { buffer.get(it) }
-        assertEquals(goldenByteBufferHex, bytes.toHex())
+        assertEquals(goldenByteBufferHex, DftByteBufferSerializerImpl.serialize(sample).toHex())
     }
 
     @Test
     fun `should emit pinned text for nested sample via char buffer serializer`() {
         assertEquals(goldenCharBufferText, DftCharBufferSerializerImpl.serialize(sample).toString())
+    }
+
+    @Test
+    fun `should emit pinned STR material for text outside ASCII`() {
+        assertEquals("14c3a9f09f9880", DftByteArraySerializerImpl.serialize(text).toHex())
+        assertEquals("1400000006c3a9f09f9880", DftByteBufferSerializerImpl.serialize(text).toHex())
+        assertEquals("Str:3:é😀", DftCharBufferSerializerImpl.serialize(text).toString())
+    }
+
+    @Test
+    fun `should emit pinned STR_BYTES material for a string holding a unit`() {
+        assertEquals("15ff61", DftByteArraySerializerImpl.serialize(textWithUnit).toHex())
+        assertEquals("1500000002ff61", DftByteBufferSerializerImpl.serialize(textWithUnit).toHex())
+        assertEquals("StrB:2:ff61", DftCharBufferSerializerImpl.serialize(textWithUnit).toString())
     }
 }
