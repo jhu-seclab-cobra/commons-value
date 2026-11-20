@@ -18,11 +18,11 @@ Public IValSerializer implementations and Type are in edu.jhu.cobra.commons.valu
 
 | Method | Behavior | Input | Output | Errors |
 |--------|----------|-------|--------|--------|
-| `serialize(value: IValue)` | Encodes value into material format | `value: IValue` | `Material` | `IllegalArgumentException` on nesting deeper than `MAX_NESTING_DEPTH` or string content with unpaired surrogates |
+| `serialize(value: IValue)` | Encodes value into material format | `value: IValue` | `Material` | `IllegalArgumentException` on nesting deeper than `MAX_NESTING_DEPTH` or a map key with unpaired surrogates |
 | `deserialize(material: Material)` | Decodes material into IValue; consumes the material exactly | `material: Material` | `IValue` | `ValFormatException` on any malformed material |
 
 **Deserialization contract (all implementations):**
-- Every malformed-material failure raises `ValFormatException`: unknown tag, truncated payload, invalid size/count prefix, unparsable number, malformed UTF-8 in string or key bytes, nesting deeper than `MAX_NESTING_DEPTH`, empty/exhausted material, trailing material after the top-level value. Underlying `BufferUnderflowException`/`NumberFormatException`/`CharacterCodingException` are wrapped at the serializer boundary, never leaked.
+- Every malformed-material failure raises `ValFormatException`: unknown tag, truncated payload, invalid size/count prefix, unparsable number, malformed UTF-8 in string or key bytes, a string-bytes payload whose bytes are all well-formed UTF-8, an unpaired surrogate in a char-buffer string or key, nesting deeper than `MAX_NESTING_DEPTH`, empty/exhausted material, trailing material after the top-level value. Underlying `BufferUnderflowException`/`NumberFormatException`/`CharacterCodingException` are wrapped at the serializer boundary, never leaked.
 - Full consumption: after decoding the top-level value, remaining material is malformed.
 - Nested length-prefixed parses assert that the nested decode consumed its window exactly (position equals window end).
 
@@ -38,7 +38,7 @@ Public IValSerializer implementations and Type are in edu.jhu.cobra.commons.valu
 
 **Responsibility:** Stateless singleton serializer converting IValue to/from `ByteArray` using binary format with type-byte prefix.
 
-**Serialization Format:** `[type_byte][payload_bytes]`. Lists and sets use size-prefixed element blocks. Maps encode key bytes and value bytes with size prefixes. Ranges encode a size prefix for the first bound followed by two tagged 8-byte Longs. Strings carry no length prefix: the payload extends to the end of the value's window.
+**Serialization Format:** `[type_byte][payload_bytes]`. Lists and sets use size-prefixed element blocks. Maps encode key bytes and value bytes with size prefixes. Ranges encode a size prefix for the first bound followed by two tagged 8-byte Longs. Strings carry no length prefix: the payload extends to the end of the value's window. A string without an unpaired unit U+DC80..U+DCFF is `[STR][UTF-8 bytes]`; a string holding one is `[STR_BYTES][bytes of StrVal.toByteArray()]`.
 
 ---
 
@@ -46,7 +46,7 @@ Public IValSerializer implementations and Type are in edu.jhu.cobra.commons.valu
 
 **Responsibility:** Stateless singleton serializer converting IValue to/from `ByteBuffer` using binary format with type-byte prefix and element count for collections.
 
-**Serialization Format:** `[type_byte][count (for collections)][elements]`. Strings are length-prefixed. Booleans use distinct type bytes (BOOL_TRUE/BOOL_FALSE). IntVal serializes as 8-byte Long. FloatVal serializes as 8-byte Double. Ranges store two tagged 8-byte Longs (INT tag before each bound).
+**Serialization Format:** `[type_byte][count (for collections)][elements]`. Strings are length-prefixed: a string without an unpaired unit U+DC80..U+DCFF is `[STR][Int length][UTF-8 bytes]`; a string holding one is `[STR_BYTES][Int length][bytes of StrVal.toByteArray()]`. Booleans use distinct type bytes (BOOL_TRUE/BOOL_FALSE). IntVal serializes as 8-byte Long. FloatVal serializes as 8-byte Double. Ranges store two tagged 8-byte Longs (INT tag before each bound).
 
 ---
 
@@ -54,7 +54,7 @@ Public IValSerializer implementations and Type are in edu.jhu.cobra.commons.valu
 
 **Responsibility:** Stateless singleton serializer converting IValue to/from `CharBuffer` using human-readable text format.
 
-**Serialization Format:** Null, boolean and uncertain forms are tag-only; numbers and ranges are delimiter-terminated; strings have hexadecimal UTF-16-code-unit lengths; collections have hexadecimal element counts. Maps encode keys as serialized StrVal with an `=` delimiter.
+**Serialization Format:** Null, boolean and uncertain forms are tag-only; numbers and ranges are delimiter-terminated; collections have hexadecimal element counts. A string without an unpaired unit U+DC80..U+DCFF is `Str:<hex UTF-16 length>:<text>`; a string holding one is `StrB:<hex byte count>:<two lowercase hex digits per byte of StrVal.toByteArray()>`, which is ASCII. The `StrB` byte count is the spelling `Int.asHexString()` emits, lowercase without sign or leading zero, and decoding rejects any other spelling, so each value has one `StrB` material. The `Str` length and the container counts are read by `String.asHexInt()`, which accepts every unsigned hexadecimal spelling; their reader is unchanged. Maps encode each key in the `Str` frame, after the well-formed UTF-16 check, with an `=` delimiter; a key in any other frame is malformed.
 
 ---
 
@@ -66,7 +66,7 @@ Public IValSerializer implementations and Type are in edu.jhu.cobra.commons.valu
 - `byte: Byte` — Binary Type Tag.
 - `str: String` — String type label.
 
-**Entries:** NULL(10), STR(20), BOOL(30), BOOL_TRUE(31), BOOL_FALSE(32), UNSURE_ANY(40), UNSURE_STR(41), UNSURE_NUM(42), UNSURE_BOOL(43), INT(57, "IntV"), FLOAT(58, "FloatV"), RANGE(60), LIST(70), SET(71), MAP(80).
+**Entries:** NULL(10), STR(20), STR_BYTES(21, "StrB"), BOOL(30), BOOL_TRUE(31), BOOL_FALSE(32), UNSURE_ANY(40), UNSURE_STR(41), UNSURE_NUM(42), UNSURE_BOOL(43), INT(57, "IntV"), FLOAT(58, "FloatV"), RANGE(60), LIST(70), SET(71), MAP(80).
 
 `Type` owns the wire-format tag vocabulary: every tag a serializer emits or decodes is declared here, and no serializer defines tags of its own. Boolean tags are split by implementation: the byte-array serializer emits BOOL with a payload byte; the byte-buffer and char-buffer serializers emit the payload-free BOOL_TRUE / BOOL_FALSE tags.
 
@@ -82,7 +82,9 @@ Internal validation helpers shared by the serializer implementations.
 
 **`MAX_NESTING_DEPTH` (internal const, value 1000)** -- Maximum supported Value-occurrence depth, with the root at depth zero. Declared in `IValue.kt` with `checkNestingDepth(depth: Int): Int`; serializers check every occurrence and copy traversal checks mutable containers. The accepted bound is shared by copying and serialization; [collection Open Gaps](design-collection.md#open-gaps) records the copy implementation difference at immutable leaves. The bound limits recursive stack use and rejects cyclic Value graphs.
 
-**`String.requireWellFormedUtf16(): String`** -- Returns the receiver; throws `IllegalArgumentException` when the string contains an unpaired UTF-16 surrogate. Called by all three serializers before encoding string content.
+**`String.requireWellFormedUtf16(): String`** -- Returns the receiver; throws `IllegalArgumentException` when the string contains an unpaired UTF-16 surrogate. Called by all three serializers before encoding a map key, and by the char-buffer serializer on each decoded `Str` payload.
+
+**`StrVal.holdsByteOutsideUtf8(): Boolean`** -- Whether `core` holds an unpaired unit U+DC80..U+DCFF, `core.indexOfByteOutsideUtf8() >= 0`; one scan of the UTF-16 units. The three serializers select the `STR_BYTES` frame when it is `true` and the `STR` frame otherwise; decoding a `STR_BYTES` payload rejects a value for which it is `false`.
 
 **`decodeMaterial(block: () -> T): T`** -- Runs a deserialization body and rethrows every decoding failure (`BufferUnderflowException`, `NumberFormatException`, `CharacterCodingException`, `IllegalArgumentException`) as `ValFormatException` with the original cause. Wraps the body of every `deserialize` implementation.
 

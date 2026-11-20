@@ -62,6 +62,7 @@ collection.first()
 - **`Float.floatVal: FloatVal`** -- Converts `Float` to `FloatVal` (widens to `Double`).
 - **`String.floatVal: FloatVal`** -- Parses string to `FloatVal`. Raises `NumberFormatException` on invalid input.
 - **`String.strVal: StrVal`** -- Wraps string in `StrVal`.
+- **`ByteArray.strVal: StrVal`** -- The `StrVal` of a byte sequence: well-formed UTF-8 decodes to characters, each other byte `XX` to the unit U+DCXX; inverse of `StrVal.toByteArray()`.
 - **`Char.strVal: StrVal`** -- Wraps character as single-char `StrVal`.
 - **`Path.strVal: StrVal`** -- Wraps `java.nio.file.Path` as `StrVal`.
 - **`File.strVal: StrVal`** -- Wraps `java.io.File` path as `StrVal`.
@@ -136,7 +137,7 @@ copy.single()
 
 ### Primitive Types
 
-- **`StrVal(core: String)`** -- String Value. Default constructor creates empty string. Methods: `startsWith(String)`, `substringAfter(String)`, `substringBefore(String)`, `contains(String)`, `uppercase()`, `lowercase()`, `trim()`, `equals(String, ignoreCase)`, `equals(IPrimitiveVal, ignoreCase)`, `length`, `get(Int)`, `get(IntVal)`.
+- **`StrVal(core: String)`** -- String Value standing for a byte sequence. The constructor canonicalizes `core`: each well-formed UTF-8 sequence of the bytes is its character, and each other byte `XX` is the unpaired unit U+DCXX. Default constructor creates empty string. Byte view: `toByteArray()`, inverse `ByteArray.strVal`; `String.indexOfByteOutsideUtf8(startIndex)` finds the next unpaired unit U+DC80..U+DCFF, reading a surrogate pair as one character. Text methods: `startsWith(String)`, `substringAfter(String)`, `substringBefore(String)`, `contains(String)`, `uppercase()`, `lowercase()`, `trim()`, `equals(String, ignoreCase)`, `equals(IPrimitiveVal, ignoreCase)`, `length`, `get(Int)`, `get(IntVal)`.
 - **`IntVal(core: Long)`** -- Integer Value. Stores `Long` internally. Default constructor creates `0L`. Methods: `toInt()`, `toDouble()`, `toFloat()`, `compareTo(Int)`, `compareTo(Long)`. Extension constructors: `Int.intVal`, `Long.intVal`, `Short.intVal`, `Byte.intVal`, `String.intVal`.
 - **`FloatVal(core: Double)`** -- Floating-point Value. Stores `Double` internally. Default constructor creates `0.0`. Methods: `toIntVal()`, `toInt()`, `toLong()`, `toFloat()`, `compareTo(Double)`. Extension constructors: `Double.floatVal`, `Float.floatVal`, `String.floatVal`.
 - **`BoolVal`** -- Boolea Value. Private constructor; obtain via `BoolVal(true)`, `BoolVal(false)`, `BoolVal.T`, `BoolVal.F`. Methods: `isTrue()`, `isFalse()`.
@@ -205,12 +206,12 @@ val restored = serializer.deserialize(bytes)
 
 ### Error Contract (all three implementations)
 
-- `serialize` raises `IllegalArgumentException` when value nesting exceeds 1000 levels (including cyclic value graphs) or a string or map key contains an unpaired UTF-16 surrogate.
-- `deserialize` raises `ValFormatException` on malformed material: empty input, truncated or garbage data, invalid size or count prefixes, unknown Type Tag values, malformed UTF-8 in string or key bytes, wrong delimiter characters (`DftCharBufferSerializerImpl`), trailing material after the value, or nesting beyond 1000 levels.
+- `serialize` raises `IllegalArgumentException` when value nesting exceeds 1000 levels (including cyclic value graphs) or a map key contains an unpaired UTF-16 surrogate.
+- `deserialize` raises `ValFormatException` on malformed material: empty input, truncated or garbage data, invalid size or count prefixes, unknown Type Tag values, malformed UTF-8 in string or key bytes, a `STR_BYTES` payload whose bytes are all well-formed UTF-8, wrong delimiter characters (`DftCharBufferSerializerImpl`), trailing material after the value, or nesting beyond 1000 levels.
 
 ### Type Enum
 
-- **`Type(byte: Byte, str: String)`** -- Type Tag enum. Entries: `NULL`, `STR`, `BOOL`, `BOOL_TRUE`, `BOOL_FALSE`, `UNSURE_ANY`, `UNSURE_STR`, `UNSURE_NUM`, `UNSURE_BOOL`, `INT`, `FLOAT`, `RANGE`, `LIST`, `SET`, `MAP`.
+- **`Type(byte: Byte, str: String)`** -- Type Tag enum. Entries: `NULL`, `STR`, `STR_BYTES`, `BOOL`, `BOOL_TRUE`, `BOOL_FALSE`, `UNSURE_ANY`, `UNSURE_STR`, `UNSURE_NUM`, `UNSURE_BOOL`, `INT`, `FLOAT`, `RANGE`, `LIST`, `SET`, `MAP`.
 
 ## Configuration
 
@@ -224,4 +225,4 @@ val restored = serializer.deserialize(bytes)
 - All three serializers are `object` singletons. No instantiation needed.
 - Serializers handle nested collections (e.g., `ListVal` containing `MapVal`) up to 1000 nesting levels.
 - `deserialize` consumes the whole material; a valid encoding followed by extra bytes or chars raises `ValFormatException`.
-- Reject or repair unpaired surrogates before `serialize`; they never round-trip.
+- A `StrVal` holding an unpaired unit U+DC80..U+DCFF (a byte outside UTF-8) serializes under `STR_BYTES` and round-trips; reject or repair unpaired surrogates in map keys before `serialize`.

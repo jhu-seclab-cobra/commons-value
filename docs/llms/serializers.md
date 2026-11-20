@@ -28,12 +28,12 @@ val restored = serializer.deserialize(bytes)
 
 ### Error Contract (all three implementations)
 
-- `serialize` raises `IllegalArgumentException` when value nesting exceeds 1000 levels (including cyclic value graphs) or a string or map key contains an unpaired UTF-16 surrogate.
-- `deserialize` raises `ValFormatException` on malformed material: empty input, truncated or garbage data, invalid size or count prefixes, unknown Type Tag values, malformed UTF-8 in string or key bytes, wrong delimiter characters (`DftCharBufferSerializerImpl`), trailing material after the value, or nesting beyond 1000 levels.
+- `serialize` raises `IllegalArgumentException` when value nesting exceeds 1000 levels (including cyclic value graphs) or a map key contains an unpaired UTF-16 surrogate.
+- `deserialize` raises `ValFormatException` on malformed material: empty input, truncated or garbage data, invalid size or count prefixes, unknown Type Tag values, malformed UTF-8 in string or key bytes, a `STR_BYTES` payload whose bytes are all well-formed UTF-8, wrong delimiter characters (`DftCharBufferSerializerImpl`), trailing material after the value, or nesting beyond 1000 levels.
 
 ### Type Enum
 
-- **`Type(byte: Byte, str: String)`** -- Type Tag enum. Entries: `NULL`, `STR`, `BOOL`, `BOOL_TRUE`, `BOOL_FALSE`, `UNSURE_ANY`, `UNSURE_STR`, `UNSURE_NUM`, `UNSURE_BOOL`, `INT`, `FLOAT`, `RANGE`, `LIST`, `SET`, `MAP`.
+- **`Type(byte: Byte, str: String)`** -- Type Tag enum. Entries: `NULL`, `STR`, `STR_BYTES`, `BOOL`, `BOOL_TRUE`, `BOOL_FALSE`, `UNSURE_ANY`, `UNSURE_STR`, `UNSURE_NUM`, `UNSURE_BOOL`, `INT`, `FLOAT`, `RANGE`, `LIST`, `SET`, `MAP`.
 
 ## Configuration
 
@@ -47,4 +47,4 @@ val restored = serializer.deserialize(bytes)
 - All three serializers are `object` singletons. No instantiation needed.
 - Serializers handle nested collections (e.g., `ListVal` containing `MapVal`) up to 1000 nesting levels.
 - `deserialize` consumes the whole material; a valid encoding followed by extra bytes or chars raises `ValFormatException`.
-- Reject or repair unpaired surrogates before `serialize`; they never round-trip.
+- A `StrVal` holding an unpaired unit U+DC80..U+DCFF (a byte outside UTF-8) serializes under `STR_BYTES` and round-trips; reject or repair unpaired surrogates in map keys before `serialize`.

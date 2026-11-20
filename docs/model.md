@@ -28,13 +28,14 @@
 - Map keys are strings only. Map values are any value (recursive nesting).
 - Every serialized value begins with a Type Tag.
 - Type Tag values are unique: no two tags share a binary or text encoding.
-- Every Type Tag identifies exactly one value kind; a kind may own several tags (boolean encodings differ by material format).
+- Every Type Tag identifies exactly one value kind; a kind may own several tags (boolean encodings differ by material format; a string holding a byte outside UTF-8 has its own tag).
 - Serialization round-trip preserves exact value kind: serialize then deserialize yields a value equal to the original.
 - Two integer values with equal content are equal. Two floating-point values with equal content are equal.
 - Primitive Value instances form a total order. Kinds rank null < boolean < numeric < string < uncertain; the two numeric kinds order as one family by exact numeric value, with NaN above every number. Order-equivalence does not imply equality: equal-valued members of different numeric kinds compare as equivalent yet remain distinct values.
 - Supported Value graphs are acyclic and may share descendants; copying and serialization visit each occurrence and do not preserve sharing identity.
 - Supported expanded Value occurrences have depth at most 1000, counting the root as zero; serialization, deserialization and structural copy reject deeper inputs. The copy implementation difference is recorded in [collection Open Gaps](design-collection.md#open-gaps).
-- Serializable string content is well-formed UTF-16: serialization rejects strings holding unpaired surrogates.
+- A string value is canonical: each well-formed UTF-8 sequence of its bytes is its character, and each other byte 80..FF is one unpaired unit U+DC80..U+DCFF. `StrVal` construction canonicalizes, and `toByteArray()` and `ByteArray.strVal` convert between a string value and its bytes.
+- Map keys are well-formed UTF-16 text: serialization rejects a key holding an unpaired surrogate.
 - Deserialization consumes its material exactly: a well-formed encoding followed by trailing content is malformed.
 
 Rationale: [concept.md](concept.md). Implementation mapping: [design-primitive.md](design-primitive.md).

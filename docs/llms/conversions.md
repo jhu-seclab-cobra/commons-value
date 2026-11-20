@@ -25,6 +25,7 @@ collection.first()
 - **`Float.floatVal: FloatVal`** -- Converts `Float` to `FloatVal` (widens to `Double`).
 - **`String.floatVal: FloatVal`** -- Parses string to `FloatVal`. Raises `NumberFormatException` on invalid input.
 - **`String.strVal: StrVal`** -- Wraps string in `StrVal`.
+- **`ByteArray.strVal: StrVal`** -- The `StrVal` of a byte sequence: well-formed UTF-8 decodes to characters, each other byte `XX` to the unit U+DCXX; inverse of `StrVal.toByteArray()`.
 - **`Char.strVal: StrVal`** -- Wraps character as single-char `StrVal`.
 - **`Path.strVal: StrVal`** -- Wraps `java.nio.file.Path` as `StrVal`.
 - **`File.strVal: StrVal`** -- Wraps `java.io.File` path as `StrVal`.

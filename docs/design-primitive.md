@@ -15,7 +15,7 @@ Related design documents:
 - **Exceptions**: `IllegalArgumentException` raised by value conversion and serialization on unknown types; `ValFormatException` extends `IllegalArgumentException`, raised by deserialization on malformed material
 - **Dependency roles**: Data holders: all value types, `Type`. Helpers: three serializer singletons (stateless, inputs by argument).
 - **Visibility**: Module `commons-value`, package `edu.jhu.cobra.commons.value` (values, conversions) and `edu.jhu.cobra.commons.value.serializer` (serializers). Every listed type and every extension in [design-conversions.md](design-conversions.md) is public. `MAX_NESTING_DEPTH`, `checkNestingDepth`, the depth-carrying `deepCopy(depth)` overloads, `hashCapacityFor`, and the WireValidation helpers are internal.
-- **Type selection**: `IValue`, `IPrimitiveVal`, `ICollectionVal` are sealed interfaces; `StrVal`, `IntVal`, `FloatVal`, `RangeVal` are data classes; `NullVal` is a data object; `Unsure` and `Type` are enum classes; `BoolVal` is a final class with a private constructor; the three serializers are objects.
+- **Type selection**: `IValue`, `IPrimitiveVal`, `ICollectionVal` are sealed interfaces; `IntVal`, `FloatVal`, `RangeVal` are data classes; `NullVal` is a data object; `Unsure` and `Type` are enum classes; `StrVal` is a final class whose constructor canonicalizes its argument; `BoolVal` is a final class with a private constructor; the three serializers are objects.
 
 ---
 
@@ -54,13 +54,13 @@ Related design documents:
 
 ### StrVal
 
-**Responsibility:** Wraps a `String` as a Value with string manipulation utilities.
+**Responsibility:** Wraps a `String` as a Value that stands for a byte sequence, with string manipulation utilities.
 
 **State/Fields:**
-- `core: String` -- The actual string content.
+- `core: String` -- The canonical text of the string's bytes ([model invariants](model.md#invariants)): each well-formed UTF-8 sequence is its character, and each other byte `XX` in 80..FF is the unpaired unit U+DCXX. Equality, `hashCode` and `toString` (`StrVal{<core>}`) read `core`.
 
 **Constructors:**
-- `StrVal(core: String)` -- Primary constructor.
+- `StrVal(core: String)` -- Primary constructor; total, never throws. It stores `core` unchanged when `core` holds no unit in D800..DFFF, which allocates nothing. Otherwise it keeps each valid surrogate pair, re-decodes each run of units U+DC80..U+DCFF from its bytes, so units that form a well-formed UTF-8 sequence become that character, and maps each other unpaired surrogate to the three bytes of its generalized UTF-8 form, which are three units U+DC80..U+DCFF. Example: `StrVal("\uDCC3\uDCA9").core` is `"é"`, and `StrVal("\uD800").core` is `"\uDCED\uDCA0\uDC80"`.
 - `StrVal()` -- Default constructor creating empty string.
 
 **Methods:**
@@ -79,8 +79,14 @@ Related design documents:
 | `get(index: Int)` | Returns char at index; negative indices count from end | `index: Int` | `Char` | `IndexOutOfBoundsException` |
 | `get(index: IntVal)` | Returns char at IntVal index; a core outside Int range is out of bounds, never truncated | `index: IntVal` | `Char` | `IndexOutOfBoundsException` |
 
+The methods above are text operations on `core`; a byte operation reads `toByteArray()`.
+
 **Properties:**
 - `length: Int` -- Number of UTF-16 code units in the string.
+
+**Extension functions:**
+- `StrVal.toByteArray(): ByteArray` -- The byte sequence the string stands for: the UTF-8 bytes of each character and byte `XX` for each unpaired unit U+DCXX. `bytes.strVal.toByteArray()` equals `bytes` for every byte array, and `value.toByteArray().strVal` equals `value` for every `StrVal`.
+- `String.indexOfByteOutsideUtf8(startIndex: Int = 0): Int` -- The index of the first unpaired unit U+DC80..U+DCFF at or after `startIndex`, or -1 when there is none. A high surrogate followed by a low surrogate is one pair, so the low unit DC80 of U+1F480 (D83D DC80) is never returned; `startIndex` is the index of a character's first unit. One scan of the UTF-16 units, without allocation. Applied to a `core`, it finds the units that stand for a byte outside UTF-8.
 
 ---
 

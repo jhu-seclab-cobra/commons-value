@@ -42,6 +42,8 @@ Public extension functions in edu.jhu.cobra.commons.value convert native inputs 
 
 **`String.strVal: StrVal`** -- Wraps String as StrVal.
 
+**`ByteArray.strVal: StrVal`** -- The string value of the byte sequence: each well-formed UTF-8 sequence decodes to its character, and each other byte `XX` to the unit U+DCXX. Inverse of `StrVal.toByteArray()` ([design-primitive.md](design-primitive.md#strval)).
+
 **`Char.strVal: StrVal`** -- Wraps Char (as String) as StrVal.
 
 **`Path.strVal: StrVal`** -- Wraps Path string representation as StrVal.
@@ -90,7 +92,7 @@ Wire-format helper functions (`asHexInt`, buffer readers): [design-serializer.md
 
 | Exception | When Raised |
 |-----------|------------|
-| `IllegalArgumentException` | `Any?.toVal` / `Any?.primitiveVal` called on unsupported type; serializer encounters unknown IValue subtype, nesting deeper than `MAX_NESTING_DEPTH`, or string content with unpaired surrogates |
+| `IllegalArgumentException` | `Any?.toVal` / `Any?.primitiveVal` called on unsupported type; serializer encounters unknown IValue subtype, nesting deeper than `MAX_NESTING_DEPTH`, or a map key with unpaired surrogates |
 | `ValFormatException` (extends `IllegalArgumentException`) | Any malformed material passed to `deserialize`: unknown tag, truncated payload, invalid size/count prefix, unparsable number, excessive nesting, empty material, trailing material ([design-serializer.md](design-serializer.md)) |
 | `IndexOutOfBoundsException` | `ListVal.get`/`set`/`subList` with out-of-range index; `StrVal.get` with out-of-range index |
 | `NumberFormatException` | `String.intVal` / `String.floatVal` / `String.asHexInt()` on invalid input |

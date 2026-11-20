@@ -19,7 +19,7 @@ The value family: the closed set of data items the library represents, serialize
 
 | Member | Definition | Reference | Literature | Tools |
 |--------|------------|-----------|------------|-------|
-| `StrVal` | A string. | none | none | none |
+| `StrVal` | A byte string; its text holds each well-formed UTF-8 sequence as a character and each other byte as one unit U+DC80..U+DCFF. | none | none | none |
 | `IntVal` | A signed 64-bit integer. | none | none | none |
 | `FloatVal` | An IEEE 754 binary64 floating-point number. | none | none | none |
 | `BoolVal` | A boolean. | none | none | none |
@@ -62,7 +62,8 @@ The value family: the closed set of data items the library represents, serialize
 | Member | Definition | Reference | Literature | Tools |
 |--------|------------|-----------|------------|-------|
 | `Type.NULL` | A tag for null. | none | none | none |
-| `Type.STR` | A tag for string. | none | none | none |
+| `Type.STR` | A tag for a string whose bytes are well-formed UTF-8. | none | none | none |
+| `Type.STR_BYTES` | A tag for a string holding a byte outside UTF-8, encoded by its bytes. | none | none | none |
 | `Type.BOOL` | A tag for boolean with a byte payload. | none | none | none |
 | `Type.BOOL_TRUE` | A tag for true without payload. | none | none | none |
 | `Type.BOOL_FALSE` | A tag for false without payload. | none | none | none |

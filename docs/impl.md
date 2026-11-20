@@ -25,5 +25,5 @@
 
 ### design-serializer.md
 
-- [@jdk] `Char.isHighSurrogate()` / `Char.isLowSurrogate()` — linear scan detects unpaired surrogates; `String.encodeToByteArray()` silently replaces them with `?` (0x3F), which is why serialization must reject first.
+- [@jdk] `Char.isHighSurrogate()` / `Char.isLowSurrogate()` — linear scan detects unpaired surrogates; `String.encodeToByteArray()` silently replaces them with `?` (0x3F), so a string holding an unpaired unit U+DC80..U+DCFF encodes through `StrVal.toByteArray()` and a map key is rejected first.
 - [@jdk] `ByteBuffer.get` throws `BufferUnderflowException` (extends `RuntimeException`, not `IllegalArgumentException`) — wrap at the `deserialize` boundary into `ValFormatException`.
