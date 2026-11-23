@@ -1,7 +1,6 @@
 [versions]
 kotlin = "2.4.20"
 kover = "0.9.9"
-jvm = "21"
 ktlint = "14.2.0"
 detekt = "1.23.8"
 junit = "6.1.3"
