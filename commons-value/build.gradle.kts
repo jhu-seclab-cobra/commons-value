@@ -10,7 +10,7 @@ plugins {
 }
 
 group = "edu.jhu.cobra"
-version = "0.2.0"
+version = libs.versions.projectVersion.get()
 
 val minJavaProperty = providers.gradleProperty("minJava").get()
 val minJava =
@@ -74,21 +74,8 @@ tasks.register<Test>("performanceTest") {
     jvmArgs("-Xmx2g", "-Xms1g")
 }
 
-kover {
-    currentProject {
-        instrumentation {
-            excludedClasses.add("*PerformanceTest*")
-            disabledForTestTasks.add("performanceTest")
-        }
-    }
-}
-
-publishing {
-    publications { create<MavenPublication>("maven") { from(components["java"]) } }
-}
-
 ktlint {
-    version.set("1.8.0")
+    version.set(libs.versions.ktlintEngine.get())
     verbose.set(true)
     android.set(false)
     outputToConsole.set(true)
@@ -102,4 +89,19 @@ detekt {
     config.setFrom(files("detekt.yml"))
     buildUponDefaultConfig = true
     parallel = true
+}
+
+kover {
+    currentProject {
+        instrumentation {
+            excludedClasses.add("*PerformanceTest*")
+            disabledForTestTasks.add("performanceTest")
+        }
+    }
+}
+
+publishing {
+    publications {
+        create<MavenPublication>("maven") { from(components["java"]) }
+    }
 }
